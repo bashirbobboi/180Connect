@@ -147,7 +147,7 @@ export default function CompanyPage() {
       }
 
       try {
-        const res = await fetch("`${API_URL}/validate-token", {
+        const res = await fetch(`${API_URL}/validate-token`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },

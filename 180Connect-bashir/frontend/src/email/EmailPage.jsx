@@ -134,7 +134,7 @@ export default function EmailPage() {
   useEffect(() => {
     const fetch_results = async () => {    
       const token = localStorage.getItem("token");
-      const res = await fetch('`${API_URL}/all-clients', {
+      const res = await fetch(`${API_URL}/all-clients`, {
         headers: {
           'Accept': 'application/json',
           Authorization: `Bearer ${token}`,
@@ -172,7 +172,7 @@ export default function EmailPage() {
       }
 
       try {
-        const res = await fetch("`${API_URL}/validate-token", {
+        const res = await fetch(`${API_URL}/validate-token`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -230,7 +230,7 @@ export default function EmailPage() {
     e.preventDefault();
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch('`${API_URL}/send-emails/', {
+      const response = await fetch(`${API_URL}/send-emails/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -40,7 +40,7 @@ export default function AddClientPage() {
       };
       delete payload.client_mission;
 
-      const response = await fetch('`${API_URL}/add-client', {
+      const response = await fetch(`${API_URL}/add-client`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

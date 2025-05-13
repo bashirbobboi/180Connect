@@ -39,7 +39,7 @@ export default function AccountPage() {
     const token = localStorage.getItem("token");
     if (!token) return false;
   
-    const res = await fetch("`${API_URL}/validate-token", {
+    const res = await fetch(`${API_URL}/validate-token`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -54,13 +54,13 @@ export default function AccountPage() {
   const handleLogout = async () => {
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch('`${API_URL}/logout', {
+      const response = await fetch(`${API_URL}/logout`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`
         }
       });
-  
+
       if (response.ok) {
         localStorage.removeItem("token");
         navigate("/login");
@@ -92,7 +92,7 @@ export default function AccountPage() {
     formData.append('file', file);
   
     try {
-      const response = await fetch('`${API_URL}/upload-profile-picture', {
+      const response = await fetch(`${API_URL}/upload-profile-picture`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -102,7 +102,7 @@ export default function AccountPage() {
   
       if (response.ok) {
         // Refresh profile picture
-        const profileRes = await fetch('`${API_URL}/user-profile', {
+        const profileRes = await fetch(`${API_URL}/user-profile`, {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`
           }
@@ -124,7 +124,7 @@ export default function AccountPage() {
 
   const handleDeleteProfilePicture = async () => {
     try {
-      const response = await fetch('`${API_URL}/delete-profile-picture', {
+      const response = await fetch(`${API_URL}/delete-profile-picture`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -152,7 +152,7 @@ export default function AccountPage() {
       if (!token) return;
 
       try {
-        const res = await fetch("`${API_URL}/user-profile", {
+        const res = await fetch(`${API_URL}/user-profile`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -225,7 +225,7 @@ export default function AccountPage() {
 
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch('`${API_URL}/update-profile', {
+      const response = await fetch(`${API_URL}/update-profile`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
