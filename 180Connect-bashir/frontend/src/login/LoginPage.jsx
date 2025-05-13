@@ -115,7 +115,7 @@ export default function LoginPage() {
   
     if (response.ok) {
       alert("User created successfully.")
-      navigate(0)
+      navigate('/login')
       return data;
     } else {
       throw new Error(data.detail);
