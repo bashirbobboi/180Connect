@@ -11,6 +11,8 @@ import NavBar from '/src/Components/NavBar';
 import { useParams } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 /**
  * Email template definitions for different communication scenarios
  */

@@ -5,6 +5,7 @@ import '../styles.less';
 import '../App.css';
 import NavBar from '../Components/NavBar';
 
+const API_URL = import.meta.env.VITE_API_URL;
 const COMPANY_TYPES = [
   "Charity",
   "CIC",

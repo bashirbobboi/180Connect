@@ -11,6 +11,8 @@ import '../App.css';
 import NavBar from '/src/Components/NavBar';
 import AddClientForm from '../Components/AddClientForm.jsx';
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 /**
  * Email template definitions for different communication scenarios
  */

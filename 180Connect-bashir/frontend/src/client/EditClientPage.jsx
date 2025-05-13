@@ -14,6 +14,9 @@ const COMPANY_TYPES = [
   "Other"
 ];
 
+const API_URL = import.meta.env.VITE_API_URL;
+
+
 export default function EditClientPage() {
   const { clientId } = useParams();
   const navigate = useNavigate();

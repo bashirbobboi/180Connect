@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 export default function AddClientForm({ onClientAdded }) {
   const [formData, setFormData] = useState({
     name: '',

@@ -10,8 +10,11 @@ import '/src/App.css';
 import NavBar from '/src/Components/NavBar';
 import { useNavigate } from 'react-router-dom';
 
+const API_URL = import.meta.env.VITE_API_URL;
+
+
 export default function AccountPage() {
-  const [loggedIn, setLoggedIn] = useState(false);
+  const [loggedIn, setLoggedIn] = useState(false); 
   const [userProfile, setUserProfile] = useState({
     email: '',
     first_name: '',
