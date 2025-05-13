@@ -58,4 +58,4 @@ frontend/
    ```
 
 ## API Integration
-The frontend communicates with the FastAPI backend at ``${API_URL}`. All authenticated requests require a Bearer token.
+The frontend communicates with the FastAPI backend at `${API_URL}`. All authenticated requests require a Bearer token.
