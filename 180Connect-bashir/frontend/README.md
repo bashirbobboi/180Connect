@@ -49,7 +49,7 @@ frontend/
 2. Configure environment variables:
    Create a `.env` file with:
    ```
-   VITE_API_URL=http://localhost:8000
+   VITE_API_URL=https://one80connect.onrender.com
    ```
 
 3. Run development server:
@@ -58,4 +58,4 @@ frontend/
    ```
 
 ## API Integration
-The frontend communicates with the FastAPI backend at `http://localhost:8000`. All authenticated requests require a Bearer token.
+The frontend communicates with the FastAPI backend at ``${API_URL}`. All authenticated requests require a Bearer token.

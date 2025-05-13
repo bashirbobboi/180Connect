@@ -4,11 +4,17 @@ from routes import api_routes, token_routes, google_routes, client_routes
 from database import engine
 from models import Base
 from data_collection import get_client_data_for_database
+import os
 
 app = FastAPI()
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],  # React dev server
+    allow_origins=[
+        "http://localhost:5173",  # React dev server
+        "https://one80connect.vercel.app",  # Your Vercel frontend URL
+        "https://180connect.vercel.app",    # Alternative Vercel URL
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

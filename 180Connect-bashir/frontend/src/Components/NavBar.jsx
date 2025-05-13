@@ -36,7 +36,7 @@ export default function NavBar ({logInPage=false}) {
 
     useEffect(() => {
         const fetch_results = async () => {        
-            const res = await fetch(`http://localhost:8000/search-clients?query=${encodeURIComponent(debouncedSearchQuery)}`, {
+            const res = await fetch(``${API_URL}/search-clients?query=${encodeURIComponent(debouncedSearchQuery)}`, {
                 headers: {
                 'Accept': 'application/json',
                 }
@@ -57,7 +57,7 @@ export default function NavBar ({logInPage=false}) {
         if (!token) return false;
       
         try {
-            const res = await fetch("http://localhost:8000/user-profile", {
+            const res = await fetch("`${API_URL}/user-profile", {
                 headers: {
                 Authorization: `Bearer ${token}`,
                 },

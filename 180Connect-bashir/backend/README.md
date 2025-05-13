@@ -76,7 +76,7 @@ backend/
    ```
 
 ## API Documentation
-The API is available at `http://localhost:8000` with interactive documentation at `/docs`.
+The API is available at ``${API_URL}` with interactive documentation at `/docs`.
 
 ## Dependencies
 See requirements.txt for full list of Python packages.

@@ -23,7 +23,7 @@ export default function EditClientPage() {
   useEffect(() => {
     const fetchClient = async () => {
       const token = localStorage.getItem("token");
-      const res = await fetch(`http://localhost:8000/clients/${clientId}`, {
+      const res = await fetch(``${API_URL}/clients/${clientId}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -66,7 +66,7 @@ export default function EditClientPage() {
       };
       delete payload.client_mission;
 
-      const response = await fetch(`http://localhost:8000/clients/${clientId}`, {
+      const response = await fetch(``${API_URL}/clients/${clientId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

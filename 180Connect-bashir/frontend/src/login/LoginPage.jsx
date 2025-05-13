@@ -49,7 +49,7 @@ export default function LoginPage() {
     formData.append("email", user);
     formData.append("password", pass);
   
-    const response = await fetch("http://localhost:8000/token", {
+    const response = await fetch("`${API_URL}/token", {
       method: "POST",
       body: formData,
       headers: {
@@ -100,7 +100,7 @@ export default function LoginPage() {
     formData.append("first_name", first_name);
     formData.append("last_name", last_name);
   
-    const response = await fetch("http://localhost:8000/register", {
+    const response = await fetch("`${API_URL}/register", {
       method: "POST",
       body: formData,
       headers: {
@@ -136,7 +136,7 @@ export default function LoginPage() {
    */
   const handleGoogleSuccess = async (googleResponse) => {
     try {
-      const response = await fetch('http://localhost:8000/auth/google', {
+      const response = await fetch('`${API_URL}/auth/google', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

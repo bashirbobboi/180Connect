@@ -19,7 +19,7 @@ export default function AddClientForm({ onClientAdded }) {
     e.preventDefault();
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch('http://localhost:8000/add-client', {
+      const response = await fetch('`${API_URL}/add-client', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
