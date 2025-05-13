@@ -8,6 +8,15 @@ import os
 
 app = FastAPI()
 
+# Add a root route
+@app.get("/")
+async def root():
+    return {
+        "message": "180Connect API is running",
+        "docs": "/docs",
+        "status": "healthy"
+    }
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
@@ -19,6 +28,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
 
 app.include_router(api_routes.router)
 app.include_router(token_routes.router)
