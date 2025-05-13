@@ -1,0 +1,74 @@
+// Import Wikimedia Codex design system resources
+@import ( reference ) '@wikimedia/codex-design-tokens/theme-wikimedia-ui.less';
+@import ( reference ) '@wikimedia/codex/mixins/css-icon.less';
+
+// Import Codex base styles
+@import '@wikimedia/codex/dist/codex.style.css';
+
+:root {
+  --background: black;
+  --foreground: #171717;
+}
+
+html,
+body {
+  max-width: 100vw;
+  overflow-x: hidden;
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+  font-family: Arial, Helvetica, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+// Icon classes using Wikimedia Codex mixins (https://doc.wikimedia.org/codex/latest/icons/all-icons.html)
+.icon-class {
+	&--search {
+		.cdx-mixin-css-icon( @cdx-icon-search );
+	}
+
+	&--trash {
+		.cdx-mixin-css-icon( @cdx-icon-trash, @param-is-button-icon: true );
+	}
+
+  &--eye {
+      .cdx-mixin-css-icon( @cdx-icon-eye);
+  }
+
+  &--info-filled {
+    .cdx-mixin-css-icon( @cdx-icon-info-filled );
+  }
+
+  &--lock {
+    .cdx-mixin-css-icon( @cdx-icon-lock );
+  }
+
+  &--user-avatar {
+    .cdx-mixin-css-icon( @cdx-icon-user-avatar );
+  }
+
+  &--edit {
+    .cdx-mixin-css-icon( @cdx-icon-edit );
+  }
+}
+
+.interactions-row:hover {
+    background-color: #f5f5f5;
+    color: #36c;
+    cursor: pointer;
+  }
+  

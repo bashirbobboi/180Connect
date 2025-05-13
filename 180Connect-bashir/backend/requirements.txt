@@ -1,0 +1,10 @@
+fastapi[standard]
+pydantic
+sqlalchemy
+python-jose[cryptography]
+passlib[bcrypt]
+google-auth
+ollama
+requests
+pandas
+uvicorn
