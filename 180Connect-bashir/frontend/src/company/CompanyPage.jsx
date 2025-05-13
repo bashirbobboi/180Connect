@@ -87,7 +87,7 @@ export default function CompanyPage() {
   const handleSendEmail = async () => {
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch('`${API_URL}/send-emails/', {
+      const response = await fetch(`${API_URL}/send-emails/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -170,7 +170,7 @@ export default function CompanyPage() {
     const fetchClientEmails = async () => {
       try {
         const token = localStorage.getItem("token");
-        const response = await fetch(``${API_URL}/client-emails/${id}`, {
+        const response = await fetch(`${API_URL}/client-emails/${id}`, {
           headers: {
             'Authorization': `Bearer ${token}`
           }
