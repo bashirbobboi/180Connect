@@ -114,8 +114,29 @@ export default function LoginPage() {
     const data = await response.json();
   
     if (response.ok) {
-      alert("User created successfully.")
-      navigate('/login')
+      // Automatically log in the user
+      const loginFormData = new URLSearchParams();
+      loginFormData.append("email", register_email);
+      loginFormData.append("password", pass);
+
+      const loginResponse = await fetch(`${API_URL}/token`, {
+        method: "POST",
+        body: loginFormData,
+        headers: {
+          "accept": "application/json",
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+      });
+
+      const loginData = await loginResponse.json();
+
+      if (loginResponse.ok) {
+        localStorage.setItem("token", loginData.access_token);
+        navigate('/email'); // or '/' or wherever you want
+      } else {
+        alert("Account created, but failed to log in automatically. Please log in manually.");
+        navigate('/login');
+      }
       return data;
     } else {
       throw new Error(data.detail);
