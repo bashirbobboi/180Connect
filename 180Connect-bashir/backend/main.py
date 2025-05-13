@@ -22,7 +22,7 @@ app.add_middleware(
     allow_origins=[
         "http://localhost:5173",  # React dev server
         "https://one80connect.vercel.app",  # Your Vercel frontend URL
-        "https://180connect.vercel.app",    # Alternative Vercel URL
+        "https://180-connect.vercel.app",    # Alternative Vercel URL
     ],
     allow_credentials=True,
     allow_methods=["*"],
