@@ -11,6 +11,8 @@ import NavBar from '/src/Components/NavBar';
 import { GoogleLogin } from '@react-oauth/google';
 import { useNavigate } from 'react-router-dom';
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 export default function LoginPage() {
   // Authentication form state
   const [createAccount, setCreateAccount] = useState(false);
