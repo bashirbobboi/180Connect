@@ -3,6 +3,7 @@
  * Defines all available routes and their corresponding components.
  */
 
+import { Analytics } from '@vercel/analytics/react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import React from 'react';
 
@@ -38,6 +39,7 @@ export default function App() {
         <Route path="/add-client" element={<AddClientPage />} />
         <Route path="/edit-client/:clientId" element={<EditClientPage />} />
       </Routes>
+      <Analytics />
     </Router>
   );
 }
