@@ -1,3 +1,7 @@
+# models.py
+# This file defines all SQLAlchemy ORM models (database tables) and Pydantic models for the backend.
+# Edit this file to add new tables, fields, or data validation schemas.
+
 from typing import Annotated, List
 from pydantic import BaseModel
 from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Boolean, Text, LargeBinary
@@ -8,7 +12,7 @@ from fastapi import UploadFile
 
 Base = declarative_base()
 
-# User table
+# === USER TABLE ===
 class User(Base):
     __tablename__ = "users"
 
@@ -24,6 +28,7 @@ class User(Base):
     tokens = relationship("Token", back_populates="user")
     emails = relationship("Email", back_populates="user")
 
+# === TOKEN TABLE ===
 class Token(Base):
     __tablename__ = "tokens"
 
@@ -34,6 +39,7 @@ class Token(Base):
 
     user = relationship("User", back_populates="tokens")
 
+# === COMPANY TABLE ===
 class Company(Base):
     __tablename__ = "companies"
 
@@ -54,6 +60,7 @@ class Company(Base):
     emails = relationship("Email", back_populates="client")
     source = relationship("Source")
 
+# === SOURCE TABLE ===
 class Source(Base):
     __tablename__ = "sources"
 
@@ -62,6 +69,7 @@ class Source(Base):
 
     companies = relationship("Company", back_populates="source")
 
+# === EMAIL TABLE ===
 class Email(Base):
     __tablename__ = "emails"
 
@@ -77,7 +85,12 @@ class Email(Base):
     user = relationship("User", back_populates="emails")
     client = relationship("Company", back_populates="emails")
 
+# === Pydantic MODELS FOR REQUEST VALIDATION ===
+
 class BulkEmailCreate(BaseModel):
+    """
+    Used for validating bulk email creation requests.
+    """
     client_ids: List[int]
     subject: str
     content: str
@@ -85,6 +98,9 @@ class BulkEmailCreate(BaseModel):
     status: str
 
 class ProfilePictureUpdate(BaseModel):
+    """
+    Used for validating profile picture upload requests.
+    """
     image: UploadFile
     max_size: int = 10 * 1024 * 1024  # 10MB limit
     allowed_types: set = {"image/jpeg", "image/png", "image/webp"}

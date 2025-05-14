@@ -1,1 +1,5 @@
+# procfile
+# This file tells deployment platforms (like Heroku or Render) how to start the FastAPI backend server.
+# Edit the command below if you change your app entry point or need to adjust host/port settings.
+
 web: uvicorn main:app --host 0.0.0.0 --port $PORT
