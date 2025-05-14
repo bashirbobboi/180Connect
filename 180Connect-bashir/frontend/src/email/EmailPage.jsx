@@ -202,9 +202,11 @@ export default function EmailPage() {
       if (searchQuery && !client.name.toLowerCase().includes(searchQuery.toLowerCase())) {
         return false;
       }
-      if (filters.company_type !== 'all' && client.company_type !== filters.company_type) {
+      if (filters.company_type !== 'all' && 
+          COMPANY_TYPE_MAPPING[client.company_type] !== filters.company_type) {
         return false;
       }
+    
       if (filters.status !== 'all' && client.status !== filters.status) {
         return false;
       }
