@@ -74,6 +74,7 @@ backend/
    ```bash
    fastapi dev main.py
    ```
+   Note: if you encounter a type error, your python version may be too old (< 3.10)
 
 ## API Documentation
 The API is available at `${API_URL}` with interactive documentation at `/docs`.
