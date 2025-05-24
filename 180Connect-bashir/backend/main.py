@@ -9,8 +9,25 @@ from database import engine
 from models import Base
 from data_collection import get_client_data_for_database
 import os
+import asyncpg
+from dotenv import load_dotenv
+
+load_dotenv() # Loading environment variables from .env
 
 app = FastAPI()
+
+@app.on_event("startup")
+async def startup():
+    app.state.db = await asyncpg.create_pool(os.getenv("RENDER_DATABASE_URL"))
+
+@app.on_event("shutdown")
+async def shutdown():
+    await app.state.db.close()
+
+@app.get("/render_users")
+async def render_users():
+    rows = await app.state.db.fetch("SELECT * FROM users")
+    return [dict(row) for row in rows]
 
 # === ROOT ROUTE ===
 @app.get("/")

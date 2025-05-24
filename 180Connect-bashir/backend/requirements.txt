@@ -8,3 +8,5 @@ ollama
 requests
 pandas
 uvicorn
+asyncpg
+python-dotenv
