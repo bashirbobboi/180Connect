@@ -59,7 +59,8 @@ export default function LoginPage() {
         "Content-Type": "application/x-www-form-urlencoded",
       },
     });
-  
+    
+    console.log(response)
     const data = await response.json();
   
     if (response.ok) {

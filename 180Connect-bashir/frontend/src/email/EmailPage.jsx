@@ -143,6 +143,7 @@ export default function EmailPage() {
         }
       });
       const data = await res.json();
+      console.log(data)
       if(data){
         setClients(data);
         const uniqueRegions = [...new Set(
@@ -179,6 +180,9 @@ export default function EmailPage() {
             Authorization: `Bearer ${token}`,
           },
         });
+
+        const data = await res.json()
+        console.log(data)
         
         if (!res.ok) {
           localStorage.removeItem("token");
