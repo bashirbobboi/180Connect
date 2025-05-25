@@ -356,64 +356,6 @@ def get_or_create_source(db: Session, source_name: str):
         db.refresh(source)
     return source
 
-def get_client_data_for_database():
-    """
-    Fetch data from multiple sources, clean it, and save to the database.
-    Edit this function to change how data is stored or to add new sources.
-    """
-    db: Session = SessionLocal()
-
-    charities = fetch_charity_data() or []
-    companies = fetch_companies_data() or []
-
-    # Collect all postcodes
-    charity_postcodes = [c["contact"]["postcode"] if c.get("contact") else "N/A" for c in charities]
-    company_postcodes = [c.get("postcode", "N/A") for c in companies]
-    location_data = get_locations_from_postcodes(charity_postcodes + company_postcodes)
-
-    # Add CharityBase source
-    charity_source = get_or_create_source(db, "CharityBase")
-    for c in charities:
-        postcode = c["contact"]["postcode"] if c.get("contact") else "N/A"
-        location = location_data.get(postcode, {"city": "N/A", "region": "N/A"})
-        company = Company(
-            id_from_source=c["id"],
-            name=c["names"][0]["value"] if "names" in c and c["names"] else "N/A",
-            status="active",
-            company_type="Charity",
-            address=", ".join(c["contact"].get("address", [])) if c.get("contact") and isinstance(c["contact"].get("address"), list) else "N/A",
-            email=c["contact"]["email"] if c.get("contact") else "N/A",
-            postcode=postcode,
-            website=c["website"] if "website" in c else "N/A",
-            activities=c["activities"] if "activities" in c else "N/A",
-            source_id=charity_source.id,
-            city=location["city"],
-            region=location["region"]
-        )
-        db.add(company)
-
-    # Add Companies House source
-    ch_source = get_or_create_source(db, "Companies House")
-    for c in companies:
-        postcode = c.get("postcode", "N/A")
-        location = location_data.get(postcode, {"city": "N/A", "region": "N/A"})
-        company = Company(
-            id_from_source=c.get("id"),
-            name=c.get("name", "N/A"),
-            status=c.get("status", "N/A"),
-            company_type=c.get("company_type", "N/A"),
-            address=c.get("address", "N/A"),
-            postcode=postcode,
-            website=c.get("website", "N/A"),
-            source_id=ch_source.id,
-            city=location["city"],
-            region=location["region"]
-        )
-        db.add(company)
-
-    db.commit()
-    db.close()
-    print(f"✅ Data saved to database (Total entries: {len(charities) + len(companies)})")
 
 # ------------------------
 # RUN SCRIPT

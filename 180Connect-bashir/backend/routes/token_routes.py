@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Form, Header, UploadFile, File
+from fastapi import APIRouter, Depends, HTTPException, Form, Header, UploadFile, File, Request
 from fastapi.security import OAuth2PasswordBearer
 from models import User, Token
 from database import get_db
@@ -11,115 +11,136 @@ import base64
 
 router = APIRouter(prefix="")
 
-def verify_token(token_value: str, db: Session) -> Token:
-    """Verify token and return Token object if valid"""
-    token = db.query(Token).filter(Token.token == token_value).first()
-    if not token:
-        raise HTTPException(status_code=401, detail="Invalid token")
+async def verify_token(token_value: str, conn):
+    token = await conn.fetchrow(
+        "SELECT * FROM tokens WHERE token = $1 LIMIT 1", token_value
+    )
 
     current_time = datetime.now(timezone.utc)
-    token_expiry = token.expires_at.replace(tzinfo=timezone.utc)
+    token_expiry = token["expires_at"].replace(tzinfo=timezone.utc)
 
-    if token_expiry < current_time:
-        raise HTTPException(status_code=401, detail="Token expired")
+    if token_expiry >= current_time:
+        return token
 
-    return token
-
-def get_current_user_from_token(authorization: str, db: Session):
-    token_value = authorization.replace("Bearer ", "")
-    token = verify_token(token_value, db)
-    return token.user
-
-def delete_expired_tokens(db: Session):
-    now = datetime.now(timezone.utc)
-    db.query(Token).filter(Token.expires_at < now).delete()
-    db.commit()
-
-@router.get("/validate-token")
-def valid_token(
-    authorization: str = Header(...),
-    db: Session = Depends(get_db)
-):
-    try:
-        user = get_current_user_from_token(authorization, db)
-        return {"detail": "Token is valid", "user": user.email}
-    except HTTPException as e:
-        raise e 
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+async def get_render_user_from_uid(conn, id: int):
+    if not conn:
+        return None
     
+    user = await conn.fetchrow("SELECT * FROM users WHERE id = $1 LIMIT 1", id)
+    return user
+
 @router.post("/token")
-def login_user(
+async def render_login_user(
+    request: Request,
     email: str = Form(...),
     password: str = Form(...),
-    db: Session = Depends(get_db)
 ):
-    user = db.query(User).filter(User.email == email).first()
-    if not user or user.password != password:
-        raise HTTPException(status_code=401, detail="Invalid email or password")
-    
-    # Generate token
-    raw_token = secrets.token_hex(32)
+    pool = request.app.state.db
 
-    # Set expiry time (e.g., 1 hour)
-    expiry_time = datetime.now(timezone.utc) + timedelta(hours=1)
+    async with pool.acquire() as conn:
+        user = await conn.fetchrow(
+            "SELECT * FROM users WHERE email = $1 LIMIT 1", email
+        )
+        if not user or user["password"] != password:
+            raise HTTPException(status_code=401, detail="Invalid email or password")
 
-    # Save to DB
-    token = Token(token=raw_token, user_id=user.id, expires_at=expiry_time)
-    db.add(token)
-    db.commit()
-    db.refresh(token)
+        raw_token = secrets.token_hex(32)
+        expiry_time = (datetime.now(timezone.utc) + timedelta(hours=1)).replace(tzinfo=None)
 
-    return {"access_token": token.token, "token_type": "bearer"}
+        inserted_token = await conn.fetchrow(
+            """
+            INSERT INTO tokens (token, user_id, expires_at)
+            VALUES ($1, $2, $3)
+            RETURNING token;
+            """,
+            raw_token,
+            user["id"],
+            expiry_time,
+        )
+
+    return {"access_token": inserted_token["token"], "token_type": "bearer"}
 
 @router.post("/logout")
-def logout_user(
-    authorization: str = Header(...),
-    db: Session = Depends(get_db)
+async def logout_user(
+    request: Request,
+    authorization: str = Header(...)
 ):
-    try:
-        token_value = authorization.replace("Bearer ", "")
-        token = db.query(Token).filter(Token.token == token_value).first()
-        
-        if token:
-            db.delete(token)
-            db.commit()
-            return {"detail": "Successfully logged out"}
-        
-        return {"detail": "Token not found"}
-        
-    except Exception as e:
-        db.rollback()
-        raise HTTPException(status_code=500, detail=f"Logout failed: {str(e)}")
+    pool = request.app.state.db
+
+    async with pool.acquire() as conn:
+        try:
+            token_value = authorization.replace("Bearer ", "")
+            token = await conn.fetchrow("SELECT * FROM tokens WHERE token = $1 LIMIT 1", token_value)
+
+            if token:
+                await conn.execute("DELETE FROM tokens WHERE token = $1", token_value)
+                return {"detail": "Successfully logged out"}
+
+            return {"detail": "Token not found"}
+
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Logout failed: {str(e)}")
+    
 
 @router.get("/user-profile")
-def get_user_profile(
-    authorization: str = Header(...),
-    db: Session = Depends(get_db)
-):
-    try:
-        token_value = authorization.replace("Bearer ", "")
-        user = get_current_user_from_token(token_value, db)
-        
-        user_data = {
-            "email": user.email,
-            "first_name": user.first_name,
-            "last_name": user.last_name,
-            "is_google_user": user.is_google_user
-        }
-        
-        if user.profile_picture:
-            user_data["profile_picture"] = {
-                "data": base64.b64encode(user.profile_picture).decode(),
-                "type": user.profile_picture_type
+async def render_get_user_profile(
+    request: Request,
+    authorization: str = Header(...)
+):  
+    pool = request.app.state.db
+    async with pool.acquire() as conn:
+        try:
+            token_value = authorization.replace("Bearer ", "")
+            token = await verify_token(token_value, conn)
+            
+            user = await get_render_user_from_uid(conn, token["user_id"])
+            
+            user_data = {
+                "email": user["email"],
+                "first_name": user["first_name"],
+                "last_name": user["last_name"],
+                "is_google_user": user["is_google_user"]
             }
             
-        return {"user": user_data}
-    except HTTPException as e:
-        raise e 
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+            if user["profile_picture"]:
+                user_data["profile_picture"] = {
+                    "data": base64.b64encode(user["profile_picture"]).decode(),
+                    "type": user["profile_picture_type"]
+                }
+                
+            return {"user": user_data}
+        except HTTPException as e:
+            raise e 
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=str(e))
+    
+@router.get("/validate-token")
+async def render_valid_token(
+    request: Request,
+    authorization: str = Header(...),
+):
+    pool = request.app.state.db
 
+    async with pool.acquire() as conn:
+        token_value = authorization.replace("Bearer ", "")
+        token = await verify_token(token_value, conn)
+
+        if not token:
+            raise HTTPException(status_code=401, detail="Invalid token")
+
+        current_time = datetime.now(timezone.utc)
+        token_expiry = token["expires_at"].replace(tzinfo=timezone.utc)
+
+        if token_expiry < current_time:
+            raise HTTPException(status_code=401, detail="Token expired")
+
+        try:
+            user = await get_render_user_from_uid(conn, token["user_id"])
+            return {"detail": "Token is valid", "user": user["email"]}
+        except HTTPException as e:
+            raise e 
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=str(e))
     
 class UserUpdate(BaseModel):
     first_name: Optional[str] = None
@@ -128,126 +149,159 @@ class UserUpdate(BaseModel):
     password: Optional[str] = None
 
 @router.put("/update-profile")
-def update_user_profile(
+async def update_user_profile(
+    request: Request,
     user_data: UserUpdate,
-    authorization: str = Header(...),
-    db: Session = Depends(get_db)
+    authorization: str = Header(...)
 ):
-    try:
-        current_user = get_current_user_from_token(authorization, db)
-        
-        # Check if email is being updated and if it's already taken
-        if user_data.email and user_data.email != current_user.email:
-            existing_user = db.query(User).filter(User.email == user_data.email).first()
-            if existing_user:
-                raise HTTPException(
-                    status_code=400,
-                    detail="Email already registered"
-                )
+    pool = request.app.state.db
 
-        update_data = user_data.dict(exclude_unset=True)
-        for key, value in update_data.items():
-            setattr(current_user, key, value)
+    async with pool.acquire() as conn:
+        try: 
+            token_value = authorization.replace("Bearer ", "")
+            token = await verify_token(token_value, conn)
+            user_id = token["user_id"]
 
-        db.commit()
-        db.refresh(current_user)
+            current_user = await get_render_user_from_uid(conn, user_id)
 
-        return {
-            "detail": "Profile updated successfully",
-            "user": {
-                "email": current_user.email,
-                "first_name": current_user.first_name,
-                "last_name": current_user.last_name
+            if not current_user:
+                raise HTTPException(status_code=404, detail="User not found")
+
+            # Check if email is being updated and already exists
+            if user_data.email and user_data.email != current_user["email"]:
+                existing_user = await conn.fetchrow("SELECT * FROM users WHERE email = $1 LIMIT 1", user_data.email)
+                if existing_user:
+                    raise HTTPException(status_code=400, detail="Email already registered")
+
+            update_fields = []
+            update_values = []
+
+            field_map = {
+                "first_name": user_data.first_name,
+                "last_name": user_data.last_name,
+                "email": user_data.email,
+                "password": user_data.password,
             }
-        }
 
-    except HTTPException as e:
-        db.rollback()
-        raise e
-    except Exception as e:
-        db.rollback()
-        raise HTTPException(
-            status_code=500,
-            detail=f"Failed to update profile: {str(e)}"
-        )
+            for idx, (field, value) in enumerate(field_map.items(), start=1):
+                if value is not None:
+                    update_fields.append(f"{field} = ${len(update_values)+1}")
+                    update_values.append(value)
+
+            if update_fields:
+                query = f"""
+                    UPDATE users SET {', '.join(update_fields)}
+                    WHERE id = ${len(update_values)+1}
+                """
+                update_values.append(user_id)
+                await conn.execute(query, *update_values)
+
+            updated_user = await get_render_user_from_uid(conn, user_id)
+
+            return {
+                "detail": "Profile updated successfully",
+                "user": {
+                    "email": updated_user["email"],
+                    "first_name": updated_user["first_name"],
+                    "last_name": updated_user["last_name"]
+                }
+            }
+
+        except HTTPException as e:
+            raise e
+        except Exception as e:
+            raise HTTPException(
+                status_code=500,
+                detail=f"Failed to update profile: {str(e)}"
+            )
 
 @router.post("/upload-profile-picture")
 async def upload_profile_picture(
+    request: Request,
     file: UploadFile = File(...),
     authorization: str = Header(...),
-    db: Session = Depends(get_db)
 ):
-    try:
-        # Validate file type
-        if not file.content_type.startswith('image/'):
-            raise HTTPException(
-                status_code=400, 
-                detail="File must be an image (JPEG, PNG, or WebP)"
+    pool = request.app.state.db
+
+    async with pool.acquire() as conn:
+        try:
+            # Validate file type
+            if not file.content_type.startswith('image/'):
+                raise HTTPException(
+                    status_code=400, 
+                    detail="File must be an image (JPEG, PNG, or WebP)"
+                )
+            
+            # Check file size (10MB limit)
+            MAX_SIZE = 10 * 1024 * 1024
+            contents = await file.read()
+            if len(contents) > MAX_SIZE:
+                raise HTTPException(
+                    status_code=400, 
+                    detail="File size too large (max 10MB)"
+                )
+            
+            # Get current user and update profile picture
+            token_value = authorization.replace("Bearer ", "")
+            token = await verify_token(token_value, conn)
+            
+            await conn.execute(
+                """
+                UPDATE users
+                SET profile_picture = $1,
+                    profile_picture_type = $2
+                WHERE id = $3
+                """,
+                contents,
+                file.content_type,
+                token["user_id"]
             )
-        
-        # Check file size (10MB limit)
-        MAX_SIZE = 10 * 1024 * 1024
-        contents = await file.read()
-        if len(contents) > MAX_SIZE:
+            
+            return {
+                "detail": "Profile picture updated successfully",
+                "type": file.content_type
+            }
+            
+        except HTTPException as e:
+            raise e
+        except Exception as e:
             raise HTTPException(
-                status_code=400, 
-                detail="File size too large (max 10MB)"
+                status_code=500,
+                detail=f"Failed to upload profile picture: {str(e)}"
             )
-        
-        # Get current user and update profile picture
-        user = get_current_user_from_token(authorization, db)
-        user.profile_picture = contents
-        user.profile_picture_type = file.content_type
-        
-        db.commit()
-        
-        return {
-            "detail": "Profile picture updated successfully",
-            "type": file.content_type
-        }
-        
-    except HTTPException as e:
-        db.rollback()
-        raise e
-    except Exception as e:
-        db.rollback()
-        raise HTTPException(
-            status_code=500,
-            detail=f"Failed to upload profile picture: {str(e)}"
-        )
 
 @router.delete("/delete-profile-picture")
 async def delete_profile_picture(
+    request: Request,
     authorization: str = Header(...),
-    db: Session = Depends(get_db)
 ):
-    try:
-        # Get current user
-        user = get_current_user_from_token(authorization, db)
+    pool = request.app.state.db
+    async with pool.acquire() as conn:
+        try:
+            # Get current user
+            token_value = authorization.replace("Bearer ", "")
+            token = await verify_token(token_value, conn)        
+            user = await get_render_user_from_uid(conn, token["user_id"])
+            
+            # Check if user has a profile picture
+            if not user["profile_picture"]:
+                raise HTTPException(
+                    status_code=404,
+                    detail="No profile picture found"
+                )
+            
+            # Remove profile picture
+            user["profile_picture"] = None
+            user["profile_picture_type"] = None
+                        
+            return {
+                "message": "Profile picture deleted successfully"
+            }
         
-        # Check if user has a profile picture
-        if not user.profile_picture:
+        except HTTPException as e:
+            raise e
+        except Exception as e:
             raise HTTPException(
-                status_code=404,
-                detail="No profile picture found"
+                status_code=500,
+                detail=f"Failed to delete profile picture: {str(e)}"
             )
-        
-        # Remove profile picture
-        user.profile_picture = None
-        user.profile_picture_type = None
-        
-        db.commit()
-        
-        return {
-            "message": "Profile picture deleted successfully"
-        }
-        
-    except HTTPException as e:
-        db.rollback()
-        raise e
-    except Exception as e:
-        db.rollback()
-        raise HTTPException(
-            status_code=500,
-            detail=f"Failed to delete profile picture: {str(e)}"
-        )

@@ -1,6 +1,6 @@
-from fastapi import APIRouter, Depends, HTTPException, Query, Header, Path, Body
+from fastapi import APIRouter, Depends, HTTPException, Query, Header, Path, Body, Request
 from models import User, Company, Email, BulkEmailCreate
-from routes.token_routes import verify_token, get_current_user_from_token
+from routes.token_routes import verify_token, get_render_user_from_uid
 from database import get_db
 from config import GMAIL_SENDER, GMAIL_APP_PASSWORD
 from ai_analysis import generate_email
@@ -19,244 +19,298 @@ router = APIRouter(prefix="")
 ############# DB FUNCTIONS ####################
 ###############################################
 @router.get("/all-clients")
-def get_all_db_clients(authorization: str = Header(...), db: Session = Depends(get_db)):
+async def render_get_all_db_clients(
+        request: Request,
+        authorization: str = Header(...)
+    ):
     """Retrieve the list of clients from the database."""
-    try:
-        token_value = authorization.replace("Bearer ", "")
-        token = verify_token(token_value, db)
-        if not token:
-            return {"message": "Invalid token.", "results": []}
-        
-        # Use join to get source information
-        companies = (
-            db.query(Company)
-            .options(joinedload(Company.source))
-            .all()
-        )
-        
-        if not companies:
-            return {"message": "Database empty.", "results": []}
+    pool = request.app.state.db
+
+    async with pool.acquire() as conn:
+        try:
+            token_value = authorization.replace("Bearer ", "")
+            token = await verify_token(token_value, conn)
+
+            if not token:
+                return {"message": "Invalid token.", "results": []}
             
-        return [
-            {
-                "id": c.id,
-                "name": c.name,
-                "status": c.status,
-                "company_type": c.company_type,
-                "address": c.address,
-                "city": c.city,
-                "region": c.region,
-                "email": c.email,
-                "postcode": c.postcode,
-                "website": c.website,
-                "activities": c.activities,
-                "source": c.source.name if c.source else None
-            }
-            for c in companies
-        ]
-        
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"An error occurred: {str(e)}")
+            # Use fetch to get all company records joined with their source name
+            companies = await conn.fetch(
+                """
+                SELECT 
+                    companies.id,
+                    companies.name,
+                    companies.status,
+                    companies.company_type,
+                    companies.address,
+                    companies.city,
+                    companies.region,
+                    companies.email,
+                    companies.postcode,
+                    companies.website,
+                    companies.activities,
+                    sources.name AS source_name
+                FROM companies
+                LEFT JOIN sources ON companies.source_id = sources.id
+                ORDER BY companies.name;
+                """
+            )
+            
+            if not companies:
+                return {"message": "Database empty.", "results": []}
+                
+            return [
+                {
+                    "id": c["id"],
+                    "name": c["name"],
+                    "status": c["status"],
+                    "company_type": c["company_type"],
+                    "address": c["address"],
+                    "city": c["city"],
+                    "region": c["region"],
+                    "email": c["email"],
+                    "postcode": c["postcode"],
+                    "website": c["website"],
+                    "activities": c["activities"],
+                    "source": c["source_name"]
+                }
+                for c in companies
+            ]
+            
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"An error occurred: {str(e)}")
 
 @router.get("/clients/{company_id}")
-def get_company(company_id: int, db: Session = Depends(get_db)):
-    company = db.query(Company).filter(Company.id == company_id).first()
-    if not company:
-        raise HTTPException(status_code=404, detail="Company not found")
-    return company
+async def get_company(
+    request: Request,
+    company_id: int, 
+):
+    pool = request.app.state.db
+
+    async with pool.acquire() as conn:
+        company = await conn.fetchrow(
+            """
+            SELECT 
+                id, name, status, company_type, address, email, postcode, 
+                city, region, website, activities, id_from_source, source_id
+            FROM companies
+            WHERE id = $1
+            """,
+            company_id
+        )
+
+        if not company:
+            raise HTTPException(status_code=404, detail="Company not found")
+
+        return dict(company)
 
 @router.get("/search-clients")
-def search_companies(query: str = Query(..., min_length=1), db: Session = Depends(get_db)):
-    try:
-        companies = db.query(Company).filter(Company.name.ilike(f"%{query}%")).all()
-        if not companies:
-            return {"message": "No companies found matching the query.", "results": []}
-        return [
-            {
-                "id": c.id,
-                "name": c.name,
-                "status": c.status,
-                "company_type": c.company_type,
-                "address": c.address,
-                "email": c.email,
-                "postcode": c.postcode,
-                "website": c.website,
-                "activities": c.activities
+async def search_companies(
+    request: Request,
+    query: str = Query(..., min_length=1), 
+):
+    pool = request.app.state.db
+
+    async with pool.acquire() as conn:
+        try:
+            companies = await conn.fetch(
+                """
+                SELECT id, name, status, company_type, address, email, postcode, website, activities
+                FROM companies
+                WHERE LOWER(name) LIKE LOWER($1)
+                """,
+                f"%{query}%",
+            )
+
+            if not companies:
+                return {"message": "No companies found matching the query.", "results": []}
+
+            return {
+                "message": "Success",
+                "results": [
+                    {
+                        "id": c["id"],
+                        "name": c["name"],
+                        "status": c["status"],
+                        "company_type": c["company_type"],
+                        "address": c["address"],
+                        "email": c["email"],
+                        "postcode": c["postcode"],
+                        "website": c["website"],
+                        "activities": c["activities"],
+                    }
+                    for c in companies
+                ]
             }
-            for c in companies
-        ]
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"An error occurred: {str(e)}")
+
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"An error occurred: {str(e)}")
     
 @router.post("/send-emails/")
-def create_bulk_emails(
+async def create_bulk_emails(
+    request: Request,
     email_data: BulkEmailCreate,
     authorization: str = Header(...),
-    db: Session = Depends(get_db)
 ):
-    # Verify if companies exist
-    companies = db.query(Company).filter(Company.id.in_(email_data.client_ids)).all()
-    found_ids = {company.id for company in companies}
-    missing_ids = set(email_data.client_ids) - found_ids
-    
-    if missing_ids:
-        raise HTTPException(
-            status_code=404, 
-            detail=f"Companies not found for IDs: {missing_ids}"
-        )
-    
-    created_emails = []
-    user = get_current_user_from_token(authorization, db)
-    try:
-        for company in companies:
-            # Create email record
-            new_email = Email(
-                user_id=user.id,
-                client_id=company.id,
-                subject=email_data.subject,
-                content=email_data.content,
-                ai=email_data.ai,
-                status="sent"
-            )
-            db.add(new_email)
-            
-            # Send the actual email if company has an email address
-            if company.email:
-                try:
-                    # Replace {charity_name} with actual company name
-                    email_content = email_data.content.replace("{charity_name}", company.name)
-                    
-                    # Create HTML version of the email with signature
-                    html_content = (
-                        '<div style="font-family: Arial, sans-serif;">'
-                        f'{email_content.replace(chr(10), "<br>")}'
-                        '<br><br>'
-                        '<div dir="ltr">'
-                        '<div>'
-                        '<a href="mailto:sheffield@180dc.org" target="_blank">Email</a>'
-                        '<span>&nbsp;-&nbsp;</span>'
-                        '<a href="https://www.180dc.org/" target="_blank">Website</a>'
-                        '<span>&nbsp;-&nbsp;</span>'
-                        '<a href="https://www.instagram.com/180dcsheffield/" target="_blank">Instagram</a>'
-                        '<span>&nbsp;-&nbsp;</span>'
-                        '<a href="https://www.linkedin.com/company/104399563/admin/dashboard/" target="_blank">LinkedIn</a>'
-                        '<br>'
-                        '</div>'
-                        '<div>Business Consulting and Services</div>'
-                        '<div>Sheffield, South Yorkshire</div>'
-                        '<div>'
-                        '<img width="96" height="96" src="https://ci3.googleusercontent.com/mail-sig/AIorK4z7bSBEIHVpx-66BDEvzOz_BzLe3E1hmBNaK9jvUMFHF4R4bsW2oHU4pTR6zGHTqDzFfySVbwZ5DnS3" alt="180DC Sheffield logo">'
-                        '</div>'
-                        '</div>'
-                        '</div>'
-                    )
-                    
-                    # Create both plain text and HTML versions
-                    msg = MIMEMultipart('alternative')
-                    msg["From"] = GMAIL_SENDER
-                    msg["To"] = company.email
-                    msg["Subject"] = email_data.subject
-                    
-                    # Add plain text version
-                    text_part = MIMEText(email_content, 'plain')
-                    msg.attach(text_part)
-                    
-                    # Add HTML version
-                    html_part = MIMEText(html_content, 'html')
-                    msg.attach(html_part)
+    pool = request.app.state.db
 
-                    with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
-                        server.login(GMAIL_SENDER, GMAIL_APP_PASSWORD)
-                        server.sendmail(GMAIL_SENDER, company.email, msg.as_string())
-                    
-                    new_email.status = "sent"
-                except Exception as e:
-                    new_email.status = "failed"
-                    print(f"Failed to send email to {company.email}: {str(e)}")
-            else:
-                new_email.status = "failed"
-                print(f"No email address for company {company.name}")
-            
-            created_emails.append({
-                "id": new_email.id,
-                "subject": new_email.subject,
-                "status": new_email.status,
-                "client_name": company.name,
-                "client_email": company.email
-            })
-        
-        db.commit()
-        
-        return {
-            "message": f"Successfully processed {len(created_emails)} emails",
-            "emails": created_emails
-        }
-        
-    except Exception as e:
-        db.rollback()
-        raise HTTPException(
-            status_code=500, 
-            detail=f"Failed to process emails: {str(e)}"
-        )
+    async with pool.acquire() as conn:
+        try:
+            # Verify token and user
+            token_value = authorization.replace("Bearer ", "")
+            token = await verify_token(token_value, conn)
+            user = await get_render_user_from_uid(conn, token["user_id"])
+
+            # Fetch all specified companies
+            company_ids = tuple(email_data.client_ids)
+            companies = await conn.fetch(
+                "SELECT * FROM companies WHERE id = ANY($1::int[]);", company_ids
+            )
+            found_ids = {c["id"] for c in companies}
+            missing_ids = set(company_ids) - found_ids
+
+            if missing_ids:
+                raise HTTPException(
+                    status_code=404,
+                    detail=f"Companies not found for IDs: {missing_ids}"
+                )
+
+            created_emails = []
+
+            for company in companies:
+                email_content = email_data.content.replace("{charity_name}", company["name"])
+                html_content = (
+                    '<div style="font-family: Arial, sans-serif;">'
+                    f'{email_content.replace(chr(10), "<br>")}'
+                    '<br><br>'
+                    '<div dir="ltr">'
+                    '<div>'
+                    '<a href="mailto:sheffield@180dc.org" target="_blank">Email</a>'
+                    '<span>&nbsp;-&nbsp;</span>'
+                    '<a href="https://www.180dc.org/" target="_blank">Website</a>'
+                    '<span>&nbsp;-&nbsp;</span>'
+                    '<a href="https://www.instagram.com/180dcsheffield/" target="_blank">Instagram</a>'
+                    '<span>&nbsp;-&nbsp;</span>'
+                    '<a href="https://www.linkedin.com/company/104399563/admin/dashboard/" target="_blank">LinkedIn</a>'
+                    '<br></div><div>Business Consulting and Services</div>'
+                    '<div>Sheffield, South Yorkshire</div>'
+                    '<div><img width="96" height="96" src="https://ci3.googleusercontent.com/mail-sig/AIorK4z7bSBEIHVpx-66BDEvzOz_BzLe3E1hmBNaK9jvUMFHF4R4bsW2oHU4pTR6zGHTqDzFfySVbwZ5DnS3" alt="180DC Sheffield logo"></div>'
+                    '</div></div>'
+                )
+
+                status = "failed"
+                if company["email"]:
+                    try:
+                        msg = MIMEMultipart("alternative")
+                        msg["From"] = GMAIL_SENDER
+                        msg["To"] = company["email"]
+                        msg["Subject"] = email_data.subject
+                        msg.attach(MIMEText(email_content, "plain"))
+                        msg.attach(MIMEText(html_content, "html"))
+
+                        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
+                            server.login(GMAIL_SENDER, GMAIL_APP_PASSWORD)
+                            server.sendmail(GMAIL_SENDER, company["email"], msg.as_string())
+
+                        status = "sent"
+                    except Exception as e:
+                        print(f"❌ Failed to send to {company['email']}: {e}")
+                else:
+                    print(f"⚠️ No email for company {company['name']}")
+
+                # Insert email record
+                email_row = await conn.fetchrow(
+                    """
+                    INSERT INTO emails (user_id, client_id, subject, content, ai, status)
+                    VALUES ($1, $2, $3, $4, $5, $6)
+                    RETURNING id;
+                    """,
+                    user["id"],
+                    company["id"],
+                    email_data.subject,
+                    email_data.content,
+                    email_data.ai,
+                    status
+                )
+
+                created_emails.append({
+                    "id": email_row["id"],
+                    "subject": email_data.subject,
+                    "status": status,
+                    "client_name": company["name"],
+                    "client_email": company["email"]
+                })
+
+            return {
+                "message": f"Successfully processed {len(created_emails)} emails",
+                "emails": created_emails
+            }
+
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Failed to process emails: {str(e)}")
     
 @router.get("/client-emails/{client_id}")
-def get_client_emails(
+async def get_client_emails(
+    request: Request,
     client_id: int,
     authorization: str = Header(...),
-    db: Session = Depends(get_db)
 ):
     """Get all emails between the current user and a specific client."""
-    try:
-        user = get_current_user_from_token(authorization, db)
-        
-        # Check if client exists
-        client = db.query(Company).filter(Company.id == client_id).first()
-        if not client:
-            raise HTTPException(status_code=404, detail="Client not found")
-        
-        emails = (
-            db.query(Email)
-            .filter(
-                Email.user_id == user.id,
-                Email.client_id == client_id
+    pool = request.app.state.db
+
+    async with pool.acquire() as conn:
+        try:
+            # Verify token and user
+            token_value = authorization.replace("Bearer ", "")
+            token = await verify_token(token_value, conn)
+            user = await get_render_user_from_uid(conn, token["user_id"])
+
+            # Check if client exists
+            client = await conn.fetchrow(
+                """
+                SELECT id, name, email, activities, address, company_type, postcode, id_from_source, status, website
+                FROM companies
+                WHERE id = $1
+                """,
+                client_id
             )
-            .order_by(Email.date.desc())  # Most recent first
-            .all()
-        )
-        
-        return {
-            "client": {
-                "id": client.id,
-                "name": client.name,
-                "email": client.email,
-                "activities": client.activities,
-                "address": client.address,
-                "company_type": client.company_type,
-                "postcode": client.postcode,
-                "id_from_source": client.id_from_source,
-                "status": client.status,
-                "website": client.website,
-            },
-            "emails": [
-                {
-                    "id": email.id,
-                    "subject": email.subject,
-                    "content": email.content,
-                    "status": email.status,
-                    "date": email.date.isoformat(),
-                    "ai_generated": email.ai
-                }
-                for email in emails
-            ]
-        }
-        
-    except HTTPException as e:
-        raise e
-    except Exception as e:
-        raise HTTPException(
-            status_code=500,
-            detail=f"Failed to retrieve emails: {str(e)}"
-        )
+            if not client:
+                raise HTTPException(status_code=404, detail="Client not found")
+
+            # Get all emails sent by user to that client
+            emails = await conn.fetch(
+                """
+                SELECT id, subject, content, status, date, ai
+                FROM emails
+                WHERE user_id = $1 AND client_id = $2
+                ORDER BY date DESC
+                """,
+                user["id"],
+                client_id
+            )
+
+            return {
+                "client": dict(client),
+                "emails": [
+                    {
+                        "id": e["id"],
+                        "subject": e["subject"],
+                        "content": e["content"],
+                        "status": e["status"],
+                        "date": e["date"].isoformat() if e["date"] else None,
+                        "ai_generated": e["ai"]
+                    }
+                    for e in emails
+                ]
+            }
+
+        except HTTPException as e:
+            raise e
+        except Exception as e:
+            raise HTTPException(
+                status_code=500,
+                detail=f"Failed to retrieve emails: {str(e)}"
+            )
 
 ###############################################
 ############# CSV FUNCTIONS ###################
@@ -366,92 +420,113 @@ class CreateClientRequest(BaseModel):
     activities: str | None = None
 
 @router.post("/add-client")
-def add_client(
+async def add_client(
+    request: Request,
     client_data: CreateClientRequest,
     authorization: str = Header(...),
-    db: Session = Depends(get_db)
 ):
     """Add a new client to the database."""
-    try:
-        # Verify token and get user
-        user = get_current_user_from_token(authorization, db)
-        
-        # Create new company
-        new_company = Company(
-            name=client_data.name,
-            status=client_data.status,
-            company_type=client_data.company_type,
-            address=client_data.address,
-            email=client_data.email,
-            postcode=client_data.postcode,
-            city=client_data.city,
-            region=client_data.region,
-            website=client_data.website,
-            activities=client_data.activities
-        )
-        
-        db.add(new_company)
-        db.commit()
-        db.refresh(new_company)
-        
-        return {
-            "message": "Client added successfully",
-            "client": {
-                "id": new_company.id,
-                "name": new_company.name,
-                "status": new_company.status,
-                "company_type": new_company.company_type,
-                "address": new_company.address,
-                "email": new_company.email,
-                "postcode": new_company.postcode,
-                "city": new_company.city,
-                "region": new_company.region,
-                "website": new_company.website,
-                "activities": new_company.activities
+    pool = request.app.state.db
+
+    async with pool.acquire() as conn:
+        try:
+            # Verify token and user
+            token_value = authorization.replace("Bearer ", "")
+            token = await verify_token(token_value, conn)
+            _ = await get_render_user_from_uid(conn, token["user_id"])
+
+            # Insert new company
+            inserted = await conn.fetchrow(
+                """
+                INSERT INTO companies (
+                    name, status, company_type, address, email, postcode,
+                    city, region, website, activities
+                )
+                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+                RETURNING id, name, status, company_type, address, email,
+                          postcode, city, region, website, activities;
+                """,
+                client_data.name,
+                client_data.status,
+                client_data.company_type,
+                client_data.address,
+                client_data.email,
+                client_data.postcode,
+                client_data.city,
+                client_data.region,
+                client_data.website,
+                client_data.activities
+            )
+
+            return {
+                "message": "Client added successfully",
+                "client": dict(inserted)
             }
-        }
-        
-    except Exception as e:
-        db.rollback()
-        raise HTTPException(
-            status_code=500,
-            detail=f"Failed to add client: {str(e)}"
-        )
+
+        except Exception as e:
+            raise HTTPException(
+                status_code=500,
+                detail=f"Failed to add client: {str(e)}"
+            )
 
 @router.put("/clients/{client_id}")
-def update_client(
+async def update_client(
+    request: Request,
     client_id: int = Path(...),
     client_data: CreateClientRequest = Body(...),
     authorization: str = Header(...),
-    db: Session = Depends(get_db)
 ):
-    user = get_current_user_from_token(authorization, db)
-    company = db.query(Company).filter(Company.id == client_id).first()
-    if not company:
-        raise HTTPException(status_code=404, detail="Client not found")
-    # Update fields
-    company.name = client_data.name
-    company.company_type = client_data.company_type
-    company.status = client_data.status
-    company.address = client_data.address
-    company.email = client_data.email
-    company.postcode = client_data.postcode
-    company.city = client_data.city
-    company.region = client_data.region
-    company.website = client_data.website
-    company.activities = client_data.activities
-    db.commit()
-    db.refresh(company)
-    return {"message": "Client updated", "client": {
-        "id": company.id,
-        "name": company.name,
-        "company_type": company.company_type,
-        "status": company.status,
-        "address": company.address,
-        "email": company.email,
-        "postcode": company.postcode,
-        "city": company.city,
-        "region": company.region,
-        "website": company.website,
-        "activities": company.activities
-    }}
+    pool = request.app.state.db
+
+    async with pool.acquire() as conn:
+        try:
+            # Authenticate user
+            token_value = authorization.replace("Bearer ", "")
+            token = await verify_token(token_value, conn)
+            _ = await get_render_user_from_uid(conn, token["user_id"])
+
+            # Check if client exists
+            company = await conn.fetchrow(
+                "SELECT * FROM companies WHERE id = $1",
+                client_id
+            )
+            if not company:
+                raise HTTPException(status_code=404, detail="Client not found")
+
+            # Update the record
+            updated = await conn.fetchrow(
+                """
+                UPDATE companies
+                SET name = $1,
+                    company_type = $2,
+                    status = $3,
+                    address = $4,
+                    email = $5,
+                    postcode = $6,
+                    city = $7,
+                    region = $8,
+                    website = $9,
+                    activities = $10
+                WHERE id = $11
+                RETURNING id, name, company_type, status, address, email, postcode, city, region, website, activities;
+                """,
+                client_data.name,
+                client_data.company_type,
+                client_data.status,
+                client_data.address,
+                client_data.email,
+                client_data.postcode,
+                client_data.city,
+                client_data.region,
+                client_data.website,
+                client_data.activities,
+                client_id
+            )
+
+            return {
+                "message": "Client updated",
+                "client": dict(updated)
+            }
+
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Failed to update client: {str(e)}")
