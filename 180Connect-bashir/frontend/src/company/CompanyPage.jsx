@@ -44,7 +44,6 @@ export default function CompanyPage() {
   // Email composition state
   const [emailSubject, setEmailSubject] = useState('');
   const [emailContent, setEmailContent] = useState('');
-  const [useAI, setUseAI] = useState(false);
   const [templateOption, setTemplateOption] = useState('custom');
 
   // UI state
@@ -64,72 +63,12 @@ export default function CompanyPage() {
     }
   };
 
-  /**
-   * Generates AI-assisted email content
-   */
-  const generateAIContent = async () => {
-    setEmailSubject(`AI-Generated: Collaboration with ${company?.name}`);
-    setEmailContent(`Dear ${company?.name} team,\n\nBased on our analysis of your organization's needs and activities, we believe we can provide valuable support to your services.\n\nWould you be available for a brief discussion next week?\n\nBest regards,\n180connect Team`);
-  };
-
-  /**
-   * Toggles AI assistance for email composition
-   */
-  const handleAIToggle = () => {
-    setUseAI(!useAI);
-    if (!useAI) {
-      generateAIContent();
-    }
-  };
-
   const handleSaveDraft = () => {
     alert('Email draft saved successfully!');
   };
 
-  const handleSendEmail = async () => {
-    try {
-      const token = localStorage.getItem("token");
-      const response = await fetch(`${API_URL}/send-emails/`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          client_ids: [company.id], // Send to single client
-          subject: emailSubject,
-          content: emailContent,
-          ai: useAI,
-          status: "sent"
-        })
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to send email');
-      }
-
-      const data = await response.json();
-      console.log('Email sent:', data);
-      
-      // Show success message
-      const successCount = data.emails.filter(e => e.status === "sent").length;
-      const failedCount = data.emails.filter(e => e.status === "failed").length;
-      
-      if (successCount > 0) {
-        alert(`Email sent successfully!`);
-        // Reset form
-        setEmailSubject('');
-        setEmailContent('');
-        // Refresh email history
-        fetchClientEmails();
-      } else {
-        alert(`Failed to send email: ${failedCount > 0 ? 'No valid email address for client' : 'Unknown error'}`);
-      }
-      
-    } catch (error) {
-      console.error('Failed to send email:', error);
-      alert('Failed to send email. Please try again.');
-    }
+  const handleSendEmail = () => {
+    alert('Email sent successfully!');
   };
 
   /**
@@ -219,13 +158,6 @@ export default function CompanyPage() {
               <div className="col-10">
                 <div className="row g-4">
                   <div className="col-md-4">
-                    {/* Edit Button at the top left, above Description */}
-                    <button
-                      className="btn btn-outline-primary mb-3"
-                      onClick={() => navigate(`/edit-client/${company.id}`)}
-                    >
-                      Edit Client
-                    </button>
                     {/* About Card */}
                     <div className="cdx-card mb-4 bg-light shadow-sm border-black rounded-1">
                       <div className="cdx-card__text">
@@ -297,23 +229,6 @@ export default function CompanyPage() {
                         <div className="cdx-card__text w-100">
                           <div className="cdx-card__text__title d-flex justify-content-between align-items-center">
                             <h2 className="h5 mb-0">Compose Email</h2>
-                            <span className="cdx-toggle-switch">
-                              <input
-                                className="cdx-toggle-switch__input"
-                                type="checkbox"
-                                id="useAI" 
-                                checked={useAI}
-                                onChange={handleAIToggle}
-                              />
-                              <span className="cdx-toggle-switch__switch">
-                                <span className="cdx-toggle-switch__switch__grip"></span>
-                              </span>
-                              <div className="cdx-toggle-switch__label cdx-label">
-                                <label htmlFor="useAI" className="cdx-label__label">
-                                  <span className="cdx-label__label__text"> Use AI? </span>
-                                </label>
-                              </div>
-                            </span>
                           </div>
                           <div className="cdx-card__text__description w-100">
                             <form className='' style={{
@@ -326,7 +241,6 @@ export default function CompanyPage() {
                                   id="templateSelect"
                                   value={templateOption}
                                   onChange={handleTemplateChange}
-                                  disabled={useAI}
                                 >
                                   <option value="custom">Custom Email</option>
                                   <option value="followup">Follow-up Template</option>

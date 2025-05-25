@@ -102,7 +102,6 @@ export default function EmailPage() {
   // Email composition state
   const [emailSubject, setEmailSubject] = useState('');
   const [emailContent, setEmailContent] = useState('');
-  const [useAI, setUseAI] = useState(false);
   const [templateOption, setTemplateOption] = useState('custom');
 
   // Client management state
@@ -143,7 +142,6 @@ export default function EmailPage() {
         }
       });
       const data = await res.json();
-      console.log(data)
       if(data){
         setClients(data);
         const uniqueRegions = [...new Set(
@@ -180,9 +178,6 @@ export default function EmailPage() {
             Authorization: `Bearer ${token}`,
           },
         });
-
-        const data = await res.json()
-        console.log(data)
         
         if (!res.ok) {
           localStorage.removeItem("token");
@@ -248,7 +243,6 @@ export default function EmailPage() {
           client_ids: selectedClients,
           subject: emailSubject,
           content: emailContent,
-          ai: useAI,
           status: "sent"
         })
       });
@@ -287,17 +281,6 @@ export default function EmailPage() {
     } else {
       setEmailSubject('');
       setEmailContent('');
-    }
-  };
-
-  const handleAIToggle = () => {
-    setUseAI(!useAI);
-    if (!useAI) {
-      // Simulate AI suggesting content
-      setTimeout(() => {
-        setEmailSubject(`AI-Generated: Collaboration Opportunity from 180connect`);
-        setEmailContent(`Dear {charity_name},\n\nBased on our analysis of your organization's needs and activities, we believe we can provide valuable support to your charitable work.\n\nOur services have helped organizations like yours improve their impact by an average of 35%. We would love to schedule a brief call to discuss how we might assist your specific mission.\n\nWould you be available for a 15-minute discussion next week?\n\nBest regards,\n180connect Team`);
-      }, 500);
     }
   };
 
@@ -369,7 +352,6 @@ export default function EmailPage() {
 
                   <div className="row g-3">
                     <div className="col-md-4">
-                      {!useAI && (
                         <div className="mb-3">
                           <label htmlFor="templateSelect" className="form-label">Email Template</label>
                           <select className="form-select form-select-sm" 
@@ -378,12 +360,11 @@ export default function EmailPage() {
                             onChange={handleTemplateChange}
                           >
                             <option value="custom">Custom Email</option>
-                            <option value="introduction">Introduction Template</option>
                             <option value="followup">Follow-up Template</option>
+                            <option value="introduction">Introduction Template</option>
                             <option value="resources">Resources Template</option>
                           </select>
                         </div>
-                      )}
                       <div>
                         <label htmlFor="emailSubject" className="form-label">Subject</label>
                         <input 
@@ -394,25 +375,6 @@ export default function EmailPage() {
                           value={emailSubject}
                           onChange={(e) => setEmailSubject(e.target.value)}
                         />
-                      </div>
-                      <div className="d-flex gap-2 mt-4">
-                        <span className="cdx-toggle-switch">
-                          <input
-                            className="cdx-toggle-switch__input"
-                            type="checkbox"
-                            id="useAI" 
-                            checked={useAI}
-                            onChange={handleAIToggle}
-                          />
-                          <span className="cdx-toggle-switch__switch">
-                            <span className="cdx-toggle-switch__switch__grip"></span>
-                          </span>
-                          <div className="cdx-toggle-switch__label cdx-label">
-                            <label htmlFor="useAI" className="cdx-label__label">
-                              <span className="cdx-label__label__text"> Use AI? </span>
-                            </label>
-                          </div>
-                        </span>
                       </div>
                     </div>
                     <div className="col-md-8">
@@ -570,13 +532,13 @@ export default function EmailPage() {
                 <div className="mb-3">
                   <div className="d-flex justify-content-between align-items-center gap-3">
                     <div className="input-group border-black border rounded flex-grow-1">
-                      <input 
-                        type="text" 
-                        className="form-control border-0"
-                        placeholder="Search clients"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                      />
+                    <input 
+                      type="text" 
+                      className="form-control border-0"
+                      placeholder="Search clients"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                    />
                     </div>
                     <button 
                       className="btn btn-primary"
