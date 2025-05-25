@@ -124,55 +124,59 @@ export default function NavBar ({logInPage=false}) {
                         180connect
                     </span>
                 </div>
-        
-                {/* Search section */}
-                <div className="cdx-search-input rounded-1 position-relative" style={{
-                    width: '35%'
-                }}>
-                    <div className="cdx-text-input cdx-text-input--has-start-icon">
-                        <input
-                            type="search"
-                            placeholder="Search for clients"
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            className="cdx-text-input__input rounded"
-                        />
-                        <span className="cdx-text-input__icon cdx-text-input__start-icon"></span>
-                    </div>
-                    
-                    {/* Search results dropdown */}
-                    {searchQuery && results.length > 0 && (
-                        <div className="position-absolute w-100 bg-white border border-black rounded-1 mt-1 shadow-sm" 
-                            style={{ maxHeight: '300px', overflowY: 'auto', zIndex: 1000 }}>
-                            <div className="p-2 border-bottom bg-light">
-                                <small className="text-muted">
-                                    Found {results.length} result{results.length === 1 ? '' : 's'}
-                                </small>
-                            </div>
-                            {results.slice(0, 500).map((result) => (
-                                <div key={result.id}
-                                    className="p-2 border-bottom search-results"
-                                    onClick={() => {
-                                        navigate(`/company/${result.id}`);
-                                        setSearchQuery('');
-                                    }}
-                                    style={{
-                                        fontSize: '0.9rem'
-                                    }}
-                                >
-                                    <div className="fw-semibold">{result.name}</div>
+                
+                {/* If current page is the login page, then hide search bar and account button */}
+                {!logInPage && (
+                <>
+                    {/* Search section */}
+                    <div className="cdx-search-input rounded-1 position-relative" style={{
+                        width: '35%'
+                    }}>
+                        <div className="cdx-text-input cdx-text-input--has-start-icon">
+                            <input
+                                type="search"
+                                placeholder="Search for clients"
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                className="cdx-text-input__input rounded"
+                            />
+                            <span className="cdx-text-input__icon cdx-text-input__start-icon"></span>
+                        </div>
+                        
+                        {/* Search results dropdown */}
+                        {searchQuery && results.length > 0 && (
+                            <div className="position-absolute w-100 bg-white border border-black rounded-1 mt-1 shadow-sm" 
+                                style={{ maxHeight: '300px', overflowY: 'auto', zIndex: 1000 }}>
+                                <div className="p-2 border-bottom bg-light">
                                     <small className="text-muted">
-                                        {result.company_type} • {String(result.id).padStart(5, '0')}
+                                        Found {results.length} result{results.length === 1 ? '' : 's'}
                                     </small>
                                 </div>
-                            ))}
-                        </div>
-                    )}
-                </div>
-                
-                {/* Account buttons */}
-                {!logInPage ? (
-                    loggedIn ? (
+                                {results.slice(0, 500).map((result) => (
+                                    <div key={result.id}
+                                        className="p-2 border-bottom search-results"
+                                        onClick={() => {
+                                            navigate(`/company/${result.id}`);
+                                            setSearchQuery('');
+                                        }}
+                                        style={{
+                                            fontSize: '0.9rem'
+                                        }}
+                                    >
+                                        <div className="fw-semibold">{result.name}</div>
+                                        <small className="text-muted">
+                                            {result.company_type} • {String(result.id).padStart(5, '0')}
+                                        </small>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                    
+                    {/* Account buttons */}
+                    {/* If user is not logged in, then hide account button  */}
+                    {loggedIn ? (
+                        // Display user profile picture if it exists
                         profilePicture ? (
                             <div className="bg-transparent rounded-1 my-auto" 
                                 onClick={() => navigate("/account")}
@@ -207,8 +211,9 @@ export default function NavBar ({logInPage=false}) {
                             <span className="icon-class--user-avatar bg-light"></span>
                             Log in
                         </button>
-                    )
-                ) : null}
+                    )}
+                </>
+                )}
             </div>
         </header>
     )
