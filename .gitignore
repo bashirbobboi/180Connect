@@ -1,1 +1,6 @@
 .DS_Store
+backend/routes/__pycache__/
+frontend/node_modules/
+myenv/
+backend/__pycache__/
+backend/.env

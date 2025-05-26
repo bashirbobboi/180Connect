@@ -39,11 +39,3 @@ async def register_user(
         
         return {"message": "User created"}
     
-
-@router.get("/render_users")
-async def render_users(request: Request,):
-    pool = request.app.state.db 
-
-    async with pool.acquire() as conn:
-        rows = await pool.fetch("SELECT * FROM users")
-        return [dict(row) for row in rows]
