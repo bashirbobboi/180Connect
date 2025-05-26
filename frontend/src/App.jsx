@@ -13,7 +13,6 @@ import EmailPage from './email/EmailPage';
 import LoginPage from './login/LoginPage';
 import CompanyPage from './company/CompanyPage';
 import AccountPage from './account/AccountPage';
-import AddClientPage from './client/AddClientPage';
 import EditClientPage from './client/EditClientPage';
 
 /**
@@ -24,7 +23,6 @@ import EditClientPage from './client/EditClientPage';
  * - /login: Authentication page
  * - /account: User profile management
  * - /company/:id: Individual company profile
- * - /add-client: Add new client page
  * - /edit-client/:clientId: Edit client page
  */
 export default function App() {
@@ -36,7 +34,6 @@ export default function App() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/account" element={<AccountPage />} />
         <Route path="/company/:id" element={<CompanyPage />} />
-        <Route path="/add-client" element={<AddClientPage />} />
         <Route path="/edit-client/:clientId" element={<EditClientPage />} />
       </Routes>
       <Analytics />

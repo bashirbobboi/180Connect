@@ -3,7 +3,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
-export default function AddClientForm({ onClientAdded }) {
+export default function AddClientForm({ showForm, onClose, onClientAdded }) {
   const [formData, setFormData] = useState({
     name: '',
     company_type: '',
@@ -70,6 +70,8 @@ export default function AddClientForm({ onClientAdded }) {
     }));
   };
 
+  if (!showForm) return null;
+  
   return (
     <div className="card">
       <div className="card-body">
@@ -193,7 +195,7 @@ export default function AddClientForm({ onClientAdded }) {
             <button 
               type="button" 
               className="btn btn-secondary"
-              onClick={() => onClientAdded(null)}
+              onClick={onClose}
             >
               Cancel
             </button>

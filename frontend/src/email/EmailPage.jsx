@@ -334,7 +334,7 @@ export default function EmailPage() {
   };
 
   return (
-    <div className="bg-white min-vh-100 rounded-1 p-3">
+    <div className="bg-white min-vh-100 rounded-1 p-3 position-relative">
       <NavBar />
 
       <div className="container py-4">
@@ -530,21 +530,21 @@ export default function EmailPage() {
               <div className="col-md-8 col-lg-9">
                 {/* Search input and Add Client button */}
                 <div className="mb-3">
-                  <div className="d-flex justify-content-between align-items-center gap-3">
+                  <div className="d-flex justify-content-between align-items-center gap-1">
                     <div className="input-group border-black border rounded flex-grow-1">
-                    <input 
-                      type="text" 
-                      className="form-control border-0"
-                      placeholder="Search clients"
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                    />
+                      <input 
+                        type="text" 
+                        className="form-control border-0"
+                        placeholder="Search clients"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                      />
                     </div>
                     <button 
-                      className="btn btn-primary"
-                      onClick={() => navigate('/add-client')}
+                      className="btn btn-outline-dark my-auto"
+                      onClick={() => setShowAddClientForm(true)}
                     >
-                      Add New Client
+                      Add
                     </button>
                   </div>
                 </div>
@@ -689,6 +689,21 @@ export default function EmailPage() {
           </div>
         </div>
       </div>
+
+      {showAddClientForm && (
+        <div className="position-fixed top-0 start-0 w-100 h-100 bg-dark bg-opacity-50 d-flex justify-content-center align-items-center z-3">
+          <div className="w-50 bg-white rounded p-4 position-relative">
+            <AddClientForm 
+              showForm={showAddClientForm}
+              onClose={() => setShowAddClientForm(false)}
+              onClientAdded={(new_client) => {
+                setClients([...clients, new_client]);
+                setShowAddClientForm(false);
+              }}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
