@@ -1,7 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, Form, Header, UploadFile, File, Request
 from fastapi.security import OAuth2PasswordBearer
 from models import User, Token
-from database import get_db
 from datetime import datetime, timedelta, timezone
 from sqlalchemy.orm import Session
 import secrets

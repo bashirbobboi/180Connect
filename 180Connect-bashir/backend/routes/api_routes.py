@@ -1,7 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, Form, UploadFile, Request
 from fastapi.security import OAuth2PasswordBearer
 from models import User
-from database import get_db
 from typing import Annotated
 from jose import JWTError, jwt
 from sqlalchemy.orm import Session

@@ -300,7 +300,6 @@ def get_client_data():
 # ------------------------
 from sqlalchemy.orm import Session
 from models import Company, Source
-from database import SessionLocal
 
 def chunk_list(lst, chunk_size):
     """Split list into chunks of specified size."""
@@ -342,20 +341,6 @@ def get_locations_from_postcodes(postcodes: list) -> dict:
             print(f"Error fetching locations for postcodes chunk: {str(e)}")
             continue
     return location_data
-
-def get_or_create_source(db: Session, source_name: str):
-    """
-    Get or create a Source entry in the database.
-    Used to track where client data came from.
-    """
-    source = db.query(Source).filter_by(name=source_name).first()
-    if not source:
-        source = Source(name=source_name)
-        db.add(source)
-        db.commit()
-        db.refresh(source)
-    return source
-
 
 # ------------------------
 # RUN SCRIPT

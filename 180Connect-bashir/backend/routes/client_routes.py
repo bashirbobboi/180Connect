@@ -1,7 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, Query, Header, Path, Body, Request
 from models import User, Company, Email, BulkEmailCreate
 from routes.token_routes import verify_token, get_render_user_from_uid
-from database import get_db
 from config import GMAIL_SENDER, GMAIL_APP_PASSWORD
 from ai_analysis import generate_email
 from pydantic import BaseModel

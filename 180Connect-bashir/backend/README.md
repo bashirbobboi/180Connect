@@ -67,14 +67,14 @@ backend/
    pip install -r requirements.txt
    ```
 
-3. Initialize database:
-   If running for the first time, ensure the init_db() function in main.py is not commented out
-
-4. Run development server:
+3. Run development server:
    ```bash
-   fastapi dev main.py
+   uvicorn main:app --host 0.0.0.0
    ```
-   Note: if you encounter a type error, your python version may be too old (< 3.10)
+   
+## Note
+- If you encounter a type error, your python version may be too old (< 3.10)
+- A .env file is needed to run the backend. It would need to contain the sender gmail address (GMAIL_SENDER), the gmail password (GMAIL_APP_PASSWORD), and the PostgreSQL database url (RENDER_DATABASE_URL)
 
 ## API Documentation
 The API is available at `${API_URL}` with interactive documentation at `/docs`.
