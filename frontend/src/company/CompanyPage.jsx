@@ -32,6 +32,103 @@ const EMAIL_TEMPLATES = {
   }
 };
 
+const PagerButton = ({ disabled, onClick, icon }) => (
+  <button
+    disabled={disabled}
+    onClick={onClick}
+    className="cdx-button cdx-button--icon-only cdx-button--weight-quiet"
+  >
+    <span className={`cdx-table-pager__icon--${icon} cdx-button__icon`} aria-hidden="true"></span>
+  </button>
+);
+
+const LoadingSpinner = () => (
+  <div className="text-center py-5">
+    <div className="spinner-border text-secondary" role="status">
+      <span className="visually-hidden">Loading...</span>
+    </div>
+    <p className="mt-2">Loading email history...</p>
+  </div>
+);
+
+const EmailCard = ({ email, isLast }) => (
+  <div className={`p-3 ${!isLast ? 'border-bottom' : ''}`}>
+    <div className="d-flex justify-content-between align-items-start">
+      <div className="flex-grow-1">
+        <div className="d-flex justify-content-between align-items-center mb-2">
+          <h3 className="h6 mb-0">{email.subject}</h3>
+          <span className={`badge ${
+            email.status === 'sent' ? 'bg-success' :
+            email.status === 'draft' ? 'bg-secondary' :
+            'bg-warning'
+          } text-white`}>
+            {email.status.charAt(0).toUpperCase() + email.status.slice(1)}
+          </span>
+        </div>
+        <div className="border-start border-4 ps-3 mb-2">
+          {email.content.split('\n').map((line, i) => (
+            <p key={i} className="mb-1 small text-muted">{line}</p>
+          ))}
+        </div>
+        <div className="d-flex justify-content-between align-items-center">
+          <div className="text-muted small">
+            {new Date(email.date).toLocaleDateString('en-GB', {
+              day: 'numeric',
+              month: 'short',
+              year: 'numeric',
+              hour: '2-digit',
+              minute: '2-digit'
+            })}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+);
+
+const ContactCard = ({ company }) => (
+  <div className="card mb-4 p-0 bg-light shadow-sm border-black rounded-1">
+    <div className="card-body">
+      <h6 className="card-title">Contact</h6>
+      {(company.email || company.address || company.website) ? (
+        <ul className="list-group list-group-flush border-0 p-0 bg-transparent" 
+          style={{ fontSize: "0.8rem" }}
+        >
+        {company?.email && (
+          <li className="list-group-item border-0 p-0 bg-transparent">
+            {"Email: "} 
+            <a 
+              href={`mailto:${company.email}`} 
+              className="link-primary link-offset-2 link-underline-opacity-25 link-underline-opacity-100-hover">
+              {company.email}
+            </a>
+          </li>
+        )}
+        {company?.website && (
+          <li className="list-group-item border-0 p-0 bg-transparent">
+          {"Website: "} 
+          <a 
+            href={company.website}
+            target="_blank" rel="noreferrer"
+            className="link-primary link-offset-2 link-underline-opacity-25 link-underline-opacity-100-hover">
+            {company.website}
+          </a>
+        </li>
+        )}
+        {company?.address && company?.address !== "N/A" && (
+          <li className="list-group-item border-0 p-0 bg-transparent">{`Address: ${company.address}`}
+          </li>
+        )}
+        </ul>
+      ) : (
+        <div className="text-start" style={{ fontSize: '0.8rem' }}>
+          <p className='fst-italic'>No contact found</p>
+        </div>
+      )}
+    </div>
+  </div>
+);
+
 export default function CompanyPage() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -61,10 +158,6 @@ export default function CompanyPage() {
       setEmailSubject('');
       setEmailContent('');
     }
-  };
-
-  const handleSaveDraft = () => {
-    alert('Email draft saved successfully!');
   };
 
   const handleSendEmail = () => {
@@ -168,12 +261,10 @@ export default function CompanyPage() {
                 <div className="row g-4">
                   <div className="col-md-4">
                     {/* About Card */}
-                    <div className="cdx-card mb-4 bg-light shadow-sm border-black rounded-1">
-                      <div className="cdx-card__text">
-                        <div className="cdx-card__text__title">
-                          Description
-                        </div>
-                        <div className="cdx-card__text__description">
+                    <div className="card mb-4 p-0 bg-light shadow-sm border-black rounded-1">
+                      <div className='card-body pb-0'>
+                        <h6 className="card-title">Description</h6>
+                        <div className="card-text" style={{ fontSize: '0.8rem' }}>
                           {company?.activities ? (
                             <>
                               <p className='m-0'>
@@ -184,8 +275,8 @@ export default function CompanyPage() {
                               {company.activities.length > 200 && (
                                 <button
                                   onClick={() => setShowFullDescription(!showFullDescription)}
-                                  className="cdx-button cdx-button--weight-quiet p-0"
-                                  style={{ fontSize: '0.875rem' }}
+                                  className="btn btn-link text-dark-emphasis pb-2 mt-1 p-0"
+                                  style={{ fontSize: '0.8rem' }}
                                 >
                                   {showFullDescription ? 'Show less' : 'Show more'}
                                 </button>
@@ -198,37 +289,7 @@ export default function CompanyPage() {
                       </div>
                     </div>
                     {/* Contact Information Card */}
-                    <div className="cdx-card mb-4 bg-light shadow-sm border-black rounded-1">
-                      <div className="cdx-card__text">
-                        <div className="cdx-card__text__title">
-                          Contact
-                        </div>
-                        <div className="cdx-card__text__supporting-text">
-                          <div className="cdx-description-list">
-                            <div className="cdx-description-list__item">
-                              <div className="cdx-description-list__term">Email:</div>
-                              <div className="cdx-description-list__value text-primary">
-                                <a href={`mailto:${company.email}`} className="cdx-link">
-                                  {company.email}
-                                </a>
-                              </div>
-                            </div>
-                            <div className="cdx-description-list__item">
-                              <div className="cdx-description-list__term">Address:</div>
-                              <div className="cdx-description-list__value text-dark">{company.address}</div>
-                            </div>
-                            <div className="cdx-description-list__item">
-                              <div className="cdx-description-list__term">Website:</div>
-                              <div className="cdx-description-list__value text-primary">
-                                <a href={company.website} className="cdx-link" target="_blank" rel="noreferrer">
-                                  {company.website}
-                                </a>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
+                    <ContactCard company={company} />
                   </div>
     
                   <div className="col-md-8">
@@ -280,18 +341,11 @@ export default function CompanyPage() {
                                 ></textarea>
                               </div>
                               <div className="d-flex justify-content-end gap-2">
-                                <button 
-                                  type="button" 
-                                  className="btn btn-outline-secondary"
-                                  onClick={handleSaveDraft}
-                                >
-                                  Save as Draft
-                                </button>
                                 <button
-                                  className="cdx-button cdx-button--action-progressive cdx-button--weight-primary rounded"
-                                  onClick={handleSendEmail} disabled={!emailSubject || !emailContent}
+                                  className="btn btn-primary"
+                                  onClick={handleSendEmail} disabled={!emailSubject || !emailContent || !(company.email)}
                                 >
-                                  Send Email
+                                  Send
                                 </button>
                               </div>
                             </form>
@@ -303,88 +357,35 @@ export default function CompanyPage() {
                     {/* Interactions Table */}
                     <section className="mb-4">
                       <div className="border border-black rounded-1 shadow-sm">
+                        {emails.length > 0 && (
                           <div className="d-flex justify-content-between align-items-center mb-2 border-bottom border-black">
-                            <div className='text-center mx-auto'>
-                                {`Showing results ${searchPage + 1} - ${Math.min(emails.length, searchPage + 20)} of ${emails.length}`}
+                            <div className="px-1">
+                              <PagerButton disabled={searchPage === 0} onClick={handleFirstPageBtn} icon="first" />
+                              <PagerButton disabled={searchPage === 0} onClick={handlePrevBtn} icon="previous" />
                             </div>
-                            <div className="me-1 px-3">
-                              <button disabled={searchPage == 0} className="cdx-button cdx-button--icon-only cdx-button--weight-quiet" 
-                                onClick={handleFirstPageBtn}  
-                              >
-                                <span className="cdx-table-pager__icon--first cdx-button__icon" aria-hidden="true"></span>
-                              </button>
-                              <button disabled={searchPage == 0} className="cdx-button cdx-button--icon-only cdx-button--weight-quiet" 
-                                onClick={handlePrevBtn}
-                              >
-                                <span className="cdx-table-pager__icon--previous cdx-button__icon" aria-hidden="true"></span>
-                              </button>
-                              <button disabled={searchPage >= (emails.length - 20)} className="cdx-button cdx-button--icon-only cdx-button--weight-quiet" 
-                                onClick={handleNextBtn}
-                              >
-                                <span className="cdx-table-pager__icon--next cdx-button__icon" aria-hidden="true"></span>
-                              </button>
-                              <button disabled={searchPage >= (emails.length - 20)} className="cdx-button cdx-button--icon-only cdx-button--weight-quiet" 
-                                onClick={handleLastPageBtn}  
-                              >
-                                <span className="cdx-table-pager__icon--last cdx-button__icon" aria-hidden="true"></span>
-                              </button>
+
+                            <div className="text-center mx-auto">
+                              {`Showing results ${searchPage + 1} - ${Math.min(emails.length, searchPage + 20)} of ${emails.length}`}
+                            </div>
+
+                            <div className="px-1">
+                              <PagerButton disabled={searchPage >= emails.length - 20} onClick={handleNextBtn} icon="next" />
+                              <PagerButton disabled={searchPage >= emails.length - 20} onClick={handleLastPageBtn} icon="last" />
                             </div>
                           </div>
-                          {loading ? (
-                            <div className="text-center py-5">
-                              <div className="spinner-border text-secondary" role="status">
-                                <span className="visually-hidden">Loading...</span>
-                              </div>
-                              <p className="mt-2">Loading email history...</p>
-                            </div>
-                          ) : (
-                            <>
-                              {emails.length > 0 ? (
-                                emails.slice(searchPage, searchPage + 20).map((email, index) => (
-                                  <div key={email.id || index}
-                                    className={`p-3 ${index !== emails.length - 1 ? 'border-bottom' : ''}`}
-                                  >
-                                    <div className="d-flex justify-content-between align-items-start">
-                                      <div className="flex-grow-1">
-                                        <div className="d-flex justify-content-between align-items-center mb-2">
-                                          <h3 className="h6 mb-0">{email.subject}</h3>
-                                          <span className={`badge ${
-                                            email.status === 'sent' ? 'bg-success' : 
-                                            email.status === 'draft' ? 'bg-secondary' : 
-                                            'bg-warning'
-                                          } text-white`}>
-                                            {email.status.charAt(0).toUpperCase() + email.status.slice(1)}
-                                          </span>
-                                        </div>
-                                        <div className="border-start border-4 ps-3 mb-2">
-                                          {email.content.split('\n').map((line, i) => (
-                                            <p key={i} className="mb-1 small text-muted">
-                                              {line}
-                                            </p>
-                                          ))}
-                                        </div>
-                                        <div className="d-flex justify-content-between align-items-center">
-                                          <div className="text-muted small">
-                                            {new Date(email.date).toLocaleDateString('en-GB', {
-                                              day: 'numeric',
-                                              month: 'short',
-                                              year: 'numeric',
-                                              hour: '2-digit',
-                                              minute: '2-digit'
-                                            })}
-                                          </div>
-                                        </div>
-                                      </div>
-                                    </div>
-                                  </div>
-                                ))
-                              ) : (
-                                <div className="text-center py-4">
-                                  <p className="text-muted mb-0">No email history found</p>
-                                </div>
-                              )}
-                            </>
-                          )}
+                        )}
+
+                        {loading ? (
+                          <LoadingSpinner />
+                        ) : emails.length > 0 ? (
+                          emails.slice(searchPage, searchPage + 20).map((email, index) => (
+                            <EmailCard key={email.id || index} email={email} isLast={index === emails.length - 1} />
+                          ))
+                        ) : (
+                          <div className="text-center py-5">
+                            <p className="text-muted mb-0">No email history found</p>
+                          </div>
+                        )}
                       </div>
                     </section>
                   </div>
