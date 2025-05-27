@@ -26,6 +26,7 @@ function useDebounce(value, delay) {
  * logInPage - Flag indicating if current page is login page
  */
 export default function NavBar ({logInPage=false}) {
+    const [loading, setLoading] = useState(true);
     const [loggedIn, setLoggedIn] = useState(false);
     const navigate = useNavigate();
     const [results, setResults] = useState([]);
@@ -46,7 +47,7 @@ export default function NavBar ({logInPage=false}) {
             const data = await res.json();
 
             if(data){
-                setResults(data)
+                setResults(data.results)
             }
         }
         if (debouncedSearchQuery) {
@@ -85,11 +86,14 @@ export default function NavBar ({logInPage=false}) {
     useEffect(() => {
         const checkLogIn = async () => {
             const status = await checkAuthStatus();
-            setLoggedIn(status)
+            setLoggedIn(status);
+            setLoading(false);
         }
         
         checkLogIn();
     }, []);
+    
+    if(loading) return null;
     
     return (
         <header className="cdx-header mb-3">
@@ -178,19 +182,16 @@ export default function NavBar ({logInPage=false}) {
                     {loggedIn ? (
                         // Display user profile picture if it exists
                         profilePicture ? (
-                            <div className="bg-transparent rounded-1 my-auto" 
+                            <div className="my-auto profile-pic" 
                                 onClick={() => navigate("/account")}
-                                style={{
-                                    cursor: 'pointer'
-                                }}
                             >
                                 <img 
                                     title="Account settings"
                                     src={`data:${profilePictureType};base64,${profilePicture}`} 
-                                    width='50rem'
-                                    className='border border-dark border-2'
+                                    width={40}
+                                    height={40}
+                                    className='border border-dark border-1 rounded-1 grayscale'
                                     style={{
-                                        borderRadius: '50%',
                                         cursor: 'pointer'
                                     }}
                                 />

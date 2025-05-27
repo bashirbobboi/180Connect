@@ -335,360 +335,366 @@ export default function EmailPage() {
 
   return (
     <div className="bg-white min-vh-100 rounded-1 p-3 position-relative">
-      <NavBar />
+      { <NavBar /> }
+      {loading 
+      ? (
+          <div className="spinner-border position-absolute top-50 start-50" role="status">
+            <span className="visually-hidden">Loading...</span>
+          </div>
+        ) : (
+        <div className="container py-4">
+          <div className="row justify-content-center">
+            <div className="col-12 col-lg-10">
+              <h2 className="mb-4 border-bottom border-black pb-3">Email Management</h2>
+              
+              {/* Top section - Email Composition */}
+              <div className="row mb-4 mt-2">
+                <form className="col-12" onSubmit={(e) => handleSubmit(e)}>
+                  <div className="border p-4 bg-light border-black rounded-1 shadow-sm">
+                    <div className="d-flex justify-content-between mb-3">
+                      <h2 className="h5 mb-0">Compose Email</h2>
+                    </div>
 
-      <div className="container py-4">
-        <div className="row justify-content-center">
-          <div className="col-12 col-lg-10">
-            <h2 className="mb-4 border-bottom border-black pb-3">Email Management</h2>
-            
-            {/* Top section - Email Composition */}
-            <div className="row mb-4 mt-2">
-              <form className="col-12" onSubmit={(e) => handleSubmit(e)}>
-                <div className="border p-4 bg-light border-black rounded-1 shadow-sm">
-                  <div className="d-flex justify-content-between mb-3">
-                    <h2 className="h5 mb-0">Compose Email</h2>
-                  </div>
-
-                  <div className="row g-3">
-                    <div className="col-md-4">
-                        <div className="mb-3">
-                          <label htmlFor="templateSelect" className="form-label">Email Template</label>
-                          <select className="form-select form-select-sm" 
-                            id="templateSelect"
-                            value={templateOption}
-                            onChange={handleTemplateChange}
-                          >
-                            <option value="custom">Custom Email</option>
-                            <option value="followup">Follow-up Template</option>
-                            <option value="introduction">Introduction Template</option>
-                            <option value="resources">Resources Template</option>
-                          </select>
+                    <div className="row g-3">
+                      <div className="col-md-4">
+                          <div className="mb-3">
+                            <label htmlFor="templateSelect" className="form-label">Email Template</label>
+                            <select className="form-select form-select-sm" 
+                              id="templateSelect"
+                              value={templateOption}
+                              onChange={handleTemplateChange}
+                            >
+                              <option value="custom">Custom Email</option>
+                              <option value="followup">Follow-up Template</option>
+                              <option value="introduction">Introduction Template</option>
+                              <option value="resources">Resources Template</option>
+                            </select>
+                          </div>
+                        <div>
+                          <label htmlFor="emailSubject" className="form-label">Subject</label>
+                          <input 
+                            type="text" 
+                            className="form-control form-control-sm" 
+                            id="emailSubject"
+                            placeholder="Email subject"
+                            value={emailSubject}
+                            onChange={(e) => setEmailSubject(e.target.value)}
+                          />
                         </div>
-                      <div>
-                        <label htmlFor="emailSubject" className="form-label">Subject</label>
-                        <input 
-                          type="text" 
-                          className="form-control form-control-sm" 
-                          id="emailSubject"
-                          placeholder="Email subject"
-                          value={emailSubject}
-                          onChange={(e) => setEmailSubject(e.target.value)}
-                        />
+                      </div>
+                      <div className="col-md-8">
+                        <label htmlFor="emailContent" className="form-label">
+                          Content
+                        </label>
+                        <textarea 
+                          className="form-control" 
+                          id="emailContent" 
+                          rows="7"
+                          placeholder="Email content"
+                          value={emailContent}
+                          onChange={(e) => setEmailContent(e.target.value)}
+                        ></textarea>
                       </div>
                     </div>
-                    <div className="col-md-8">
-                      <label htmlFor="emailContent" className="form-label">
-                        Content
-                      </label>
-                      <textarea 
-                        className="form-control" 
-                        id="emailContent" 
-                        rows="7"
-                        placeholder="Email content"
-                        value={emailContent}
-                        onChange={(e) => setEmailContent(e.target.value)}
-                      ></textarea>
+
+                    <div className="mt-3 d-flex justify-content-end gap-2 text-end">
+                      <button className="btn btn-primary"
+                        disabled={selectedClients.length === 0 || !emailSubject || !emailContent}
+                      >
+                        Send ({selectedClients.length})
+                      </button>
                     </div>
                   </div>
-
-                  <div className="mt-3 d-flex justify-content-end gap-2 text-end">
-                    <button className="btn btn-primary"
-                      disabled={selectedClients.length === 0 || !emailSubject || !emailContent}
-                    >
-                      Send ({selectedClients.length})
-                    </button>
-                  </div>
-                </div>
-              </form>
-            </div>
-
-            {/* Middle section - Filter sidebar (left) and Results (right) */}
-            <div className="row g-4">
-              {/* Left sidebar - Filters */}
-              <div className="col-md-4 col-lg-3">
-                <div className="bg-light border border-black rounded-1 p-3 shadow-sm">
-                  <h3 className="h6 mb-3 pb-2 border-bottom">Filters</h3>
-                  <div className="mb-3">
-                    <label htmlFor="typeFilter" className="form-label small">Company Type</label>
-                    <select id="typeFilter" 
-                      className="form-select form-select-sm"
-                      value={filters.company_type}
-                      onChange={(e) => handleFilterChange('company_type', e.target.value)}
-                    >
-                      <option value="all">All Types</option>
-                      {getUniqueCompanyTypes(clients).map(type => (
-                        <option key={type} value={type}>
-                          {type}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div className="mb-3">
-                    <label htmlFor="statusFilter" className="form-label small">Status</label>
-                    <select 
-                      id="statusFilter" 
-                      className="form-select form-select-sm"
-                      value={filters.status}
-                      onChange={(e) => handleFilterChange('status', e.target.value)}
-                    >
-                      <option value="all">All Statuses</option>
-                      <option value="active">Active</option>
-                      <option value="inactive">Inactive</option>
-                      <option value="pending">Pending</option>
-                    </select>
-                  </div>
-
-                  <div className="mb-3">
-                    <label htmlFor="sourceFilter" className="form-label small">Source</label>
-                    <select 
-                      id="sourceFilter" 
-                      className="form-select form-select-sm"
-                      value={filters.source}
-                      onChange={(e) => handleFilterChange('source', e.target.value)}
-                    >
-                      <option value="all">All Sources</option>
-                      {getUniqueSources(clients).map(source => (
-                        <option key={source} value={source}>
-                          {source}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div className="mb-3">
-                    <label className="form-label small d-block">Region</label>
-                    <div className="d-flex flex-column gap-2">
-                      {regions.map(region => (
-                        <div key={region} className="form-check">
-                          <input
-                            type="checkbox"
-                            className="form-check-input"
-                            id={`region-${region}`}
-                            checked={filters.regions?.includes(region)}
-                            onChange={(e) => {
-                              const newRegions = e.target.checked 
-                                ? [...(filters.regions || []), region]
-                                : filters.regions?.filter(r => r !== region) || [];
-                              handleFilterChange('regions', newRegions);
-                            }}
-                          />
-                          <label className="form-check-label small" htmlFor={`region-${region}`}>
-                            {region}
-                          </label>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="mb-3">
-                    <label className="form-label small d-block">City</label>
-                    <div className="d-flex flex-column gap-2">
-                      {cities.map(city => (
-                        <div key={city} className="form-check">
-                          <input
-                            type="checkbox"
-                            className="form-check-input"
-                            id={`city-${city}`}
-                            checked={filters.cities?.includes(city)}
-                            onChange={(e) => {
-                              const newCities = e.target.checked 
-                                ? [...(filters.cities || []), city]
-                                : filters.cities?.filter(c => c !== city) || [];
-                              handleFilterChange('cities', newCities);
-                            }}
-                          />
-                          <label className="form-check-label small" htmlFor={`city-${city}`}>
-                            {city}
-                          </label>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  <button 
-                    className="btn btn-sm btn-outline-secondary w-100"
-                    onClick={() => {
-                      setFilters({
-                        company_type: 'all',
-                        status: 'all',
-                        regions: [],
-                        cities: [],
-                        source: 'all'
-                      });
-                      setSearchQuery('');
-                      setSearchPage(0);
-                    }}
-                  >
-                    Reset Filters
-                  </button>
-                </div>
+                </form>
               </div>
 
-              {/* Right content - Client Results */}
-              <div className="col-md-8 col-lg-9">
-                {/* Search input and Add Client button */}
-                <div className="mb-3">
-                  <div className="d-flex justify-content-between align-items-center gap-1">
-                    <div className="input-group border-black border rounded flex-grow-1">
-                      <input 
-                        type="text" 
-                        className="form-control border-0"
-                        placeholder="Search clients"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                      />
+              {/* Middle section - Filter sidebar (left) and Results (right) */}
+              <div className="row g-4">
+                {/* Left sidebar - Filters */}
+                <div className="col-md-4 col-lg-3">
+                  <div className="bg-light border border-black rounded-1 p-3 shadow-sm">
+                    <h3 className="h6 mb-3 pb-2 border-bottom">Filters</h3>
+                    <div className="mb-3">
+                      <label htmlFor="typeFilter" className="form-label small">Company Type</label>
+                      <select id="typeFilter" 
+                        className="form-select form-select-sm"
+                        value={filters.company_type}
+                        onChange={(e) => handleFilterChange('company_type', e.target.value)}
+                      >
+                        <option value="all">All Types</option>
+                        {getUniqueCompanyTypes(clients).map(type => (
+                          <option key={type} value={type}>
+                            {type}
+                          </option>
+                        ))}
+                      </select>
                     </div>
+
+                    <div className="mb-3">
+                      <label htmlFor="statusFilter" className="form-label small">Status</label>
+                      <select 
+                        id="statusFilter" 
+                        className="form-select form-select-sm"
+                        value={filters.status}
+                        onChange={(e) => handleFilterChange('status', e.target.value)}
+                      >
+                        <option value="all">All Statuses</option>
+                        <option value="active">Active</option>
+                        <option value="inactive">Inactive</option>
+                        <option value="pending">Pending</option>
+                      </select>
+                    </div>
+
+                    <div className="mb-3">
+                      <label htmlFor="sourceFilter" className="form-label small">Source</label>
+                      <select 
+                        id="sourceFilter" 
+                        className="form-select form-select-sm"
+                        value={filters.source}
+                        onChange={(e) => handleFilterChange('source', e.target.value)}
+                      >
+                        <option value="all">All Sources</option>
+                        {getUniqueSources(clients).map(source => (
+                          <option key={source} value={source}>
+                            {source}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div className="mb-3">
+                      <label className="form-label small d-block">Region</label>
+                      <div className="d-flex flex-column gap-2">
+                        {regions.map(region => (
+                          <div key={region} className="form-check">
+                            <input
+                              type="checkbox"
+                              className="form-check-input"
+                              id={`region-${region}`}
+                              checked={filters.regions?.includes(region)}
+                              onChange={(e) => {
+                                const newRegions = e.target.checked 
+                                  ? [...(filters.regions || []), region]
+                                  : filters.regions?.filter(r => r !== region) || [];
+                                handleFilterChange('regions', newRegions);
+                              }}
+                            />
+                            <label className="form-check-label small" htmlFor={`region-${region}`}>
+                              {region}
+                            </label>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="mb-3">
+                      <label className="form-label small d-block">City</label>
+                      <div className="d-flex flex-column gap-2">
+                        {cities.map(city => (
+                          <div key={city} className="form-check">
+                            <input
+                              type="checkbox"
+                              className="form-check-input"
+                              id={`city-${city}`}
+                              checked={filters.cities?.includes(city)}
+                              onChange={(e) => {
+                                const newCities = e.target.checked 
+                                  ? [...(filters.cities || []), city]
+                                  : filters.cities?.filter(c => c !== city) || [];
+                                handleFilterChange('cities', newCities);
+                              }}
+                            />
+                            <label className="form-check-label small" htmlFor={`city-${city}`}>
+                              {city}
+                            </label>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
                     <button 
-                      className="btn btn-outline-dark my-auto"
-                      onClick={() => setShowAddClientForm(true)}
+                      className="btn btn-sm btn-outline-secondary w-100"
+                      onClick={() => {
+                        setFilters({
+                          company_type: 'all',
+                          status: 'all',
+                          regions: [],
+                          cities: [],
+                          source: 'all'
+                        });
+                        setSearchQuery('');
+                        setSearchPage(0);
+                      }}
                     >
-                      Add
+                      Reset Filters
                     </button>
                   </div>
                 </div>
-                
-                {/* Search results count */}
-                {searchQuery.length > 0 && 
-                  <div className="d-flex justify-content-between align-items-center mb-2">
-                    <div className="text-muted small">
-                      {filteredClients.length} {filteredClients.length === 1 ? 'result' : 'results'} found
-                      {searchQuery && <span> for "<strong>{searchQuery}</strong>"</span>}
-                    </div>
-                  </div>
-                }
 
-                {/* Results List */}
-                {loading ? (
-                  <div className="text-center py-5">
-                    <div className="spinner-border text-secondary" role="status">
-                      <span className="visually-hidden">Loading...</span>
+                {/* Right content - Client Results */}
+                <div className="col-md-8 col-lg-9">
+                  {/* Search input and Add Client button */}
+                  <div className="mb-3">
+                    <div className="d-flex justify-content-between align-items-center gap-1">
+                      <div className="input-group border-black border rounded flex-grow-1">
+                        <input 
+                          type="text" 
+                          className="form-control border-0"
+                          placeholder="Search clients"
+                          value={searchQuery}
+                          onChange={(e) => setSearchQuery(e.target.value)}
+                        />
+                      </div>
+                      <button 
+                        className="btn btn-outline-dark my-auto"
+                        onClick={() => setShowAddClientForm(true)}
+                      >
+                        Add
+                      </button>
                     </div>
-                    <p className="mt-2">Loading clients...</p>
                   </div>
-                ) : (
-                  <div className="border border-black rounded-1 shadow-sm">
-                    {/* Results header with pagination */}
-                    <div className="d-flex justify-content-between align-items-center mb-2 border-bottom border-black">
-                      <div className=''>
-                        <button 
-                          className="btn btn-sm btn-outline-secondary ms-1"
-                          onClick={handleSelectAll}
-                          disabled={filteredClients.length === 0}
-                        >
-                          {selectedClients.length === filteredClients.length ? 'Deselect All' : 'Select All'}
-                        </button>
-                      </div>
-                      <div className='text-center mx-auto'>
-                        {`Showing results ${searchPage + 1} - ${Math.min(filteredClients.length, searchPage + 20)} of ${filteredClients.length}`}
-                      </div>
-                      <div className="me-1 px-3">
-                        <button disabled={searchPage == 0} className="cdx-button cdx-button--icon-only cdx-button--weight-quiet" 
-                          onClick={handleFirstPageBtn}  
-                        >
-                          <span className="cdx-table-pager__icon--first cdx-button__icon" aria-hidden="true"></span>
-                        </button>
-                        <button disabled={searchPage == 0} className="cdx-button cdx-button--icon-only cdx-button--weight-quiet" 
-                          onClick={handlePrevBtn}
-                        >
-                          <span className="cdx-table-pager__icon--previous cdx-button__icon" aria-hidden="true"></span>
-                        </button>
-                        <button disabled={searchPage >= (filteredClients.length - 20)} className="cdx-button cdx-button--icon-only cdx-button--weight-quiet" 
-                          onClick={handleNextBtn}
-                        >
-                          <span className="cdx-table-pager__icon--next cdx-button__icon" aria-hidden="true"></span>
-                        </button>
-                        <button disabled={searchPage >= (filteredClients.length - 20)} className="cdx-button cdx-button--icon-only cdx-button--weight-quiet" 
-                          onClick={handleLastPageBtn}  
-                        >
-                          <span className="cdx-table-pager__icon--last cdx-button__icon" aria-hidden="true"></span>
-                        </button>
+                  
+                  {/* Search results count */}
+                  {searchQuery.length > 0 && 
+                    <div className="d-flex justify-content-between align-items-center mb-2">
+                      <div className="text-muted small">
+                        {filteredClients.length} {filteredClients.length === 1 ? 'result' : 'results'} found
+                        {searchQuery && <span> for "<strong>{searchQuery}</strong>"</span>}
                       </div>
                     </div>
-                    {filterResults.length > 0 ? (
-                      filterResults.map((client, index) => (
-                        <div key={client.id} className={`search-results p-3 ${index !== filterResults.length - 1 ? 'border-bottom' : ''}`}>
-                          <div className="d-flex">
-                            <div className="me-3">
-                              <input 
-                                className="form-check-input mt-1" 
-                                type="checkbox" 
-                                id={`client-${client.id}`}
-                                checked={selectedClients.includes(client.id)}
-                                onChange={() => handleSelectClient(client.id)}
-                              />
-                            </div>
-                            <div onClick={() => navigate(`/company/${client.id}`)}>
-                              <h3 className="h6 mb-1">{client.name}</h3>
-                              <div className="text-primary mb-2 small">{client.email}</div>
-                              <div className="d-flex flex-wrap gap-2 mb-1">
-                                <span className="badge bg-light text-dark border">
-                                  {COMPANY_TYPE_MAPPING[client.company_type] || client.company_type}
-                                </span>
-                                <span className="badge bg-light text-dark border">{client.size}</span>
-                                <span className="badge bg-light text-dark border">{client.region || 'No region'}</span>
-                                <span className="badge bg-light text-dark border">{client.city || 'No city'}</span>
-                                {client.source && (
-                                  <span className="badge bg-secondary text-light">
-                                    Source: {client.source}
+                  }
+
+                  {/* Results List */}
+                  {loading ? (
+                    <div className="text-center py-5">
+                      <div className="spinner-border text-secondary" role="status">
+                        <span className="visually-hidden">Loading...</span>
+                      </div>
+                      <p className="mt-2">Loading clients...</p>
+                    </div>
+                  ) : (
+                    <div className="border border-black rounded-1 shadow-sm">
+                      {/* Results header with pagination */}
+                      <div className="d-flex justify-content-between align-items-center mb-2 border-bottom border-black">
+                        <div className=''>
+                          <button 
+                            className="btn btn-sm btn-outline-secondary ms-1"
+                            onClick={handleSelectAll}
+                            disabled={filteredClients.length === 0}
+                          >
+                            {selectedClients.length === filteredClients.length ? 'Deselect All' : 'Select All'}
+                          </button>
+                        </div>
+                        <div className='text-center mx-auto'>
+                          {`Showing results ${searchPage + 1} - ${Math.min(filteredClients.length, searchPage + 20)} of ${filteredClients.length}`}
+                        </div>
+                        <div className="me-1 px-3">
+                          <button disabled={searchPage == 0} className="cdx-button cdx-button--icon-only cdx-button--weight-quiet" 
+                            onClick={handleFirstPageBtn}  
+                          >
+                            <span className="cdx-table-pager__icon--first cdx-button__icon" aria-hidden="true"></span>
+                          </button>
+                          <button disabled={searchPage == 0} className="cdx-button cdx-button--icon-only cdx-button--weight-quiet" 
+                            onClick={handlePrevBtn}
+                          >
+                            <span className="cdx-table-pager__icon--previous cdx-button__icon" aria-hidden="true"></span>
+                          </button>
+                          <button disabled={searchPage >= (filteredClients.length - 20)} className="cdx-button cdx-button--icon-only cdx-button--weight-quiet" 
+                            onClick={handleNextBtn}
+                          >
+                            <span className="cdx-table-pager__icon--next cdx-button__icon" aria-hidden="true"></span>
+                          </button>
+                          <button disabled={searchPage >= (filteredClients.length - 20)} className="cdx-button cdx-button--icon-only cdx-button--weight-quiet" 
+                            onClick={handleLastPageBtn}  
+                          >
+                            <span className="cdx-table-pager__icon--last cdx-button__icon" aria-hidden="true"></span>
+                          </button>
+                        </div>
+                      </div>
+                      {filterResults.length > 0 ? (
+                        filterResults.map((client, index) => (
+                          <div key={client.id} className={`search-results p-3 ${index !== filterResults.length - 1 ? 'border-bottom' : ''}`}>
+                            <div className="d-flex">
+                              <div className="me-3">
+                                <input 
+                                  className="form-check-input mt-1" 
+                                  type="checkbox" 
+                                  id={`client-${client.id}`}
+                                  checked={selectedClients.includes(client.id)}
+                                  onChange={() => handleSelectClient(client.id)}
+                                />
+                              </div>
+                              <div onClick={() => navigate(`/company/${client.id}`)}>
+                                <h3 className="h6 mb-1">{client.name}</h3>
+                                <div className="text-primary mb-2 small">{client.email}</div>
+                                <div className="d-flex flex-wrap gap-2 mb-1">
+                                  <span className="badge bg-light text-dark border">
+                                    {COMPANY_TYPE_MAPPING[client.company_type] || client.company_type}
                                   </span>
-                                )}
+                                  <span className="badge bg-light text-dark border">{client.size}</span>
+                                  <span className="badge bg-light text-dark border">{client.region || 'No region'}</span>
+                                  <span className="badge bg-light text-dark border">{client.city || 'No city'}</span>
+                                  {client.source && (
+                                    <span className="badge bg-secondary text-light">
+                                      Source: {client.source}
+                                    </span>
+                                  )}
+                                </div>
                               </div>
                             </div>
                           </div>
+                        ))
+                      ) : (
+                        <div className="text-center py-4">
+                          <p className="text-muted">No clients match your criteria</p>
                         </div>
-                      ))
-                    ) : (
-                      <div className="text-center py-4">
-                        <p className="text-muted">No clients match your criteria</p>
-                      </div>
-                    )}
+                      )}
 
-                    {/* Footer pagination (duplicate of header) */}
-                    <div className="d-flex justify-content-between align-items-center mb-2 border-top border-black">
-                      <div className=''>
-                        <button 
-                          className="btn btn-sm btn-outline-secondary ms-1"
-                          onClick={handleSelectAll}
-                          disabled={filterResults.length === 0}
-                        >
-                          {selectedClients.length === filterResults.length ? 'Deselect All' : 'Select All'}
-                        </button>
-                      </div>
-                      <div className='text-center mx-auto'>
-                        {`Showing results ${searchPage + 1} - ${Math.min(filteredClients.length, searchPage + 20)} of ${filteredClients.length}`}
-                      </div>
-                      <div className="me-1 px-3">
-                        <button disabled={searchPage == 0} className="cdx-button cdx-button--icon-only cdx-button--weight-quiet" 
-                          onClick={handleFirstPageBtn}  
-                        >
-                          <span className="cdx-table-pager__icon--first cdx-button__icon" aria-hidden="true"></span>
-                        </button>
-                        <button disabled={searchPage == 0} className="cdx-button cdx-button--icon-only cdx-button--weight-quiet" 
-                          onClick={handlePrevBtn}
-                        >
-                          <span className="cdx-table-pager__icon--previous cdx-button__icon" aria-hidden="true"></span>
-                        </button>
-                        <button disabled={searchPage >= (filteredClients.length - 20)} className="cdx-button cdx-button--icon-only cdx-button--weight-quiet" 
-                          onClick={handleNextBtn}
-                        >
-                          <span className="cdx-table-pager__icon--next cdx-button__icon" aria-hidden="true"></span>
-                        </button>
-                        <button disabled={searchPage >= (filteredClients.length - 20)} className="cdx-button cdx-button--icon-only cdx-button--weight-quiet" 
-                          onClick={handleLastPageBtn}  
-                        >
-                          <span className="cdx-table-pager__icon--last cdx-button__icon" aria-hidden="true"></span>
-                        </button>
+                      {/* Footer pagination (duplicate of header) */}
+                      <div className="d-flex justify-content-between align-items-center mb-2 border-top border-black">
+                        <div className=''>
+                          <button 
+                            className="btn btn-sm btn-outline-secondary ms-1"
+                            onClick={handleSelectAll}
+                            disabled={filterResults.length === 0}
+                          >
+                            {selectedClients.length === filterResults.length ? 'Deselect All' : 'Select All'}
+                          </button>
+                        </div>
+                        <div className='text-center mx-auto'>
+                          {`Showing results ${searchPage + 1} - ${Math.min(filteredClients.length, searchPage + 20)} of ${filteredClients.length}`}
+                        </div>
+                        <div className="me-1 px-3">
+                          <button disabled={searchPage == 0} className="cdx-button cdx-button--icon-only cdx-button--weight-quiet" 
+                            onClick={handleFirstPageBtn}  
+                          >
+                            <span className="cdx-table-pager__icon--first cdx-button__icon" aria-hidden="true"></span>
+                          </button>
+                          <button disabled={searchPage == 0} className="cdx-button cdx-button--icon-only cdx-button--weight-quiet" 
+                            onClick={handlePrevBtn}
+                          >
+                            <span className="cdx-table-pager__icon--previous cdx-button__icon" aria-hidden="true"></span>
+                          </button>
+                          <button disabled={searchPage >= (filteredClients.length - 20)} className="cdx-button cdx-button--icon-only cdx-button--weight-quiet" 
+                            onClick={handleNextBtn}
+                          >
+                            <span className="cdx-table-pager__icon--next cdx-button__icon" aria-hidden="true"></span>
+                          </button>
+                          <button disabled={searchPage >= (filteredClients.length - 20)} className="cdx-button cdx-button--icon-only cdx-button--weight-quiet" 
+                            onClick={handleLastPageBtn}  
+                          >
+                            <span className="cdx-table-pager__icon--last cdx-button__icon" aria-hidden="true"></span>
+                          </button>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                )}
+                  )}
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
+      )}
 
       {showAddClientForm && (
         <div className="position-fixed top-0 start-0 w-100 h-100 bg-dark bg-opacity-50 d-flex justify-content-center align-items-center z-3">

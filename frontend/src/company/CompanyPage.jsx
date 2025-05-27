@@ -141,7 +141,16 @@ export default function CompanyPage() {
 
   return (
     <>
-      {!company ? (<></>) : (
+      {loading 
+      ? (
+        <div className="bg-white min-vh-100 rounded-1 p-3 position-relative">
+          <NavBar />
+          <div className="spinner-border position-absolute top-50 start-50" role="status">
+            <span className="visually-hidden">Loading...</span>
+          </div>
+        </div>
+      ) 
+      : (
         <div className="bg-whites rounded-1 p-3">
           <NavBar />
           

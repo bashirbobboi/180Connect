@@ -12,9 +12,9 @@ import { useNavigate } from 'react-router-dom';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
-
 export default function AccountPage() {
   const [loggedIn, setLoggedIn] = useState(false); 
+  const [loading, setLoading] = useState(true);
   const [userProfile, setUserProfile] = useState({
     email: '',
     first_name: '',
@@ -195,14 +195,11 @@ export default function AccountPage() {
       if (status) {
         fetchUserProfile();
       }
+      setLoading(false)
     };
     
     checkLogIn();
   }, []);
-
-  useEffect(() => {
-    console.log(userProfile)
-  }, [userProfile]);
 
   const handleInputChange = (e) => {
     setEditForm({
@@ -267,237 +264,244 @@ export default function AccountPage() {
   return (
     <div className="bg-white min-vh-100 rounded-1 p-3">
       <NavBar />
-      <div className="container py-4">
-        <div className="row justify-content-center">
-          <div className="col-12 col-lg-10">
-            <h2 className="mb-4 border-bottom border-black pb-3">Account Settings</h2>
-            <div className="row mb-4 mt-2">
-            {loggedIn ? (
-              <>
-                {error && <div className="alert alert-danger">{error}</div>}
-                {success && <div className="alert alert-success">{success}</div>}
+      {loading 
+      ? (
+          <div className="spinner-border position-absolute top-50 start-50" role="status">
+            <span className="visually-hidden">Loading...</span>
+          </div>
+        ) 
+        : (
+        <div className="container py-4">
+            <div className="row justify-content-center">
+              <div className="col-12 col-lg-10">
+                <h2 className="mb-4 border-bottom border-black pb-3">Account Settings</h2>
+                <div className="row mb-4 mt-2">
+                {loggedIn ? (
+                  <>
+                    {error && <div className="alert alert-danger">{error}</div>}
+                    {success && <div className="alert alert-success">{success}</div>}
 
-                {isEditing ? (
-                  <form onSubmit={handleSubmit} className="row g-3 w-50 bg-light px-3 pb-3 rounded-1 border border-black shadow-sm mx-auto">
-                    <div className="mb-3">
-                      <label className="form-label">Email</label>
-                      <input
-                        type="email"
-                        disabled={userProfile.is_google_user}
-                        name="email"
-                        className="form-control"
-                        value={editForm.email}
-                        onChange={handleInputChange}
-                        required
-                      />
-                    </div>
-                    <div className="mb-3">
-                      <label className="form-label">First Name</label>
-                      <input
-                        type="text"
-                        name="first_name"
-                        className="form-control"
-                        value={editForm.first_name}
-                        onChange={handleInputChange}
-                        required
-                      />
-                    </div>
-                    <div className="mb-3">
-                      <label className="form-label">Last Name</label>
-                      <input
-                        type="text"
-                        name="last_name"
-                        className="form-control"
-                        value={editForm.last_name}
-                        onChange={handleInputChange}
-                        required
-                      />
-                    </div>
-                    <div className="mb-3">
-                      <label className="form-label">Current Password</label>
-                      <input
-                        type="password"
-                        disabled={userProfile.is_google_user}
-                        name="currentPassword"
-                        className="form-control"
-                        value={editForm.currentPassword}
-                        onChange={handleInputChange}
-                        required
-                      />
-                    </div>
-                    <div className="mb-3">
-                      <label className="form-label">New Password (leave blank to keep current)</label>
-                      <input
-                        type="password"
-                        disabled={userProfile.is_google_user}
-                        name="newPassword"
-                        className="form-control"
-                        value={editForm.newPassword}
-                        onChange={handleInputChange}
-                      />
-                    </div>
-                    <div className="mb-3">
-                      <label className="form-label">Confirm New Password</label>
-                      <input
-                        type="password"
-                        disabled={userProfile.is_google_user}
-                        name="confirmPassword"
-                        className="form-control"
-                        value={editForm.confirmPassword}
-                        onChange={handleInputChange}
-                      />
-                    </div>
-                    <div className="d-flex justify-content-end gap-2">
-                      <button className="btn btn-danger w-100 mt-2 btn-sm fw-semibold" type="button" onClick={() => {
-                          setIsEditing(!isEditing)
-                          setEditForm({
-                            ...editForm,
-                            email: userProfile.email,
-                            first_name: userProfile.first_name || '',
-                            last_name: userProfile.last_name || '',
-                            currentPassword: '',
-                            newPassword: '',
-                            confirmPassword: '',
-                          });
-                          setError('')
-                        }
-                      }>Cancel</button>
-                      <button className="btn btn-primary w-100 mt-2 btn-sm fw-semibold" type="submit"
-                        disabled={handleCheckDataChange()}
-                      >Save changes</button>
-                    </div>
-                  </form>
-                ) : (
-                  <div className="row g-3 w-50 bg-light px-3 pb-3 rounded-1 border border-black shadow-sm mx-auto">
-                    <div className="mb-3">
-                      <label className="form-label text-muted small">Email</label>
-                      <div>{userProfile.email}</div>
-                    </div>
-                    <div className="mb-3">
-                      <label className="form-label text-muted small">Name</label>
-                      <div>{userProfile.first_name} {userProfile.last_name}</div>
-                    </div>
-                    <div className="mb-3">
-                      <label className="form-label text-muted small">Password</label>
-                      <div>
-                        {'•'.repeat(8)}
-                      </div>
-                    </div>
+                    {isEditing ? (
+                      <form onSubmit={handleSubmit} className="row g-3 w-50 bg-light px-3 pb-3 rounded-1 border border-black shadow-sm mx-auto">
+                        <div className="mb-3">
+                          <label className="form-label">Email</label>
+                          <input
+                            type="email"
+                            disabled={userProfile.is_google_user}
+                            name="email"
+                            className="form-control"
+                            value={editForm.email}
+                            onChange={handleInputChange}
+                            required
+                          />
+                        </div>
+                        <div className="mb-3">
+                          <label className="form-label">First Name</label>
+                          <input
+                            type="text"
+                            name="first_name"
+                            className="form-control"
+                            value={editForm.first_name}
+                            onChange={handleInputChange}
+                            required
+                          />
+                        </div>
+                        <div className="mb-3">
+                          <label className="form-label">Last Name</label>
+                          <input
+                            type="text"
+                            name="last_name"
+                            className="form-control"
+                            value={editForm.last_name}
+                            onChange={handleInputChange}
+                            required
+                          />
+                        </div>
+                        <div className="mb-3">
+                          <label className="form-label">Current Password</label>
+                          <input
+                            type="password"
+                            disabled={userProfile.is_google_user}
+                            name="currentPassword"
+                            className="form-control"
+                            value={editForm.currentPassword}
+                            onChange={handleInputChange}
+                            required
+                          />
+                        </div>
+                        <div className="mb-3">
+                          <label className="form-label">New Password (leave blank to keep current)</label>
+                          <input
+                            type="password"
+                            disabled={userProfile.is_google_user}
+                            name="newPassword"
+                            className="form-control"
+                            value={editForm.newPassword}
+                            onChange={handleInputChange}
+                          />
+                        </div>
+                        <div className="mb-3">
+                          <label className="form-label">Confirm New Password</label>
+                          <input
+                            type="password"
+                            disabled={userProfile.is_google_user}
+                            name="confirmPassword"
+                            className="form-control"
+                            value={editForm.confirmPassword}
+                            onChange={handleInputChange}
+                          />
+                        </div>
+                        <div className="d-flex justify-content-end gap-2">
+                          <button className="btn btn-danger w-100 mt-2 btn-sm fw-semibold" type="button" onClick={() => {
+                              setIsEditing(!isEditing)
+                              setEditForm({
+                                ...editForm,
+                                email: userProfile.email,
+                                first_name: userProfile.first_name || '',
+                                last_name: userProfile.last_name || '',
+                                currentPassword: '',
+                                newPassword: '',
+                                confirmPassword: '',
+                              });
+                              setError('')
+                            }
+                          }>Cancel</button>
+                          <button className="btn btn-primary w-100 mt-2 btn-sm fw-semibold" type="submit"
+                            disabled={handleCheckDataChange()}
+                          >Save changes</button>
+                        </div>
+                      </form>
+                    ) : (
+                      <div className="row g-3 w-50 bg-light px-3 pb-3 rounded-1 border border-black shadow-sm mx-auto">
+                        <div className="mb-3">
+                          <label className="form-label text-muted small">Email</label>
+                          <div>{userProfile.email}</div>
+                        </div>
+                        <div className="mb-3">
+                          <label className="form-label text-muted small">Name</label>
+                          <div>{userProfile.first_name} {userProfile.last_name}</div>
+                        </div>
+                        <div className="mb-3">
+                          <label className="form-label text-muted small">Password</label>
+                          <div>
+                            {'•'.repeat(8)}
+                          </div>
+                        </div>
 
-                    {/* Profile picture section */}
-                    <div className="mb-3">
-                      <label className="form-label text-muted small">Profile picture</label>
-                      <div className='d-flex position-relative w-50 mx-auto'>
-                        {profilePicture ? (
-                          <div className='position-relative w-100'>
-                            <div className='position-relative'>
-                              <div 
-                                className='position-absolute bg-dark border-light fw-semibold text-white px-2 py-1 rounded-1'
-                                style={{
-                                  top: '5px',
-                                  right: '20px',
-                                  fontSize: '1.1rem',
-                                  cursor: 'pointer',
-                                }}
-                                onClick={handlePictureMenuClick}
-                              >
-                                <span className="icon-class--edit bg-white"></span>
+                        {/* Profile picture section */}
+                        <div className="mb-3">
+                          <label className="form-label text-muted small">Profile picture</label>
+                          <div className='d-flex position-relative w-50 mx-auto'>
+                            {profilePicture ? (
+                              <div className='position-relative w-100'>
+                                <div className='position-relative'>
+                                  <div 
+                                    className='position-absolute bg-dark border-light fw-semibold text-white px-2 py-1 rounded-1'
+                                    style={{
+                                      top: '0',
+                                      right: '24px',
+                                      fontSize: '1.1rem',
+                                      cursor: 'pointer',
+                                    }}
+                                    onClick={handlePictureMenuClick}
+                                  >
+                                    <span className="icon-class--edit bg-white"></span>
+                                  </div>
+                                  {showPictureMenu && (
+                                    <div 
+                                      className='position-absolute bg-white border shadow-sm rounded-1 py-1'
+                                      style={{
+                                        top: '40px',
+                                        right: '15px',
+                                        width: '150px',
+                                        zIndex: 1000
+                                      }}
+                                    >
+                                      <label className='d-block px-3 py-1 mb-0'
+                                        style={{cursor: 'pointer'}}
+                                      >
+                                        <input
+                                          type="file"
+                                          className="d-none"
+                                          accept="image/*"
+                                          onChange={handleProfilePictureUpload}
+                                        />
+                                        Change
+                                      </label>
+                                      <div 
+                                        className='px-3 py-1 text-danger'
+                                        style={{cursor: 'pointer'}}
+                                        onClick={handleDeleteProfilePicture}
+                                      >
+                                        Remove
+                                      </div>
+                                    </div>
+                                  )}
+                                </div>
+                                <img 
+                                  className='d-block mx-auto rounded-1'
+                                  src={`data:${profilePictureType};base64,${profilePicture}`}
+                                  style={{ 
+                                    width: '200px',
+                                    height: '200px',
+                                    objectFit: 'cover'
+                                  }}
+                                />
                               </div>
-                              {showPictureMenu && (
+                            ) : (
+                              // No profile picture state
+                              <div className="text-center w-100">
                                 <div 
-                                  className='position-absolute bg-white border shadow-sm rounded-1 py-1'
-                                  style={{
-                                    top: '40px',
-                                    right: '15px',
-                                    width: '150px',
-                                    zIndex: 1000
+                                  className="bg-light d-flex align-items-center justify-content-center rounded-circle mb-3 mx-auto"
+                                  style={{ 
+                                    width: '200px', 
+                                    height: '200px',
+                                    border: '2px dashed #dee2e6'
                                   }}
                                 >
-                                  <label className='d-block px-3 py-1 mb-0'
-                                    style={{cursor: 'pointer'}}
-                                  >
-                                    <input
-                                      type="file"
-                                      className="d-none"
-                                      accept="image/*"
-                                      onChange={handleProfilePictureUpload}
-                                    />
-                                    Change
-                                  </label>
-                                  <div 
-                                    className='px-3 py-1 text-danger'
-                                    style={{cursor: 'pointer'}}
-                                    onClick={handleDeleteProfilePicture}
-                                  >
-                                    Remove
-                                  </div>
+                                  <span className="icon-class--user-avatar" 
+                                    style={{ 
+                                      fontSize: '4rem',
+                                      opacity: 0.5
+                                    }}
+                                  ></span>
                                 </div>
-                              )}
-                            </div>
-                            <img 
-                              className='d-block mx-auto'
-                              src={`data:${profilePictureType};base64,${profilePicture}`}
-                              style={{ 
-                                borderRadius: '50%', 
-                                width: '200px',
-                                height: '200px',
-                                objectFit: 'cover'
-                              }}
-                            />
+                                <label 
+                                  className="btn btn-outline-secondary btn-sm"
+                                  style={{cursor: 'pointer'}}
+                                >
+                                  <input
+                                    type="file"
+                                    className="d-none"
+                                    accept="image/*"
+                                    onChange={handleProfilePictureUpload}
+                                  />
+                                  Upload profile picture
+                                </label>
+                              </div>
+                            )}
                           </div>
-                        ) : (
-                          // No profile picture state
-                          <div className="text-center w-100">
-                            <div 
-                              className="bg-light d-flex align-items-center justify-content-center rounded-circle mb-3 mx-auto"
-                              style={{ 
-                                width: '200px', 
-                                height: '200px',
-                                border: '2px dashed #dee2e6'
-                              }}
-                            >
-                              <span className="icon-class--user-avatar" 
-                                style={{ 
-                                  fontSize: '4rem',
-                                  opacity: 0.5
-                                }}
-                              ></span>
-                            </div>
-                            <label 
-                              className="btn btn-outline-secondary btn-sm"
-                              style={{cursor: 'pointer'}}
-                            >
-                              <input
-                                type="file"
-                                className="d-none"
-                                accept="image/*"
-                                onChange={handleProfilePictureUpload}
-                              />
-                              Upload profile picture
-                            </label>
-                          </div>
-                        )}
+                        </div>
+                        
+                        <div className="d-grid gap-2 d-md-block w-100 mt-4 border-top">
+                          <button className="btn btn-primary w-100 mt-3 btn-sm fw-semibold" type="button" onClick={() => setIsEditing(!isEditing)}>Edit Profile</button>
+                          <button className="btn btn-danger w-100 mt-2 btn-sm fw-semibold" type="button" onClick={handleLogout}>Log out</button>
+                        </div>
                       </div>
-                    </div>
-                    
-                    <div className="d-grid gap-2 d-md-block w-100 mt-4 border-top">
-                      <button className="btn btn-primary w-100 mt-3 btn-sm fw-semibold" type="button" onClick={() => setIsEditing(!isEditing)}>Edit Profile</button>
-                      <button className="btn btn-danger w-100 mt-2 btn-sm fw-semibold" type="button" onClick={handleLogout}>Log out</button>
-                    </div>
+                    )}
+                  </>
+                ) : (
+                  <div className='text-center py-5'>
+                    <p className='fs-4 text-muted fw-lighter'>
+                      Please log in before accessing this page.
+                    </p>
                   </div>
                 )}
-              </>
-            ) : (
-              <div className='text-center py-5'>
-                <p className='fs-4 text-muted fw-lighter'>
-                  Please log in before accessing this page.
-                </p>
               </div>
-            )}
+            </div>
           </div>
         </div>
-      </div>
-    </div>
+      )}
     </div>
   );
 }

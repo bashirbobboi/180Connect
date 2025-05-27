@@ -33,3 +33,11 @@
 .search-results {
   cursor: pointer;
 }
+
+.profile-pic {
+  filter: none;
+}
+
+.profile-pic:hover {
+  filter: contrast(120%);
+}
