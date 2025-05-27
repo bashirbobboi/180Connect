@@ -211,7 +211,12 @@ export default function LoginPage() {
                     <div className="cdx-label">
                       <label className="cdx-label__label d-flex justify-content-between align-items-center">
                         <span className="cdx-label__label__text fs-5 fw-light">Password</span>
-                        <a href="#" className="text-primary text-decoration-none small">Forgot password?</a>
+                        <a className="text-primary text-decoration-none small"
+                          style={{ cursor: 'pointer' }}
+                          onClick={() => navigate('/forgot-password')}
+                        >
+                          Forgot password?
+                        </a>
                       </label>
                     </div>
                     <div className="col-md-12 cdx-text-input cdx-text-input--has-start-icon">

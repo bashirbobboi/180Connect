@@ -7,6 +7,9 @@ import secrets
 from typing import Optional
 from pydantic import BaseModel
 import base64
+import smtplib
+from email.mime.text import MIMEText
+from config import GMAIL_SENDER, GMAIL_APP_PASSWORD
 
 router = APIRouter(prefix="")
 
@@ -304,3 +307,68 @@ async def delete_profile_picture(
                 status_code=500,
                 detail=f"Failed to delete profile picture: {str(e)}"
             )
+
+def send_reset_email(email: str, link: str):
+    try:
+        msg = MIMEText(link, "plain")
+        msg["From"] = GMAIL_SENDER
+        msg["To"] = email
+        msg["Subject"] = "180Connect Password Reset"
+
+        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
+            server.login(GMAIL_SENDER, GMAIL_APP_PASSWORD)
+            server.sendmail(GMAIL_SENDER, email, msg.as_string())
+
+    except Exception as e:
+        print(f"❌ Failed to send reset password link to {email}: {e}")
+
+@router.post("/request-password-reset")
+async def request_password_reset(request: Request, email: str = Form(...)):
+    pool = request.app.state.db
+    async with pool.acquire() as conn:
+        user = await conn.fetchrow("SELECT id FROM users WHERE email = $1", email)
+        if not user:
+            return {"message": "If that email exists, a reset link has been sent."}
+
+        token = secrets.token_urlsafe(48)
+        expiry = (datetime.now(timezone.utc) + timedelta(hours=1)).replace(tzinfo=None)
+
+        await conn.execute("""
+            INSERT INTO password_reset_tokens (user_id, token, expires_at)
+            VALUES ($1, $2, $3)
+        """, user["id"], token, expiry)
+
+        # Send email with reset link
+        host = request.headers.get("host")
+        scheme = request.url.scheme
+        reset_link = f"https://180-connect.vercel.app/reset-password?token={token}"
+        send_reset_email(email, reset_link)
+
+        return {"message": "If that email exists, a reset link has been sent."}
+    
+@router.post("/reset-password")
+async def reset_password(
+    request: Request,
+    token: str = Form(...),
+    new_password: str = Form(...)
+):
+    pool = request.app.state.db
+    async with pool.acquire() as conn:
+        record = await conn.fetchrow("""
+            SELECT user_id, expires_at FROM password_reset_tokens
+            WHERE token = $1
+        """, token)
+
+        if not record or record["expires_at"].replace(tzinfo=timezone.utc) < datetime.now(timezone.utc):
+            raise HTTPException(status_code=400, detail="Invalid or expired token")
+
+        await conn.execute(
+            "UPDATE users SET password = $1 WHERE id = $2",
+            new_password,
+            record["user_id"]
+        )
+
+        # Delete token
+        await conn.execute("DELETE FROM password_reset_tokens WHERE token = $1", token)
+
+        return {"message": "Password updated successfully"}
