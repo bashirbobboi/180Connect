@@ -160,8 +160,45 @@ export default function CompanyPage() {
     }
   };
 
-  const handleSendEmail = () => {
-    alert('Email sent successfully!');
+  const handleSendEmail = async () => {
+    if(!company) return null;
+    try {
+      const token = localStorage.getItem("token");
+
+      const formData = new URLSearchParams();
+    formData.append("client_id", company.id);
+    formData.append("subject", emailSubject);
+    formData.append("content", emailContent);
+    formData.append("status", "sent");
+
+      const response = await fetch(`${API_URL}/send-email/`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        },
+        body: formData
+      });
+  
+      if (!response.ok) {
+        throw new Error('Failed to send emails');
+      }
+  
+      const data = await response.json();
+      console.log('Emails processed:', data);
+      
+      // Show success message with details
+      const successCount = data.emails.filter(e => e.status === "sent").length;
+      const failedCount = data.emails.filter(e => e.status === "failed").length;
+      
+      alert(`Emails processed:\n${successCount} sent successfully\n${failedCount} failed`);
+      
+      // Reset form
+      setEmailSubject('');
+      setEmailContent('');      
+    } catch (error) {
+      console.error('Failed to send emails:', error);
+      alert('Failed to send emails. Please try again.');
+    }
   };
 
   /**
@@ -343,7 +380,8 @@ export default function CompanyPage() {
                               <div className="d-flex justify-content-end gap-2">
                                 <button
                                   className="btn btn-primary"
-                                  onClick={handleSendEmail} disabled={!emailSubject || !emailContent || !(company.email)}
+                                  onClick={handleSendEmail} 
+                                  disabled={!emailSubject || !emailContent || !(company.email)}
                                 >
                                   Send
                                 </button>

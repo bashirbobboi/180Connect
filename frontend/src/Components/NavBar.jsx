@@ -22,6 +22,40 @@ function useDebounce(value, delay) {
   return debouncedValue;
 }
 
+const Logo = ({ link='/' }) => {
+    const navigate = useNavigate()
+    return (
+        <div className="cdx-header__logo d-flex align-items-center gap-2"
+            onClick={() => navigate(link)}
+            style={{
+                cursor: 'pointer'
+            }}
+        >
+            <span className="cdx-header__logo-text px-2"
+                style={{
+                    fontFamily: "'Quicksand', sans-serif",
+                    fontSize: '2rem',
+                    fontWeight: 'bold',
+                    color: '#fff',
+                    backgroundColor: '#000',
+                    borderRadius: '0.25rem',
+                    letterSpacing: '-1px'
+                }}
+            >
+            <img 
+                src="https://cdn.prod.website-files.com/60e54ea15f272327f97407a7/60efd71577cf177edbe14a4d_180DC%20Globe.png" 
+                alt="180connect logo" 
+                className='me-1 mb-1'
+                style={{
+                    width: '26px',
+                    objectFit: 'contain'
+                }} 
+            />
+                180connect
+            </span>
+        </div>
+    )}
+
 /**
  * logInPage - Flag indicating if current page is login page
  */
@@ -99,35 +133,7 @@ export default function NavBar ({logInPage=false}) {
         <header className="cdx-header mb-3">
             <div className="d-flex justify-content-between align-items-center">
                 {/* Logo section */}
-                <div className="cdx-header__logo d-flex align-items-center gap-2"
-                    onClick={() => navigate('/')}
-                    style={{
-                        cursor: 'pointer'
-                    }}
-                >
-                    <span className="cdx-header__logo-text px-2"
-                        style={{
-                            fontFamily: "'Quicksand', sans-serif",
-                            fontSize: '2rem',
-                            fontWeight: 'bold',
-                            color: '#fff',
-                            backgroundColor: '#000',
-                            borderRadius: '0.25rem',
-                            letterSpacing: '-1px'
-                        }}
-                    >
-                    <img 
-                        src="https://cdn.prod.website-files.com/60e54ea15f272327f97407a7/60efd71577cf177edbe14a4d_180DC%20Globe.png" 
-                        alt="180connect logo" 
-                        className='me-1 mb-1'
-                        style={{
-                        width: '26px',
-                        objectFit: 'contain'
-                        }} 
-                    />
-                        180connect
-                    </span>
-                </div>
+                <Logo />
                 
                 {/* If current page is the login page, then hide search bar and account button */}
                 {!logInPage && (

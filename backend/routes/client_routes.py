@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Query, Header, Path, Body, Request
+from fastapi import APIRouter, HTTPException, Query, Header, Path, Body, Request, Form
 from models import User, Company, Email, BulkEmailCreate
 from routes.token_routes import verify_token, get_render_user_from_uid
 from config import GMAIL_SENDER, GMAIL_APP_PASSWORD
@@ -220,15 +220,14 @@ async def create_bulk_emails(
                 # Insert email record
                 email_row = await conn.fetchrow(
                     """
-                    INSERT INTO emails (user_id, client_id, subject, content, ai, status)
-                    VALUES ($1, $2, $3, $4, $5, $6)
+                    INSERT INTO emails (user_id, client_id, subject, content, status)
+                    VALUES ($1, $2, $3, $4, $5)
                     RETURNING id;
                     """,
                     user["id"],
                     company["id"],
                     email_data.subject,
                     email_data.content,
-                    email_data.ai,
                     status
                 )
 
@@ -247,7 +246,96 @@ async def create_bulk_emails(
 
         except Exception as e:
             raise HTTPException(status_code=500, detail=f"Failed to process emails: {str(e)}")
+        
+@router.post("/send-email/")
+async def create_bulk_emails(
+    request: Request,
+    authorization: str = Header(...),
+    client_id: int = Form(...),
+    subject: str = Form(...),
+    content: str = Form(...),
+):
+    pool = request.app.state.db
+
+    async with pool.acquire() as conn:
+        try:
+            # Verify token and user
+            token_value = authorization.replace("Bearer ", "")
+            token = await verify_token(token_value, conn)
+            user = await get_render_user_from_uid(conn, token["user_id"])
+
+            # Fetch all specified companies
+            company = await conn.fetchrow(
+                "SELECT * FROM companies WHERE id = $1 LIMIT 1;", client_id
+            )
+
+            if not company:
+                raise HTTPException(
+                    status_code=404,
+                    detail=f"Invalid company id"
+                )
+
+            content = content.replace("{charity_name}", company["name"])
+            html_content = (
+                '<div style="font-family: Arial, sans-serif;">'
+                f'{content.replace(chr(10), "<br>")}'
+                '<br><br>'
+                '<div dir="ltr">'
+                '<div>'
+                '<a href="mailto:sheffield@180dc.org" target="_blank">Email</a>'
+                '<span>&nbsp;-&nbsp;</span>'
+                '<a href="https://www.180dc.org/" target="_blank">Website</a>'
+                '<span>&nbsp;-&nbsp;</span>'
+                '<a href="https://www.instagram.com/180dcsheffield/" target="_blank">Instagram</a>'
+                '<span>&nbsp;-&nbsp;</span>'
+                '<a href="https://www.linkedin.com/company/104399563/admin/dashboard/" target="_blank">LinkedIn</a>'
+                '<br></div><div>Business Consulting and Services</div>'
+                '<div>Sheffield, South Yorkshire</div>'
+                '<div><img width="96" height="96" src="https://ci3.googleusercontent.com/mail-sig/AIorK4z7bSBEIHVpx-66BDEvzOz_BzLe3E1hmBNaK9jvUMFHF4R4bsW2oHU4pTR6zGHTqDzFfySVbwZ5DnS3" alt="180DC Sheffield logo"></div>'
+                '</div></div>'
+            )
+
+            status = "failed"
+            if company["email"]:
+                try:
+                    msg = MIMEMultipart("alternative")
+                    msg["From"] = GMAIL_SENDER
+                    msg["To"] = company["email"]
+                    msg["Subject"] = subject
+                    msg.attach(MIMEText(content, "plain"))
+                    msg.attach(MIMEText(html_content, "html"))
+
+                    with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
+                        server.login(GMAIL_SENDER, GMAIL_APP_PASSWORD)
+                        server.sendmail(GMAIL_SENDER, company["email"], msg.as_string())
+
+                    status = "sent"
+                except Exception as e:
+                    print(f"❌ Failed to send to {company['email']}: {e}")
+            else:
+                print(f"⚠️ No email for company {company['name']}")
+
+            # Insert email record
+            await conn.execute(
+                """
+                INSERT INTO emails (user_id, client_id, subject, content, status)
+                VALUES ($1, $2, $3, $4, $5)
+                RETURNING id;
+                """,
+                user["id"],
+                company["id"],
+                subject,
+                content,
+                status
+            )
+
+            return {
+                "message": f"Successfully processed email",
+            }
     
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Failed to process email: {str(e)}")
+
 @router.get("/client-emails/{client_id}")
 async def get_client_emails(
     request: Request,
@@ -279,7 +367,7 @@ async def get_client_emails(
             # Get all emails sent by user to that client
             emails = await conn.fetch(
                 """
-                SELECT id, subject, content, status, date, ai
+                SELECT id, subject, content, status, date
                 FROM emails
                 WHERE user_id = $1 AND client_id = $2
                 ORDER BY date DESC
@@ -296,8 +384,7 @@ async def get_client_emails(
                         "subject": e["subject"],
                         "content": e["content"],
                         "status": e["status"],
-                        "date": e["date"].isoformat() if e["date"] else None,
-                        "ai_generated": e["ai"]
+                        "date": e["date"].isoformat() if e["date"] else None
                     }
                     for e in emails
                 ]
