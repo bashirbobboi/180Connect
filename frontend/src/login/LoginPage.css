@@ -79,6 +79,102 @@
   }
 }
 
+/* Custom Google Button Styling */
+.google-login-container {
+  background: #f7f7f7 !important;
+  background-color: #f7f7f7 !important;
+}
+
+/* Custom styling for Google button to match the reference design */
+.google-login-container [data-testid="google-login-button"],
+.google-login-container > div {
+  width: 100% !important;
+  background: #f7f7f7 !important;
+}
+
+/* Override Google's default button styling */
+.google-login-container iframe {
+  width: 100% !important;
+  height: 50px !important;
+  border-radius: 5px !important;
+}
+
+/* Custom Google button if you want full control */
+.custom-google-button {
+  width: 100%;
+  height: 50px;
+  border: 1px solid #dadce0;
+  border-radius: 5px;
+  background: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  color: #3c4043;
+  text-decoration: none;
+}
+
+.custom-google-button:hover {
+  box-shadow: 0 1px 2px 0 rgba(60, 64, 67, 0.30), 0 1px 3px 1px rgba(60, 64, 67, 0.15);
+  border-color: #dadce0;
+  color: #3c4043;
+  text-decoration: none;
+}
+
+.custom-google-button:focus {
+  outline: none;
+  box-shadow: 0 1px 2px 0 rgba(60, 64, 67, 0.30), 0 1px 3px 1px rgba(60, 64, 67, 0.15);
+}
+
+.google-icon {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
+/* Social buttons container styling */
+.social-buttons-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.social-button {
+  width: 100%;
+  height: 50px;
+  border: 1px solid #dadce0;
+  border-radius: 5px;
+  background: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  color: #3c4043;
+  text-decoration: none;
+}
+
+.social-button:hover {
+  box-shadow: 0 1px 2px 0 rgba(60, 64, 67, 0.30), 0 1px 3px 1px rgba(60, 64, 67, 0.15);
+  color: #3c4043;
+  text-decoration: none;
+}
+
+.social-icon {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
 /* Notification Toast Styles */
 .notification-toast {
   position: fixed;
