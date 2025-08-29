@@ -512,7 +512,7 @@ export default function LoginPage() {
                       <input 
                         type="email"
                         className="form-control px-0 py-2"
-                        placeholder="name@example.com"
+                        placeholder="name@180dc.com"
                         value={registerEmail} 
                         onChange={(e) => setRegisterEmail(e.target.value)}
                         style={{ 
@@ -610,7 +610,7 @@ export default function LoginPage() {
                 <div className="text-center">
                   <span className="text-muted small">Already have an account? </span>
                   <a 
-                    className="text-dark text-decoration-none fw-medium small"
+                    className="text-dark fw-medium small sign-in-link"
                     style={{ cursor: 'pointer' }}
                     onClick={(e) => {
                       e.preventDefault()
