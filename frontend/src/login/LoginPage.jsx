@@ -32,7 +32,19 @@ export default function LoginPage() {
   const [registerPassword, setRegisterPassword] = useState('');
   const [showRegisterPassword, setShowRegisterPassword] = useState(false);
   
+  // Notification state
+  const [notification, setNotification] = useState({ show: false, message: '', type: '' });
+  
   const navigate = useNavigate();
+
+  // Show notification function
+  const showNotification = (message, type = 'success') => {
+    setNotification({ show: true, message, type });
+    // Auto-hide after 4 seconds
+    setTimeout(() => {
+      setNotification({ show: false, message: '', type: '' });
+    }, 4000);
+  };
 
   function validateLoginForm(checkEmail, checkPassword) {
     if (!checkEmail || !checkPassword) {
@@ -49,7 +61,7 @@ export default function LoginPage() {
     try {
       const error = validateLoginForm(user, pass);
       if (error) {
-        alert(error);
+        showNotification(error, 'error');
         return;
       }
 
@@ -77,20 +89,20 @@ export default function LoginPage() {
       if (response.ok) {
         console.log("Login successful, storing token and navigating...");
         localStorage.setItem("token", data.access_token);
-        alert("Login successful! Redirecting...");
-        navigate('/email');
+        showNotification("Login successful! Redirecting...", 'success');
+        setTimeout(() => navigate('/email'), 1500); // Delay navigation to show notification
         return data;
       } else if (response.status === 401) {
-        alert("Invalid email or password");
+        showNotification("Invalid email or password", 'error');
         throw new Error(data.detail);
       } else {
-        alert(`Login failed: ${data.detail || 'Unknown error'}`);
+        showNotification(`Login failed: ${data.detail || 'Unknown error'}`, 'error');
         throw new Error(data.detail);
       }
     } catch (error) {
       console.error("Login error:", error);
       if (!error.message.includes("Invalid email or password")) {
-        alert(`Login failed: ${error.message}`);
+        showNotification(`Login failed: ${error.message}`, 'error');
       }
     }
   }
@@ -113,7 +125,7 @@ export default function LoginPage() {
     try {
       const error = validateRegisterForm(register_email, pass, first_name, last_name);
       if (error) {
-        alert(error);
+        showNotification(error, 'error');
         return;
       }
 
@@ -140,7 +152,7 @@ export default function LoginPage() {
       console.log("Registration response:", response.status, data);
     
       if (response.ok) {
-        alert("Account created successfully! Logging you in...");
+        showNotification("Account created successfully! Logging you in...", 'success');
         
         // Automatically log in the user
         const loginFormData = new URLSearchParams();
@@ -161,19 +173,19 @@ export default function LoginPage() {
 
         if (loginResponse.ok) {
           localStorage.setItem("token", loginData.access_token);
-          navigate('/email');
+          setTimeout(() => navigate('/email'), 1500); // Delay navigation to show notification
         } else {
-          alert("Account created, but failed to log in automatically. Please log in manually.");
-          navigate('/login');
+          showNotification("Account created, but failed to log in automatically. Please log in manually.", 'error');
+          setTimeout(() => navigate('/login'), 1500);
         }
         return data;
       } else {
-        alert(`Registration failed: ${data.detail || 'Unknown error'}`);
+        showNotification(`Registration failed: ${data.detail || 'Unknown error'}`, 'error');
         throw new Error(data.detail);
       }
     } catch (error) {
       console.error("Registration error:", error);
-      alert(`Registration failed: ${error.message}`);
+      showNotification(`Registration failed: ${error.message}`, 'error');
     }
   }
 
@@ -215,6 +227,27 @@ export default function LoginPage() {
 
   return (
     <div className="min-vh-100" style={{ backgroundColor: '#f7f7f7' }}>
+      {/* Notification Toast */}
+      {notification.show && (
+        <div className={`notification-toast ${notification.type}`}>
+          <div className="notification-content">
+            <div className="notification-icon">
+              {notification.type === 'success' ? (
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="20,6 9,17 4,12"/>
+                </svg>
+              ) : (
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="12" r="10"/>
+                  <line x1="15" y1="9" x2="9" y2="15"/>
+                  <line x1="9" y1="9" x2="15" y2="15"/>
+                </svg>
+              )}
+            </div>
+            <span className="notification-message">{notification.message}</span>
+          </div>
+        </div>
+      )}
       {/* Header with create account */}
       <div className="d-flex justify-content-end align-items-center p-4">
         <button 
@@ -238,11 +271,13 @@ export default function LoginPage() {
                 {/* Logo and Title */}
                 <div className="text-center mb-5">
                   <div className="mb-4">
-                    <svg width="50" height="50" viewBox="0 0 100 100" className="mb-3 logo-animation">
-                      <circle cx="50" cy="50" r="45" fill="#000" stroke="#000" strokeWidth="2"/>
-                      <text x="50" y="40" textAnchor="middle" fill="#fff" fontSize="24" fontWeight="bold" fontFamily="Arial, sans-serif">180</text>
-                      <text x="50" y="65" textAnchor="middle" fill="#fff" fontSize="12" fontWeight="normal" fontFamily="Arial, sans-serif">CONNECT</text>
-                    </svg>
+                    <img 
+                      src="/connectlogo.png" 
+                      alt="180Connect Logo" 
+                      width="200" 
+                      height="" 
+                      className="mb-3 logo-animation"
+                    />
                   </div>
                   <h1 className="css-1llmlc0 mb-5">Log into 180Connect</h1>
                 </div>
@@ -382,11 +417,13 @@ export default function LoginPage() {
                 {/* Logo and Title */}
                 <div className="text-center mb-5">
                   <div className="mb-4">
-                    <svg width="50" height="50" viewBox="0 0 100 100" className="mb-3 logo-animation">
-                      <circle cx="50" cy="50" r="45" fill="#000" stroke="#000" strokeWidth="2"/>
-                      <text x="50" y="40" textAnchor="middle" fill="#fff" fontSize="24" fontWeight="bold" fontFamily="Arial, sans-serif">180</text>
-                      <text x="50" y="65" textAnchor="middle" fill="#fff" fontSize="12" fontWeight="normal" fontFamily="Arial, sans-serif">CONNECT</text>
-                    </svg>
+                    <img 
+                      src="/connectlogo.png" 
+                      alt="180Connect Logo" 
+                      width="50" 
+                      height="50" 
+                      className="mb-3 logo-animation"
+                    />
                   </div>
                   <h1 className="css-1llmlc0 mb-5">Create your 180Connect account</h1>
                 </div>
