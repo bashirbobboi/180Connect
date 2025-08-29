@@ -13,6 +13,8 @@ import { useNavigate } from 'react-router-dom';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
+console.log("LoginPage API_URL:", API_URL);
+
 export default function LoginPage() {
   // Authentication form state
   const [createAccount, setCreateAccount] = useState(false);
@@ -41,38 +43,52 @@ export default function LoginPage() {
   }
   
   async function login(user, pass) {
-    const error = validateLoginForm(user, pass);
-    if (error) {
-      alert(error);
-      return;
-    }
+    try {
+      const error = validateLoginForm(user, pass);
+      if (error) {
+        alert(error);
+        return;
+      }
 
-    const formData = new URLSearchParams();
-    formData.append("email", user);
-    formData.append("password", pass);
-  
-    const response = await fetch(`${API_URL}/token`, {
-      method: "POST",
-      body: formData,
-      headers: {
-        "accept": "application/json",
-        "Content-Type": "application/x-www-form-urlencoded",
-      },
-    });
+      console.log("Starting login for:", user);
+
+      const formData = new URLSearchParams();
+      formData.append("email", user);
+      formData.append("password", pass);
     
-    console.log(response)
-    const data = await response.json();
-  
-    if (response.ok) {
-      localStorage.setItem("token", data.access_token);
-      navigate('/email')
-      return data;
-    } else if (response.status === 401) {
-      alert("Invalid email or password");
-      throw new Error(data.detail);
-    }
-    else {
-      throw new Error(data.detail);
+      console.log("Sending login request to:", `${API_URL}/token`);
+      
+      const response = await fetch(`${API_URL}/token`, {
+        method: "POST",
+        body: formData,
+        headers: {
+          "accept": "application/json",
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+      });
+      
+      console.log("Login response status:", response.status);
+      const data = await response.json();
+      console.log("Login response data:", data);
+    
+      if (response.ok) {
+        console.log("Login successful, storing token and navigating...");
+        localStorage.setItem("token", data.access_token);
+        alert("Login successful! Redirecting...");
+        navigate('/email');
+        return data;
+      } else if (response.status === 401) {
+        alert("Invalid email or password");
+        throw new Error(data.detail);
+      } else {
+        alert(`Login failed: ${data.detail || 'Unknown error'}`);
+        throw new Error(data.detail);
+      }
+    } catch (error) {
+      console.error("Login error:", error);
+      if (!error.message.includes("Invalid email or password")) {
+        alert(`Login failed: ${error.message}`);
+      }
     }
   }
 
@@ -91,56 +107,70 @@ export default function LoginPage() {
   }
 
   async function register(register_email, pass, first_name, last_name) {
-    const error = validateRegisterForm(register_email, pass, first_name, last_name);
-    if (error) {
-      alert(error);
-      return;
-    }
+    try {
+      const error = validateRegisterForm(register_email, pass, first_name, last_name);
+      if (error) {
+        alert(error);
+        return;
+      }
 
-    const formData = new URLSearchParams();
-    formData.append("email", register_email);
-    formData.append("password", pass);
-    formData.append("first_name", first_name);
-    formData.append("last_name", last_name);
-  
-    const response = await fetch(`${API_URL}/register`, {
-      method: "POST",
-      body: formData,
-      headers: {
-        "accept": "application/json",
-        "Content-Type": "application/x-www-form-urlencoded"
-      },
-    });
-  
-    const data = await response.json();
-  
-    if (response.ok) {
-      // Automatically log in the user
-      const loginFormData = new URLSearchParams();
-      loginFormData.append("email", register_email);
-      loginFormData.append("password", pass);
+      console.log("Starting registration for:", register_email);
 
-      const loginResponse = await fetch(`${API_URL}/token`, {
+      const formData = new URLSearchParams();
+      formData.append("email", register_email);
+      formData.append("password", pass);
+      formData.append("first_name", first_name);
+      formData.append("last_name", last_name);
+    
+      console.log("Sending registration request to:", `${API_URL}/register`);
+      
+      const response = await fetch(`${API_URL}/register`, {
         method: "POST",
-        body: loginFormData,
+        body: formData,
         headers: {
           "accept": "application/json",
-          "Content-Type": "application/x-www-form-urlencoded",
+          "Content-Type": "application/x-www-form-urlencoded"
         },
       });
+    
+      const data = await response.json();
+      console.log("Registration response:", response.status, data);
+    
+      if (response.ok) {
+        alert("Account created successfully! Logging you in...");
+        
+        // Automatically log in the user
+        const loginFormData = new URLSearchParams();
+        loginFormData.append("email", register_email);
+        loginFormData.append("password", pass);
 
-      const loginData = await loginResponse.json();
+        const loginResponse = await fetch(`${API_URL}/token`, {
+          method: "POST",
+          body: loginFormData,
+          headers: {
+            "accept": "application/json",
+            "Content-Type": "application/x-www-form-urlencoded",
+          },
+        });
 
-      if (loginResponse.ok) {
-        localStorage.setItem("token", loginData.access_token);
-        navigate('/email'); // or '/' or wherever you want
+        const loginData = await loginResponse.json();
+        console.log("Login response:", loginResponse.status, loginData);
+
+        if (loginResponse.ok) {
+          localStorage.setItem("token", loginData.access_token);
+          navigate('/email');
+        } else {
+          alert("Account created, but failed to log in automatically. Please log in manually.");
+          navigate('/login');
+        }
+        return data;
       } else {
-        alert("Account created, but failed to log in automatically. Please log in manually.");
-        navigate('/login');
+        alert(`Registration failed: ${data.detail || 'Unknown error'}`);
+        throw new Error(data.detail);
       }
-      return data;
-    } else {
-      throw new Error(data.detail);
+    } catch (error) {
+      console.error("Registration error:", error);
+      alert(`Registration failed: ${error.message}`);
     }
   }
 

@@ -23,61 +23,105 @@ async def render_get_all_db_clients(
         authorization: str = Header(...)
     ):
     """Retrieve the list of clients from the database."""
-    pool = request.app.state.db
-
-    async with pool.acquire() as conn:
-        try:
-            token_value = authorization.replace("Bearer ", "")
-            token = await verify_token(token_value, conn)
-
-            if not token:
-                return {"message": "Invalid token.", "results": []}
-            
-            # Use fetch to get all company records joined with their source name
-            companies = await conn.fetch(
-                """
-                SELECT 
-                    companies.id,
-                    companies.name,
-                    companies.status,
-                    companies.company_type,
-                    companies.address,
-                    companies.city,
-                    companies.region,
-                    companies.email,
-                    companies.postcode,
-                    companies.website,
-                    companies.activities,
-                    sources.name AS source_name
-                FROM companies
-                LEFT JOIN sources ON companies.source_id = sources.id
-                ORDER BY companies.name;
-                """
-            )
-            
-            if not companies:
-                return {"message": "Database empty.", "results": []}
+    # Check if using SQLite or PostgreSQL
+    if hasattr(request.app.state, 'SessionLocal'):
+        # SQLite/SQLAlchemy approach
+        from models import Company, Source, Token, User
+        SessionLocal = request.app.state.SessionLocal
+        
+        with SessionLocal() as db:
+            try:
+                token_value = authorization.replace("Bearer ", "")
                 
-            return [
-                {
-                    "id": c["id"],
-                    "name": c["name"],
-                    "status": c["status"],
-                    "company_type": c["company_type"],
-                    "address": c["address"],
-                    "city": c["city"],
-                    "region": c["region"],
-                    "email": c["email"],
-                    "postcode": c["postcode"],
-                    "website": c["website"],
-                    "activities": c["activities"],
-                    "source": c["source_name"]
-                }
-                for c in companies
-            ]
-            
-        except Exception as e:
-            raise HTTPException(status_code=500, detail=f"An error occurred: {str(e)}")
+                # Verify token using SQLAlchemy
+                from routes.token_routes import verify_token_sqlite
+                token = verify_token_sqlite(token_value, db)
+                if not token:
+                    return {"message": "Invalid token.", "results": []}
+                
+                # Get all companies with their sources
+                companies = db.query(Company, Source.name.label('source_name')).outerjoin(Source).order_by(Company.name).all()
+                
+                if not companies:
+                    return {"message": "Database empty.", "results": []}
+                    
+                return [
+                    {
+                        "id": company.id,
+                        "name": company.name,
+                        "status": company.status,
+                        "company_type": company.company_type,
+                        "address": company.address,
+                        "city": company.city,
+                        "region": company.region,
+                        "email": company.email,
+                        "postcode": company.postcode,
+                        "website": company.website,
+                        "activities": company.activities,
+                        "source": source_name or "Unknown"
+                    }
+                    for company, source_name in companies
+                ]
+                
+            except Exception as e:
+                raise HTTPException(status_code=500, detail=f"An error occurred: {str(e)}")
+    else:
+        # PostgreSQL/asyncpg approach
+        pool = request.app.state.db
+
+        async with pool.acquire() as conn:
+            try:
+                token_value = authorization.replace("Bearer ", "")
+                token = await verify_token(token_value, conn)
+
+                if not token:
+                    return {"message": "Invalid token.", "results": []}
+                
+                # Use fetch to get all company records joined with their source name
+                companies = await conn.fetch(
+                    """
+                    SELECT 
+                        companies.id,
+                        companies.name,
+                        companies.status,
+                        companies.company_type,
+                        companies.address,
+                        companies.city,
+                        companies.region,
+                        companies.email,
+                        companies.postcode,
+                        companies.website,
+                        companies.activities,
+                        sources.name AS source_name
+                    FROM companies
+                    LEFT JOIN sources ON companies.source_id = sources.id
+                    ORDER BY companies.name;
+                    """
+                )
+                
+                if not companies:
+                    return {"message": "Database empty.", "results": []}
+                    
+                return [
+                    {
+                        "id": c["id"],
+                        "name": c["name"],
+                        "status": c["status"],
+                        "company_type": c["company_type"],
+                        "address": c["address"],
+                        "city": c["city"],
+                        "region": c["region"],
+                        "email": c["email"],
+                        "postcode": c["postcode"],
+                        "website": c["website"],
+                        "activities": c["activities"],
+                        "source": c["source_name"]
+                    }
+                    for c in companies
+                ]
+                
+            except Exception as e:
+                raise HTTPException(status_code=500, detail=f"An error occurred: {str(e)}")
 
 @router.get("/clients/{company_id}")
 async def get_company(
@@ -512,48 +556,108 @@ async def add_client(
     authorization: str = Header(...),
 ):
     """Add a new client to the database."""
-    pool = request.app.state.db
+    # Check if using SQLite or PostgreSQL
+    if hasattr(request.app.state, 'SessionLocal'):
+        # SQLite/SQLAlchemy approach
+        from models import Company, User
+        from routes.token_routes import verify_token_sqlite
+        SessionLocal = request.app.state.SessionLocal
+        
+        with SessionLocal() as db:
+            try:
+                # Verify token and user
+                token_value = authorization.replace("Bearer ", "")
+                token = verify_token_sqlite(token_value, db)
+                if not token:
+                    raise HTTPException(status_code=401, detail="Invalid token")
+                
+                user = db.query(User).filter(User.id == token.user_id).first()
+                if not user:
+                    raise HTTPException(status_code=401, detail="Invalid user")
 
-    async with pool.acquire() as conn:
-        try:
-            # Verify token and user
-            token_value = authorization.replace("Bearer ", "")
-            token = await verify_token(token_value, conn)
-            _ = await get_render_user_from_uid(conn, token["user_id"])
-
-            # Insert new company
-            inserted = await conn.fetchrow(
-                """
-                INSERT INTO companies (
-                    name, status, company_type, address, email, postcode,
-                    city, region, website, activities
+                # Insert new company
+                new_company = Company(
+                    name=client_data.name,
+                    status=client_data.status,
+                    company_type=client_data.company_type,
+                    address=client_data.address,
+                    email=client_data.email,
+                    postcode=client_data.postcode,
+                    city=client_data.city,
+                    region=client_data.region,
+                    website=client_data.website,
+                    activities=client_data.activities
                 )
-                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
-                RETURNING id, name, status, company_type, address, email,
-                          postcode, city, region, website, activities;
-                """,
-                client_data.name,
-                client_data.status,
-                client_data.company_type,
-                client_data.address,
-                client_data.email,
-                client_data.postcode,
-                client_data.city,
-                client_data.region,
-                client_data.website,
-                client_data.activities
-            )
+                db.add(new_company)
+                db.commit()
+                db.refresh(new_company)
 
-            return {
-                "message": "Client added successfully",
-                "client": dict(inserted)
-            }
+                return {
+                    "message": "Client added successfully",
+                    "client": {
+                        "id": new_company.id,
+                        "name": new_company.name,
+                        "status": new_company.status,
+                        "company_type": new_company.company_type,
+                        "address": new_company.address,
+                        "email": new_company.email,
+                        "postcode": new_company.postcode,
+                        "city": new_company.city,
+                        "region": new_company.region,
+                        "website": new_company.website,
+                        "activities": new_company.activities
+                    }
+                }
 
-        except Exception as e:
-            raise HTTPException(
-                status_code=500,
-                detail=f"Failed to add client: {str(e)}"
-            )
+            except Exception as e:
+                raise HTTPException(
+                    status_code=500,
+                    detail=f"Failed to add client: {str(e)}"
+                )
+    else:
+        # PostgreSQL/asyncpg approach
+        pool = request.app.state.db
+
+        async with pool.acquire() as conn:
+            try:
+                # Verify token and user
+                token_value = authorization.replace("Bearer ", "")
+                token = await verify_token(token_value, conn)
+                _ = await get_render_user_from_uid(conn, token["user_id"])
+
+                # Insert new company
+                inserted = await conn.fetchrow(
+                    """
+                    INSERT INTO companies (
+                        name, status, company_type, address, email, postcode,
+                        city, region, website, activities
+                    )
+                    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+                    RETURNING id, name, status, company_type, address, email,
+                              postcode, city, region, website, activities;
+                    """,
+                    client_data.name,
+                    client_data.status,
+                    client_data.company_type,
+                    client_data.address,
+                    client_data.email,
+                    client_data.postcode,
+                    client_data.city,
+                    client_data.region,
+                    client_data.website,
+                    client_data.activities
+                )
+
+                return {
+                    "message": "Client added successfully",
+                    "client": dict(inserted)
+                }
+
+            except Exception as e:
+                raise HTTPException(
+                    status_code=500,
+                    detail=f"Failed to add client: {str(e)}"
+                )
 
 @router.put("/clients/{client_id}")
 async def update_client(

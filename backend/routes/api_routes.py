@@ -20,22 +20,49 @@ async def register_user(
     first_name: str = Form(...),
     last_name: str = Form(...),
 ):
-    pool = request.app.state.db
-
-    async with pool.acquire() as conn:
-        user = await pool.fetchrow("SELECT * FROM users WHERE email = $1 LIMIT 1", email)
-        if user:
-            raise HTTPException(status_code=400, detail="User already exists")
+    # Check if using SQLite or PostgreSQL
+    if hasattr(request.app.state, 'SessionLocal'):
+        # SQLite/SQLAlchemy approach
+        from models import User
+        SessionLocal = request.app.state.SessionLocal
         
-        # Uses parameterised queries ($1, $2, etc.) to prevent SQL injection.
-        query = """
-            INSERT INTO users (email, password, first_name, last_name, is_google_user, profile_picture, profile_picture_type)
-            VALUES ($1, $2, $3, $4, FALSE, NULL, NULL)
-            RETURNING *;
-        """
-        new_user = await pool.fetchrow(query, email, password, first_name, last_name)
-        if not new_user:
-            raise HTTPException(status_code=400, detail="An error occurred")
+        with SessionLocal() as db:
+            # Check if user already exists
+            existing_user = db.query(User).filter(User.email == email).first()
+            if existing_user:
+                raise HTTPException(status_code=400, detail="User already exists")
+            
+            # Create new user
+            new_user = User(
+                email=email,
+                password=password,
+                first_name=first_name,
+                last_name=last_name,
+                is_google_user=False
+            )
+            db.add(new_user)
+            db.commit()
+            db.refresh(new_user)
+            
+            return {"message": "User created"}
+    else:
+        # PostgreSQL/asyncpg approach
+        pool = request.app.state.db
         
-        return {"message": "User created"}
+        async with pool.acquire() as conn:
+            user = await conn.fetchrow("SELECT * FROM users WHERE email = $1 LIMIT 1", email)
+            if user:
+                raise HTTPException(status_code=400, detail="User already exists")
+            
+            # Uses parameterised queries ($1, $2, etc.) to prevent SQL injection.
+            query = """
+                INSERT INTO users (email, password, first_name, last_name, is_google_user, profile_picture, profile_picture_type)
+                VALUES ($1, $2, $3, $4, FALSE, NULL, NULL)
+                RETURNING *;
+            """
+            new_user = await conn.fetchrow(query, email, password, first_name, last_name)
+            if not new_user:
+                raise HTTPException(status_code=400, detail="An error occurred")
+            
+            return {"message": "User created"}
     

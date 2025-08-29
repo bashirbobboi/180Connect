@@ -14,6 +14,7 @@ from config import GMAIL_SENDER, GMAIL_APP_PASSWORD
 router = APIRouter(prefix="")
 
 async def verify_token(token_value: str, conn):
+    """PostgreSQL version of verify_token - for backward compatibility"""
     token = await conn.fetchrow(
         "SELECT * FROM tokens WHERE token = $1 LIMIT 1", token_value
     )
@@ -23,6 +24,21 @@ async def verify_token(token_value: str, conn):
 
     if token_expiry >= current_time:
         return token
+
+def verify_token_sqlite(token_value: str, db):
+    """SQLite version of verify_token"""
+    from models import Token
+    token = db.query(Token).filter(Token.token == token_value).first()
+    
+    if not token:
+        return None
+    
+    current_time = datetime.now(timezone.utc)
+    token_expiry = token.expires_at.replace(tzinfo=timezone.utc)
+    
+    if token_expiry >= current_time:
+        return token
+    return None
 
 async def get_render_user_from_uid(conn, id: int):
     if not conn:
@@ -37,30 +53,55 @@ async def render_login_user(
     email: str = Form(...),
     password: str = Form(...),
 ):
-    pool = request.app.state.db
+    # Check if using SQLite or PostgreSQL
+    if hasattr(request.app.state, 'SessionLocal'):
+        # SQLite/SQLAlchemy approach
+        from models import User, Token
+        SessionLocal = request.app.state.SessionLocal
+        
+        with SessionLocal() as db:
+            user = db.query(User).filter(User.email == email).first()
+            if not user or user.password != password:
+                raise HTTPException(status_code=401, detail="Invalid email or password")
 
-    async with pool.acquire() as conn:
-        user = await conn.fetchrow(
-            "SELECT * FROM users WHERE email = $1 LIMIT 1", email
-        )
-        if not user or user["password"] != password:
-            raise HTTPException(status_code=401, detail="Invalid email or password")
+            raw_token = secrets.token_hex(32)
+            expiry_time = datetime.now(timezone.utc) + timedelta(hours=1)
 
-        raw_token = secrets.token_hex(32)
-        expiry_time = (datetime.now(timezone.utc) + timedelta(hours=1)).replace(tzinfo=None)
+            new_token = Token(
+                token=raw_token,
+                user_id=user.id,
+                expires_at=expiry_time
+            )
+            db.add(new_token)
+            db.commit()
 
-        inserted_token = await conn.fetchrow(
-            """
-            INSERT INTO tokens (token, user_id, expires_at)
-            VALUES ($1, $2, $3)
-            RETURNING token;
-            """,
-            raw_token,
-            user["id"],
-            expiry_time,
-        )
+            return {"access_token": raw_token, "token_type": "bearer"}
+    else:
+        # PostgreSQL/asyncpg approach
+        pool = request.app.state.db
 
-    return {"access_token": inserted_token["token"], "token_type": "bearer"}
+        async with pool.acquire() as conn:
+            user = await conn.fetchrow(
+                "SELECT * FROM users WHERE email = $1 LIMIT 1", email
+            )
+            if not user or user["password"] != password:
+                raise HTTPException(status_code=401, detail="Invalid email or password")
+
+            raw_token = secrets.token_hex(32)
+            expiry_time = (datetime.now(timezone.utc) + timedelta(hours=1)).replace(tzinfo=None)
+
+            inserted_token = await conn.fetchrow(
+                """
+                INSERT INTO tokens (token, user_id, expires_at)
+                VALUES ($1, $2, $3)
+                RETURNING token;
+                """,
+                raw_token,
+                user["id"],
+                expiry_time,
+            )
+
+        return {"access_token": inserted_token["token"], "token_type": "bearer"}
 
 @router.post("/logout")
 async def logout_user(
@@ -89,60 +130,128 @@ async def render_get_user_profile(
     request: Request,
     authorization: str = Header(...)
 ):  
-    pool = request.app.state.db
-    async with pool.acquire() as conn:
-        try:
-            token_value = authorization.replace("Bearer ", "")
-            token = await verify_token(token_value, conn)
-            
-            user = await get_render_user_from_uid(conn, token["user_id"])
-            
-            user_data = {
-                "email": user["email"],
-                "first_name": user["first_name"],
-                "last_name": user["last_name"],
-                "is_google_user": user["is_google_user"]
-            }
-            
-            if user["profile_picture"]:
-                user_data["profile_picture"] = {
-                    "data": base64.b64encode(user["profile_picture"]).decode(),
-                    "type": user["profile_picture_type"]
+    # Check if using SQLite or PostgreSQL
+    if hasattr(request.app.state, 'SessionLocal'):
+        # SQLite/SQLAlchemy approach
+        from models import User
+        SessionLocal = request.app.state.SessionLocal
+        
+        with SessionLocal() as db:
+            try:
+                token_value = authorization.replace("Bearer ", "")
+                token = verify_token_sqlite(token_value, db)
+                if not token:
+                    raise HTTPException(status_code=401, detail="Invalid token")
+                
+                user = db.query(User).filter(User.id == token.user_id).first()
+                if not user:
+                    raise HTTPException(status_code=404, detail="User not found")
+                
+                user_data = {
+                    "email": user.email,
+                    "first_name": user.first_name,
+                    "last_name": user.last_name,
+                    "is_google_user": user.is_google_user
                 }
                 
-            return {"user": user_data}
-        except HTTPException as e:
-            raise e 
-        except Exception as e:
-            raise HTTPException(status_code=500, detail=str(e))
+                if user.profile_picture:
+                    user_data["profile_picture"] = {
+                        "data": base64.b64encode(user.profile_picture).decode(),
+                        "type": user.profile_picture_type
+                    }
+                    
+                return {"user": user_data}
+            except HTTPException as e:
+                raise e 
+            except Exception as e:
+                raise HTTPException(status_code=500, detail=str(e))
+    else:
+        # PostgreSQL/asyncpg approach
+        pool = request.app.state.db
+        async with pool.acquire() as conn:
+            try:
+                token_value = authorization.replace("Bearer ", "")
+                token = await verify_token(token_value, conn)
+                
+                user = await get_render_user_from_uid(conn, token["user_id"])
+                
+                user_data = {
+                    "email": user["email"],
+                    "first_name": user["first_name"],
+                    "last_name": user["last_name"],
+                    "is_google_user": user["is_google_user"]
+                }
+                
+                if user["profile_picture"]:
+                    user_data["profile_picture"] = {
+                        "data": base64.b64encode(user["profile_picture"]).decode(),
+                        "type": user["profile_picture_type"]
+                    }
+                    
+                return {"user": user_data}
+            except HTTPException as e:
+                raise e 
+            except Exception as e:
+                raise HTTPException(status_code=500, detail=str(e))
     
 @router.get("/validate-token")
 async def render_valid_token(
     request: Request,
     authorization: str = Header(...),
 ):
-    pool = request.app.state.db
+    # Check if using SQLite or PostgreSQL
+    if hasattr(request.app.state, 'SessionLocal'):
+        # SQLite/SQLAlchemy approach
+        from models import User
+        SessionLocal = request.app.state.SessionLocal
+        
+        with SessionLocal() as db:
+            try:
+                token_value = authorization.replace("Bearer ", "")
+                token = verify_token_sqlite(token_value, db)
 
-    async with pool.acquire() as conn:
-        token_value = authorization.replace("Bearer ", "")
-        token = await verify_token(token_value, conn)
+                if not token:
+                    raise HTTPException(status_code=401, detail="Invalid token")
 
-        if not token:
-            raise HTTPException(status_code=401, detail="Invalid token")
+                current_time = datetime.now(timezone.utc)
+                token_expiry = token.expires_at.replace(tzinfo=timezone.utc)
 
-        current_time = datetime.now(timezone.utc)
-        token_expiry = token["expires_at"].replace(tzinfo=timezone.utc)
+                if token_expiry < current_time:
+                    raise HTTPException(status_code=401, detail="Token expired")
 
-        if token_expiry < current_time:
-            raise HTTPException(status_code=401, detail="Token expired")
+                user = db.query(User).filter(User.id == token.user_id).first()
+                if not user:
+                    raise HTTPException(status_code=404, detail="User not found")
+                    
+                return {"detail": "Token is valid", "user": user.email}
+            except HTTPException as e:
+                raise e 
+            except Exception as e:
+                raise HTTPException(status_code=500, detail=str(e))
+    else:
+        # PostgreSQL/asyncpg approach
+        pool = request.app.state.db
 
-        try:
-            user = await get_render_user_from_uid(conn, token["user_id"])
-            return {"detail": "Token is valid", "user": user["email"]}
-        except HTTPException as e:
-            raise e 
-        except Exception as e:
-            raise HTTPException(status_code=500, detail=str(e))
+        async with pool.acquire() as conn:
+            try:
+                token_value = authorization.replace("Bearer ", "")
+                token = await verify_token(token_value, conn)
+
+                if not token:
+                    raise HTTPException(status_code=401, detail="Invalid token")
+
+                current_time = datetime.now(timezone.utc)
+                token_expiry = token["expires_at"].replace(tzinfo=timezone.utc)
+
+                if token_expiry < current_time:
+                    raise HTTPException(status_code=401, detail="Token expired")
+
+                user = await get_render_user_from_uid(conn, token["user_id"])
+                return {"detail": "Token is valid", "user": user["email"]}
+            except HTTPException as e:
+                raise e 
+            except Exception as e:
+                raise HTTPException(status_code=500, detail=str(e))
     
 class UserUpdate(BaseModel):
     first_name: Optional[str] = None
