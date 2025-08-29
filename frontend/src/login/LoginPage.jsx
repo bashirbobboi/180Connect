@@ -395,7 +395,20 @@ export default function LoginPage() {
                         </button>
                       </form>
 
-                      
+                      {/* Forgot Password Link */}
+                      <div className="text-center mb-4">
+                        <a 
+                          href="#"
+                          className="text-dark fw-medium small sign-in-link"
+                          style={{ cursor: 'pointer', fontSize: '12px' }}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            window.location.href = '/forgot-password';
+                          }}
+                        >
+                          Forgot password?
+                        </a>
+                      </div>
 
                       {/* Mobile OR divider */}
                       <div className="d-block d-md-none mt-5">

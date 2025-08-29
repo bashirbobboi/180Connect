@@ -29,21 +29,22 @@ async def render_get_all_db_clients(
         from models import Company, Source, Token, User
         SessionLocal = request.app.state.SessionLocal
         
+        # Verify token first, outside try block
+        token_value = authorization.replace("Bearer ", "")
+        
         with SessionLocal() as db:
             try:
-                token_value = authorization.replace("Bearer ", "")
-                
                 # Verify token using SQLAlchemy
                 from routes.token_routes import verify_token_sqlite
                 token = verify_token_sqlite(token_value, db)
                 if not token:
-                    return {"message": "Invalid token.", "results": []}
+                    return []  # Return empty array instead of raising exception
                 
                 # Get all companies with their sources
                 companies = db.query(Company, Source.name.label('source_name')).outerjoin(Source).order_by(Company.name).all()
                 
                 if not companies:
-                    return {"message": "Database empty.", "results": []}
+                    return []
                     
                 return [
                     {
@@ -64,7 +65,7 @@ async def render_get_all_db_clients(
                 ]
                 
             except Exception as e:
-                raise HTTPException(status_code=500, detail=f"An error occurred: {str(e)}")
+                raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
     else:
         # PostgreSQL/asyncpg approach
         pool = request.app.state.db
@@ -75,7 +76,7 @@ async def render_get_all_db_clients(
                 token = await verify_token(token_value, conn)
 
                 if not token:
-                    return {"message": "Invalid token.", "results": []}
+                    return []  # Return empty array instead of raising exception
                 
                 # Use fetch to get all company records joined with their source name
                 companies = await conn.fetch(
@@ -100,7 +101,7 @@ async def render_get_all_db_clients(
                 )
                 
                 if not companies:
-                    return {"message": "Database empty.", "results": []}
+                    return []
                     
                 return [
                     {
@@ -120,8 +121,11 @@ async def render_get_all_db_clients(
                     for c in companies
                 ]
                 
+            except HTTPException:
+                # Re-raise HTTP exceptions (like 401 for invalid token)
+                raise
             except Exception as e:
-                raise HTTPException(status_code=500, detail=f"An error occurred: {str(e)}")
+                raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
 
 @router.get("/clients/{company_id}")
 async def get_company(

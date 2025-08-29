@@ -455,27 +455,47 @@ def send_reset_email(email: str, link: str):
 
 @router.post("/request-password-reset")
 async def request_password_reset(request: Request, email: str = Form(...)):
-    pool = request.app.state.db
-    async with pool.acquire() as conn:
-        user = await conn.fetchrow("SELECT id FROM users WHERE email = $1", email)
-        if not user:
+    # Check if using SQLite or PostgreSQL
+    if hasattr(request.app.state, 'SessionLocal'):
+        # SQLite/SQLAlchemy approach
+        from models import User
+        SessionLocal = request.app.state.SessionLocal
+        
+        with SessionLocal() as db:
+            try:
+                user = db.query(User).filter(User.email == email).first()
+                if not user:
+                    return {"message": "If that email exists, a reset link has been sent."}
+
+                # For now, just return success message since we don't have password reset tokens table in SQLite
+                # In a real implementation, you'd need to create the password_reset_tokens table
+                return {"message": "Password reset functionality is not fully implemented for local development."}
+                
+            except Exception as e:
+                raise HTTPException(status_code=500, detail=f"Password reset failed: {str(e)}")
+    else:
+        # PostgreSQL/asyncpg approach
+        pool = request.app.state.db
+        async with pool.acquire() as conn:
+            user = await conn.fetchrow("SELECT id FROM users WHERE email = $1", email)
+            if not user:
+                return {"message": "If that email exists, a reset link has been sent."}
+
+            token = secrets.token_urlsafe(48)
+            expiry = (datetime.now(timezone.utc) + timedelta(hours=1)).replace(tzinfo=None)
+
+            await conn.execute("""
+                INSERT INTO password_reset_tokens (user_id, token, expires_at)
+                VALUES ($1, $2, $3)
+            """, user["id"], token, expiry)
+
+            # Send email with reset link
+            host = request.headers.get("host")
+            scheme = request.url.scheme
+            reset_link = f"https://180-connect.vercel.app/reset-password?token={token}"
+            send_reset_email(email, reset_link)
+
             return {"message": "If that email exists, a reset link has been sent."}
-
-        token = secrets.token_urlsafe(48)
-        expiry = (datetime.now(timezone.utc) + timedelta(hours=1)).replace(tzinfo=None)
-
-        await conn.execute("""
-            INSERT INTO password_reset_tokens (user_id, token, expires_at)
-            VALUES ($1, $2, $3)
-        """, user["id"], token, expiry)
-
-        # Send email with reset link
-        host = request.headers.get("host")
-        scheme = request.url.scheme
-        reset_link = f"https://180-connect.vercel.app/reset-password?token={token}"
-        send_reset_email(email, reset_link)
-
-        return {"message": "If that email exists, a reset link has been sent."}
     
 @router.post("/reset-password")
 async def reset_password(
@@ -483,23 +503,30 @@ async def reset_password(
     token: str = Form(...),
     new_password: str = Form(...)
 ):
-    pool = request.app.state.db
-    async with pool.acquire() as conn:
-        record = await conn.fetchrow("""
-            SELECT user_id, expires_at FROM password_reset_tokens
-            WHERE token = $1
-        """, token)
+    # Check if using SQLite or PostgreSQL
+    if hasattr(request.app.state, 'SessionLocal'):
+        # SQLite/SQLAlchemy approach
+        # For local development, password reset tokens are not implemented
+        raise HTTPException(status_code=400, detail="Password reset functionality is not available in local development")
+    else:
+        # PostgreSQL/asyncpg approach
+        pool = request.app.state.db
+        async with pool.acquire() as conn:
+            record = await conn.fetchrow("""
+                SELECT user_id, expires_at FROM password_reset_tokens
+                WHERE token = $1
+            """, token)
 
-        if not record or record["expires_at"].replace(tzinfo=timezone.utc) < datetime.now(timezone.utc):
-            raise HTTPException(status_code=400, detail="Invalid or expired token")
+            if not record or record["expires_at"].replace(tzinfo=timezone.utc) < datetime.now(timezone.utc):
+                raise HTTPException(status_code=400, detail="Invalid or expired token")
 
-        await conn.execute(
-            "UPDATE users SET password = $1 WHERE id = $2",
-            new_password,
-            record["user_id"]
-        )
+            await conn.execute(
+                "UPDATE users SET password = $1 WHERE id = $2",
+                new_password,
+                record["user_id"]
+            )
 
-        # Delete token
-        await conn.execute("DELETE FROM password_reset_tokens WHERE token = $1", token)
+            # Delete token
+            await conn.execute("DELETE FROM password_reset_tokens WHERE token = $1", token)
 
-        return {"message": "Password updated successfully"}
+            return {"message": "Password updated successfully"}

@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { useSearchParams, useNavigate } from "react-router-dom";
 import '../styles.less';
 import '../App.css';
+import '../login/LoginPage.css';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -36,8 +37,13 @@ export function ForgotPassword(){
       });
 
       if (res.ok) {
-        setEmail('');
-        setSent(true);
+        const data = await res.json();
+        if (data.message && data.message.includes("not fully implemented")) {
+          alert("Password reset is not available in local development mode. Please contact an administrator.");
+        } else {
+          setEmail('');
+          setSent(true);
+        }
       } else {
         const data = await res.json();
         alert(data.detail || "Reset failed.");
@@ -48,38 +54,108 @@ export function ForgotPassword(){
   };
 
   return (
-    <div className="bg-whites rounded-1 p-3 m-2" style={{ minHeight: '60vh' }}>
-      <div className="container py-4 h-100">
-        <div className="row justify-content-center h-100">
-          <div className="col-12 col-lg-10">
-            <div className="d-flex justify-content-center align-items-center h-100" style={{ minHeight: "60vh" }}>
+    <div className="min-vh-100 login-page">
+      {/* Header with logo and back to login button */}
+      <div className="d-flex justify-content-between align-items-center p-4">
+        {/* Logo in top left */}
+        <div>
+          <img 
+            src="/connectlogo.png" 
+            alt="180Connect Logo" 
+            width="200" 
+            height="" 
+          />
+        </div>
+        
+        {/* Back to login button */}
+        <button 
+          className="css-1uj0sxn create-account-hover"
+          onClick={(e) => {
+            e.preventDefault();
+            window.location.href = '/login';
+          }}
+        >
+          BACK TO LOGIN
+        </button>
+      </div>
+
+      <div className="d-flex justify-content-center align-items-center" style={{ minHeight: '80vh' }}>
+        <div className="container">
+          <div className="row justify-content-center">
+            <div className="col-12 col-lg-6 col-xl-5">
+              
               {sent ? (
-                <div className='w-50 bg-light px-3 pb-3 rounded-1 border border-black shadow-sm'>
-                  <h2 className="border-bottom py-2">Email sent</h2>
-                  <p>
-                    An email with instructions on how to reset your password has been sent to the provided email address. Check your spam or junk folder, if you don't see the email in your inbox.
-                  </p>
+                <div className="text-center">
+                  <h1 className="css-1llmlc0 mb-4">Email Sent</h1>
+                  <div className="bg-white p-4 rounded" style={{ border: '1px solid #e0e0e0' }}>
+                    <p className="mb-0">
+                      An email with instructions on how to reset your password has been sent to <strong>{email}</strong>. 
+                      Check your spam or junk folder if you don't see the email in your inbox.
+                    </p>
+                  </div>
                 </div>
               ) : (
-                <form className="row g-3 w-50 bg-light px-3 pb-3 rounded-1 border border-black shadow-sm" onSubmit={handleRequestPasswordReset}>
-                  <h2 className="border-bottom pb-2">Reset your password</h2>
-                  <div className="col-12">
-                    <input
-                      type="email"
-                      placeholder="Email address"
-                      className="form-control border-black rounded-1"
-                      id="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                    />
-                    <div className="form-text">We will send you an email with instructions on how to reset your password.</div>
+                <>
+                  {/* Title */}
+                  <div className="text-center mb-5">
+                    <h1 className="css-1llmlc0 mb-3">Forgot Password?</h1>
+                    <p className="text-muted">Enter your email address and we'll send you instructions to reset your password.</p>
                   </div>
 
-                  <div className="col-12 d-grid pt-3 pb-1">
-                    <button type="submit" className="btn btn-dark">Send email</button>
+                  {/* Forgot Password Form */}
+                  <form onSubmit={handleRequestPasswordReset}>
+                    <div className="mb-4">
+                      <label className="form-label text-uppercase text-muted small fw-medium mb-2" style={{ fontSize: '11px', letterSpacing: '1px' }}>
+                        EMAIL ADDRESS
+                      </label>
+                      <div className="input-container">
+                        <input 
+                          type="email"
+                          className="form-control px-0 py-2"
+                          placeholder="name@example.com"
+                          value={email} 
+                          onChange={(e) => setEmail(e.target.value)}
+                          style={{ 
+                            fontSize: '16px',
+                            boxShadow: 'none'
+                          }}
+                          required
+                        />
+                      </div>
+                    </div>
+
+                    <button 
+                      type="submit"
+                      className="btn w-100 py-3 mb-4"
+                      style={{ 
+                        backgroundColor: email ? '#000' : '#e5e5e5',
+                        color: email ? '#fff' : '#999',
+                        fontSize: '14px',
+                        fontWeight: '500',
+                        letterSpacing: '1px',
+                        textTransform: 'uppercase',
+                        border: 'none',
+                        borderRadius: '5px'
+                      }}
+                      disabled={!email}
+                    >
+                      SEND RESET EMAIL
+                    </button>
+                  </form>
+
+                  <div className="text-center">
+                    <span className="text-muted small">Remember your password? </span>
+                    <a 
+                      className="text-dark fw-medium small sign-in-link"
+                      style={{ cursor: 'pointer' }}
+                      onClick={() => window.location.href = '/login'}
+                    >
+                      Sign in
+                    </a>
                   </div>
-                </form>
+                </>
               )}
+              
             </div>
           </div>
         </div>
@@ -137,58 +213,159 @@ export default function ResetPasswordPage() {
   };
 
   return (
-    <div className="bg-whites rounded-1 p-3 m-2" style={{ minHeight: '60vh' }}>
-      <div className="container py-4 h-100">
-        <div className="row justify-content-center h-100">
-          <div className="col-12 col-lg-10">
-            <div className="d-flex justify-content-center align-items-center h-100" style={{ minHeight: "60vh" }}>
+    <div className="min-vh-100 login-page">
+      {/* Header with logo and back to login button */}
+      <div className="d-flex justify-content-between align-items-center p-4">
+        {/* Logo in top left */}
+        <div>
+          <img 
+            src="/connectlogo.png" 
+            alt="180Connect Logo" 
+            width="200" 
+            height="" 
+          />
+        </div>
+        
+        {/* Back to login button */}
+        <button 
+          className="css-1uj0sxn create-account-hover"
+          onClick={(e) => {
+            e.preventDefault();
+            navigate('/login');
+          }}
+        >
+          BACK TO LOGIN
+        </button>
+      </div>
+
+      <div className="d-flex justify-content-center align-items-center" style={{ minHeight: '80vh' }}>
+        <div className="container">
+          <div className="row justify-content-center">
+            <div className="col-12 col-lg-6 col-xl-5">
+              
               {!token ? (
-                <div className='w-50'>
-                  <h2 className='mx-auto text-center'>Invalid or missing reset token</h2>
-                  <div className="col-12 d-grid pt-3 pb-1">
-                    <button className="btn btn-outline-dark mx-auto"
-                      onClick={() => navigate('/forgot-password')}
-                    >Request a new one</button>
-                  </div>
+                <div className="text-center">
+                  <h1 className="css-1llmlc0 mb-4">Invalid Reset Link</h1>
+                  <p className="text-muted mb-4">This password reset link is invalid or has expired.</p>
+                  <button 
+                    className="btn py-3 px-4"
+                    style={{ 
+                      backgroundColor: '#000',
+                      color: '#fff',
+                      fontSize: '14px',
+                      fontWeight: '500',
+                      letterSpacing: '1px',
+                      textTransform: 'uppercase',
+                      border: 'none',
+                      borderRadius: '5px'
+                    }}
+                    onClick={() => navigate('/forgot-password')}
+                  >
+                    REQUEST A NEW ONE
+                  </button>
                 </div>
               ) : (
-                <form className="row g-3 w-50 bg-light px-3 pb-3 rounded-1 border border-black shadow-sm" onSubmit={handlePasswordReset}>
-                <h2 className="border-bottom pb-2">Change your password</h2>
+                <>
+                  {/* Title */}
+                  <div className="text-center mb-5">
+                    <h1 className="css-1llmlc0 mb-3">Reset Password</h1>
+                    <p className="text-muted">Enter your new password below.</p>
+                  </div>
 
-                {errorMessage && <div className="alert alert-danger">{errorMessage}</div>}
-                {successMessage && <div className="alert alert-success">{successMessage}</div>}
+                  {/* Messages */}
+                  {errorMessage && (
+                    <div className="alert alert-danger mb-4" role="alert">
+                      {errorMessage}
+                    </div>
+                  )}
+                  {successMessage && (
+                    <div className="alert alert-success mb-4" role="alert">
+                      {successMessage}
+                    </div>
+                  )}
 
-                <div className="col-12">
-                  <label htmlFor="inputPassword1" className="form-label fs-5">New password</label>
-                  <input
-                    type="password"
-                    placeholder="Create a strong password"
-                    className="form-control border-black rounded-1"
-                    id="inputPassword1"
-                    value={newPassword}
-                    onChange={(e) => setNewPassword(e.target.value)}
-                  />
-                  <div className="form-text">Password should be at least 8 characters long.</div>
-                </div>
+                  {/* Reset Password Form */}
+                  <form onSubmit={handlePasswordReset}>
+                    <div className="mb-4">
+                      <label className="form-label text-uppercase text-muted small fw-medium mb-2" style={{ fontSize: '11px', letterSpacing: '1px' }}>
+                        NEW PASSWORD
+                      </label>
+                      <div className="input-container">
+                        <input 
+                          type="password"
+                          className="form-control px-0 py-2"
+                          placeholder="Create a strong password"
+                          value={newPassword} 
+                          onChange={(e) => setNewPassword(e.target.value)}
+                          style={{ 
+                            fontSize: '16px',
+                            boxShadow: 'none'
+                          }}
+                          required
+                        />
+                      </div>
+                      <div className="form-text text-muted small mt-1" style={{ fontSize: '11px' }}>
+                        Password should be at least 8 characters long
+                      </div>
+                    </div>
 
-                <div className="col-12">
-                  <label htmlFor="inputPassword2" className="form-label fs-5">Confirm new password</label>
-                  <input
-                    type="password"
-                    placeholder="Confirm your password"
-                    className="form-control border-black rounded-1"
-                    id="inputPassword2"
-                    value={confirmNewPassword}
-                    onChange={(e) => setConfirmNewPassword(e.target.value)}
-                  />
-                  {(newPassword !== confirmNewPassword) && <div className="form-text text-danger">Both passwords must match.</div>}
-                </div>
+                    <div className="mb-4">
+                      <label className="form-label text-uppercase text-muted small fw-medium mb-2" style={{ fontSize: '11px', letterSpacing: '1px' }}>
+                        CONFIRM PASSWORD
+                      </label>
+                      <div className="input-container">
+                        <input 
+                          type="password"
+                          className="form-control px-0 py-2"
+                          placeholder="Confirm your password"
+                          value={confirmNewPassword} 
+                          onChange={(e) => setConfirmNewPassword(e.target.value)}
+                          style={{ 
+                            fontSize: '16px',
+                            boxShadow: 'none'
+                          }}
+                          required
+                        />
+                      </div>
+                      {(newPassword !== confirmNewPassword && confirmNewPassword) && (
+                        <div className="form-text text-danger small mt-1" style={{ fontSize: '11px' }}>
+                          Passwords do not match
+                        </div>
+                      )}
+                    </div>
 
-                <div className="col-12 d-grid pt-3 pb-1">
-                  <button type="submit" className="btn btn-dark">Reset password</button>
-                </div>
-              </form>
+                    <button 
+                      type="submit"
+                      className="btn w-100 py-3 mb-4"
+                      style={{ 
+                        backgroundColor: (newPassword && confirmNewPassword && newPassword === confirmNewPassword) ? '#000' : '#e5e5e5',
+                        color: (newPassword && confirmNewPassword && newPassword === confirmNewPassword) ? '#fff' : '#999',
+                        fontSize: '14px',
+                        fontWeight: '500',
+                        letterSpacing: '1px',
+                        textTransform: 'uppercase',
+                        border: 'none',
+                        borderRadius: '5px'
+                      }}
+                      disabled={!newPassword || !confirmNewPassword || newPassword !== confirmNewPassword}
+                    >
+                      RESET PASSWORD
+                    </button>
+                  </form>
+
+                  <div className="text-center">
+                    <span className="text-muted small">Remember your password? </span>
+                    <a 
+                      className="text-dark fw-medium small sign-in-link"
+                      style={{ cursor: 'pointer' }}
+                      onClick={() => navigate('/login')}
+                    >
+                      Sign in
+                    </a>
+                  </div>
+                </>
               )}
+              
             </div>
           </div>
         </div>

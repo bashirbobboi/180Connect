@@ -134,30 +134,55 @@ export default function EmailPage() {
    */
   useEffect(() => {
     const fetch_results = async () => {    
-      const token = localStorage.getItem("token");
-      const res = await fetch(`${API_URL}/all-clients`, {
-        headers: {
-          'Accept': 'application/json',
-          Authorization: `Bearer ${token}`,
+      try {
+        const token = localStorage.getItem("token");
+        const res = await fetch(`${API_URL}/all-clients`, {
+          headers: {
+            'Accept': 'application/json',
+            Authorization: `Bearer ${token}`,
+          }
+        });
+        
+        if (!res.ok) {
+          if (res.status === 401) {
+            // Token is invalid, redirect to login
+            localStorage.removeItem("token");
+            navigate('/login');
+            return;
+          }
+          console.error('Failed to fetch clients:', res.status, res.statusText);
+          setLoading(false);
+          return;
         }
-      });
-      const data = await res.json();
-      if(data){
-        setClients(data);
-        const uniqueRegions = [...new Set(
-          data
-            .map(client => client.region)
-            .filter(Boolean)
-        )].sort();
+        
+        const data = await res.json();
+        
+        // Check if data is an array
+        if (Array.isArray(data)) {
+          setClients(data);
+          const uniqueRegions = [...new Set(
+            data
+              .map(client => client.region)
+              .filter(Boolean)
+          )].sort();
 
-        const uniqueCities = [...new Set(
-          data
-            .map(client => client.city)
-            .filter(Boolean)
-        )].sort();
+          const uniqueCities = [...new Set(
+            data
+              .map(client => client.city)
+              .filter(Boolean)
+          )].sort();
 
-        setRegions(uniqueRegions);
-        setCities(uniqueCities);
+          setRegions(uniqueRegions);
+          setCities(uniqueCities);
+        } else {
+          console.error('Expected array but got:', typeof data, data);
+          setClients([]);
+        }
+        
+        setLoading(false);
+      } catch (error) {
+        console.error('Error fetching clients:', error);
+        setClients([]);
         setLoading(false);
       }
     }
