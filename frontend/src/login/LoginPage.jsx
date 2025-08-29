@@ -249,7 +249,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-vh-100" style={{ backgroundColor: '#f7f7f7' }}>
+    <div className="min-vh-100 login-page">
       {/* Notification Toast */}
       {notification.show && (
         <div className={`notification-toast ${notification.type}`}>
@@ -271,16 +271,16 @@ export default function LoginPage() {
           </div>
         </div>
       )}
-      {/* Header with create account */}
+      {/* Header with conditional button */}
       <div className="d-flex justify-content-end align-items-center p-4">
         <button 
-          className="css-1uj0sxn"
+          className="css-1uj0sxn create-account-hover"
           onClick={(e) => {
             e.preventDefault()
-            setCreateAccount(true)
+            setCreateAccount(!createAccount)
           }}
         >
-          CREATE ACCOUNT
+          {createAccount ? 'LOG IN' : 'CREATE ACCOUNT'}
         </button>
       </div>
 
@@ -391,16 +391,7 @@ export default function LoginPage() {
                         </button>
                       </form>
 
-                      <div className="text-center">
-                        <a 
-                          href="#"
-                          className="text-dark text-decoration-none"
-                          style={{ fontSize: '12px', fontWeight: '500', letterSpacing: '1px' }}
-                          onClick={() => navigate('/forgot-password')}
-                        >
-                          CAN'T LOG IN?
-                        </a>
-                      </div>
+                      
 
                       {/* Mobile OR divider */}
                       <div className="d-block d-md-none mt-5">
