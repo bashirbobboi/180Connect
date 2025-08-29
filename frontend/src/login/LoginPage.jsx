@@ -351,7 +351,7 @@ export default function LoginPage() {
 
                         <button 
                           type="submit"
-                          className="btn w-100 rounded-0 py-3 mb-4"
+                          className="btn w-100 py-3 mb-4"
                           style={{ 
                             backgroundColor: email && password ? '#000' : '#e5e5e5',
                             color: email && password ? '#fff' : '#999',
@@ -359,7 +359,8 @@ export default function LoginPage() {
                             fontWeight: '500',
                             letterSpacing: '1px',
                             textTransform: 'uppercase',
-                            border: 'none'
+                            border: 'none',
+                            borderRadius: '5px'
                           }}
                           disabled={!email || !password}
                         >
@@ -555,7 +556,7 @@ export default function LoginPage() {
 
                   <button 
                     type="submit"
-                    className="btn w-100 rounded-0 py-3 mb-4"
+                    className="btn w-100 py-3 mb-4"
                     style={{ 
                       backgroundColor: fname && lname && registerEmail && registerPassword ? '#000' : '#e5e5e5',
                       color: fname && lname && registerEmail && registerPassword ? '#fff' : '#999',
@@ -563,7 +564,8 @@ export default function LoginPage() {
                       fontWeight: '500',
                       letterSpacing: '1px',
                       textTransform: 'uppercase',
-                      border: 'none'
+                      border: 'none',
+                      borderRadius: '4px'
                     }}
                     disabled={!fname || !lname || !registerEmail || !registerPassword}
                   >
