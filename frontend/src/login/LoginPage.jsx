@@ -271,8 +271,19 @@ export default function LoginPage() {
           </div>
         </div>
       )}
-      {/* Header with conditional button */}
-      <div className="d-flex justify-content-end align-items-center p-4">
+      {/* Header with logo and conditional button */}
+      <div className="d-flex justify-content-between align-items-center p-4">
+        {/* Logo in top left */}
+        <div>
+          <img 
+            src="/connectlogo.png" 
+            alt="180Connect Logo" 
+            width="200" 
+            height="" 
+          />
+        </div>
+        
+        {/* Button in top right */}
         <button 
           className="css-1uj0sxn create-account-hover"
           onClick={(e) => {
@@ -291,17 +302,8 @@ export default function LoginPage() {
             <div className="row justify-content-center">
               <div className="col-12 col-lg-10 col-xl-8">
                 
-                {/* Logo and Title */}
+                {/* Title Only */}
                 <div className="text-center mb-5">
-                  <div className="mb-4">
-                    <img 
-                      src="/connectlogo.png" 
-                      alt="180Connect Logo" 
-                      width="200" 
-                      height="" 
-                      className="mb-3 logo-animation"
-                    />
-                  </div>
                   <h1 className="css-1llmlc0 mb-5">Log into 180Connect</h1>
                 </div>
 
@@ -315,60 +317,62 @@ export default function LoginPage() {
                           <label className="form-label text-uppercase text-muted small fw-medium mb-2" style={{ fontSize: '11px', letterSpacing: '1px' }}>
                             EMAIL ADDRESS
                           </label>
-                          <input 
-                            type="email"
-                            className="form-control border-0 border-bottom border-dark rounded-0 bg-transparent px-0 py-2"
-                            placeholder="name@180dc.com"
-                            value={email} 
-                            onChange={(e) => setEmail(e.target.value)}
-                            style={{ 
-                              fontSize: '16px',
-                              boxShadow: 'none',
-                              borderRadius: '0 !important'
-                            }}
-                          />
+                          <div className="input-container">
+                            <input 
+                              type="email"
+                              className="form-control px-0 py-2"
+                              placeholder="name@180dc.com"
+                              value={email} 
+                              onChange={(e) => setEmail(e.target.value)}
+                              style={{ 
+                                fontSize: '16px',
+                                boxShadow: 'none'
+                              }}
+                            />
+                          </div>
                         </div>
 
                         <div className="mb-4">
                           <label className="form-label text-uppercase text-muted small fw-medium mb-2" style={{ fontSize: '11px', letterSpacing: '1px' }}>
                             PASSWORD
                           </label>
-                          <div className="position-relative">
-                            <input 
-                              type={showPassword ? "text" : "password"}
-                              className="form-control border-0 border-bottom border-dark rounded-0 bg-transparent px-0 py-2 pe-4"
-                              placeholder="Password"
-                              value={password} 
-                              onChange={(e) => setPassword(e.target.value)}
-                              style={{ 
-                                fontSize: '16px',
-                                boxShadow: 'none',
-                                borderRadius: '0 !important'
-                              }}
-                            />
-                            <button 
-                              type="button"
-                              className="btn btn-link p-0 text-dark position-absolute"
-                              style={{ 
-                                fontSize: '16px',
-                                right: '0',
-                                top: '50%',
-                                transform: 'translateY(-50%)'
-                              }}
-                              onClick={() => setShowPassword(!showPassword)}
-                            >
-                              {showPassword ? (
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                                  <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
-                                  <line x1="1" y1="1" x2="23" y2="23"/>
-                                </svg>
-                              ) : (
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-                                  <circle cx="12" cy="12" r="3"/>
-                                </svg>
-                              )}
-                            </button>
+                          <div className="input-container">
+                            <div className="position-relative">
+                              <input 
+                                type={showPassword ? "text" : "password"}
+                                className="form-control px-0 py-2 pe-4"
+                                placeholder="Password"
+                                value={password} 
+                                onChange={(e) => setPassword(e.target.value)}
+                                style={{ 
+                                  fontSize: '16px',
+                                  boxShadow: 'none'
+                                }}
+                              />
+                              <button 
+                                type="button"
+                                className="btn btn-link p-0 text-dark position-absolute"
+                                style={{ 
+                                  fontSize: '16px',
+                                  right: '0',
+                                  top: '50%',
+                                  transform: 'translateY(-50%)'
+                                }}
+                                onClick={() => setShowPassword(!showPassword)}
+                              >
+                                {showPassword ? (
+                                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
+                                    <line x1="1" y1="1" x2="23" y2="23"/>
+                                  </svg>
+                                ) : (
+                                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                                    <circle cx="12" cy="12" r="3"/>
+                                  </svg>
+                                )}
+                              </button>
+                            </div>
                           </div>
                         </div>
 
@@ -456,15 +460,6 @@ export default function LoginPage() {
                 
                 {/* Logo and Title */}
                 <div className="text-center mb-5">
-                  <div className="mb-4">
-                    <img 
-                      src="/connectlogo.png" 
-                      alt="180Connect Logo" 
-                      width="50" 
-                      height="50" 
-                      className="mb-3 logo-animation"
-                    />
-                  </div>
                   <h1 className="css-1llmlc0 mb-5">Create your 180Connect account</h1>
                 </div>
 
