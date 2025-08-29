@@ -283,104 +283,133 @@ export default function LoginPage() {
                 </div>
 
                 {/* Main Content Row */}
-                <div className="row gx-5 position-relative">
+                <div className="row gx-0 align-items-center" style={{ minHeight: '400px' }}>
                   {/* Left Column - Login Form */}
-                  <div className="col-12 col-md-6">
-                    <form onSubmit={(e) => handleLogin(e)}>
-                      <div className="mb-4">
-                        <label className="form-label text-uppercase text-muted small fw-medium mb-2" style={{ fontSize: '11px', letterSpacing: '1px' }}>
-                          EMAIL ADDRESS
-                        </label>
-                        <input 
-                          type="email"
-                          className="form-control border-0 border-bottom border-dark rounded-0 bg-transparent px-0 py-2"
-                          placeholder="name@180dc.com"
-                          value={email} 
-                          onChange={(e) => setEmail(e.target.value)}
-                          style={{ 
-                            fontSize: '16px',
-                            boxShadow: 'none',
-                            borderRadius: '0 !important'
-                          }}
-                        />
-                      </div>
-
-                      <div className="mb-4">
-                        <label className="form-label text-uppercase text-muted small fw-medium mb-2" style={{ fontSize: '11px', letterSpacing: '1px' }}>
-                          PASSWORD
-                        </label>
-                        <div className="position-relative">
+                  <div className="col-12 col-md-5">
+                    <div className="pe-md-4">
+                      <form onSubmit={(e) => handleLogin(e)}>
+                        <div className="mb-4">
+                          <label className="form-label text-uppercase text-muted small fw-medium mb-2" style={{ fontSize: '11px', letterSpacing: '1px' }}>
+                            EMAIL ADDRESS
+                          </label>
                           <input 
-                            type={showPassword ? "text" : "password"}
-                            className="form-control border-0 border-bottom border-dark rounded-0 bg-transparent px-0 py-2 pe-4"
-                            placeholder="Password"
-                            value={password} 
-                            onChange={(e) => setPassword(e.target.value)}
+                            type="email"
+                            className="form-control border-0 border-bottom border-dark rounded-0 bg-transparent px-0 py-2"
+                            placeholder="name@180dc.com"
+                            value={email} 
+                            onChange={(e) => setEmail(e.target.value)}
                             style={{ 
                               fontSize: '16px',
                               boxShadow: 'none',
                               borderRadius: '0 !important'
                             }}
                           />
-                          <button 
-                            type="button"
-                            className="btn btn-link p-0 text-dark position-absolute"
-                            style={{ 
-                              fontSize: '16px',
-                              right: '0',
-                              top: '50%',
-                              transform: 'translateY(-50%)'
-                            }}
-                            onClick={() => setShowPassword(!showPassword)}
-                          >
-                            {showPassword ? (
-                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
-                                <line x1="1" y1="1" x2="23" y2="23"/>
-                              </svg>
-                            ) : (
-                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-                                <circle cx="12" cy="12" r="3"/>
-                              </svg>
-                            )}
-                          </button>
                         </div>
+
+                        <div className="mb-4">
+                          <label className="form-label text-uppercase text-muted small fw-medium mb-2" style={{ fontSize: '11px', letterSpacing: '1px' }}>
+                            PASSWORD
+                          </label>
+                          <div className="position-relative">
+                            <input 
+                              type={showPassword ? "text" : "password"}
+                              className="form-control border-0 border-bottom border-dark rounded-0 bg-transparent px-0 py-2 pe-4"
+                              placeholder="Password"
+                              value={password} 
+                              onChange={(e) => setPassword(e.target.value)}
+                              style={{ 
+                                fontSize: '16px',
+                                boxShadow: 'none',
+                                borderRadius: '0 !important'
+                              }}
+                            />
+                            <button 
+                              type="button"
+                              className="btn btn-link p-0 text-dark position-absolute"
+                              style={{ 
+                                fontSize: '16px',
+                                right: '0',
+                                top: '50%',
+                                transform: 'translateY(-50%)'
+                              }}
+                              onClick={() => setShowPassword(!showPassword)}
+                            >
+                              {showPassword ? (
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                                  <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
+                                  <line x1="1" y1="1" x2="23" y2="23"/>
+                                </svg>
+                              ) : (
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                                  <circle cx="12" cy="12" r="3"/>
+                                </svg>
+                              )}
+                            </button>
+                          </div>
+                        </div>
+
+                        <button 
+                          type="submit"
+                          className="btn w-100 rounded-0 py-3 mb-4"
+                          style={{ 
+                            backgroundColor: email && password ? '#000' : '#e5e5e5',
+                            color: email && password ? '#fff' : '#999',
+                            fontSize: '14px',
+                            fontWeight: '500',
+                            letterSpacing: '1px',
+                            textTransform: 'uppercase',
+                            border: 'none'
+                          }}
+                          disabled={!email || !password}
+                        >
+                          LOG IN
+                        </button>
+                      </form>
+
+                      <div className="text-center">
+                        <a 
+                          href="#"
+                          className="text-dark text-decoration-none"
+                          style={{ fontSize: '12px', fontWeight: '500', letterSpacing: '1px' }}
+                          onClick={() => navigate('/forgot-password')}
+                        >
+                          CAN'T LOG IN?
+                        </a>
                       </div>
 
-                      <button 
-                        type="submit"
-                        className="btn w-100 rounded-0 py-3 mb-4"
-                        style={{ 
-                          backgroundColor: email && password ? '#000' : '#e5e5e5',
-                          color: email && password ? '#fff' : '#999',
-                          fontSize: '14px',
-                          fontWeight: '500',
-                          letterSpacing: '1px',
-                          textTransform: 'uppercase',
-                          border: 'none'
-                        }}
-                        disabled={!email || !password}
-                      >
-                        LOG IN
-                      </button>
-                    </form>
+                      {/* Mobile OR divider */}
+                      <div className="d-block d-md-none mt-5">
+                        <div className="d-flex align-items-center">
+                          <div className="css-amgugu"></div>
+                          <div className="px-3" style={{ fontSize: '11px', color: '#999', letterSpacing: '0.5px' }}>
+                            OR
+                          </div>
+                          <div className="css-amgugu"></div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
 
-                    <div className="text-center">
-                      <a 
-                        href="#"
-                        className="text-dark text-decoration-none"
-                        style={{ fontSize: '12px', fontWeight: '500', letterSpacing: '1px' }}
-                        onClick={() => navigate('/forgot-password')}
-                      >
-                        CAN'T LOG IN?
-                      </a>
+                  {/* Desktop Vertical Divider */}
+                  <div className="col-2 d-none d-md-flex justify-content-center align-items-center" style={{ height: '300px' }}>
+                    <div className="position-relative d-flex align-items-center justify-content-center" style={{ height: '100%' }}>
+                      <div className="css-amgugu"></div>
+                      <div className="position-absolute" style={{ 
+                        backgroundColor: '#f7f7f7', 
+                        padding: '8px 12px', 
+                        fontSize: '11px', 
+                        color: '#999', 
+                        letterSpacing: '0.5px' 
+                      }}>
+                        OR
+                      </div>
                     </div>
                   </div>
 
                   {/* Right Column - Social Login */}
-                  <div className="col-12 col-md-6">
-                    <div className="d-flex flex-column justify-content-center" style={{ minHeight: '200px' }}>
+                  <div className="col-12 col-md-5">
+                    <div className="ps-md-4 d-flex flex-column justify-content-center" style={{ minHeight: '300px' }}>
                       <GoogleLogin
                         onSuccess={(response) => {
                           handleGoogleSuccess(response)
@@ -393,13 +422,6 @@ export default function LoginPage() {
                         width="100%"
                         text="continue_with"
                       />
-                    </div>
-                    
-                    {/* OR divider */}
-                    <div className="text-center mt-4">
-                      <p className="text-muted small mb-0" style={{ fontSize: '11px' }}>
-                        OR
-                      </p>
                     </div>
                   </div>
                 </div>

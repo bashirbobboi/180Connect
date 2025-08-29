@@ -62,6 +62,23 @@
   transition: opacity 0.2s ease;
 }
 
+/* Responsive divider line */
+.css-amgugu {
+  box-sizing: border-box;
+  height: 1px;
+  width: 100%;
+  background: rgb(231, 231, 231);
+}
+
+@media (min-width: 774px) {
+  .css-amgugu {
+    height: 100%;
+    width: 1px;
+    -webkit-box-align: center;
+    align-items: center;
+  }
+}
+
 /* Notification Toast Styles */
 .notification-toast {
   position: fixed;
