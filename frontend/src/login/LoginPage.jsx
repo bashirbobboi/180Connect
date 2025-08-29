@@ -10,6 +10,7 @@ import '../App.css';
 import NavBar from '/src/Components/NavBar';
 import { GoogleLogin } from '@react-oauth/google';
 import { useNavigate } from 'react-router-dom';
+import './LoginPage.css';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -211,114 +212,210 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="bg-whites rounded-1 p-3 m-2" style={{minHeight: '60vh'}}>
+    <div className="login-page min-vh-100 d-flex flex-column">
       <NavBar logInPage={true}/>
-      <div className="container py-4 h-100">
-        <div className="row justify-content-center h-100">
-          <div className="col-12 col-lg-10">
-            <div className="d-flex justify-content-center align-items-center h-100" style={{ minHeight: "60vh" }}>
+      <div className="flex-grow-1 d-flex align-items-center justify-content-center py-5">
+        <div className="container">
+          <div className="row justify-content-center">
+            <div className="col-11 col-sm-8 col-md-6 col-lg-5 col-xl-4">
               {!createAccount ? (
                 /* Login form */
-                <form className="row g-3 w-50 bg-light px-3 pb-3 rounded-1 border border-black shadow-sm" onSubmit={(e) => handleLogin(e)}>
-                  <h2 className="border-bottom pb-2">Login</h2>
-                  <div className='col-md-12'>
-                    <div className="cdx-label">
-                      <label className="cdx-label__label">
-                        <span className="cdx-label__label__text fs-5 fw-light">Email</span>
-                      </label>
-                      <span id="cdx-demo-description-1" className="cdx-label__description" style={{fontSize: '0.9rem'}}>
-                        This can either be your email address or your company username.
-                      </span>
-                    </div>
-                    <div className="col-md-12 cdx-text-input cdx-text-input--has-start-icon">
-                      <input className="cdx-text-input__input rounded-1" 
-                        placeholder="name@example.com" type="text" 
-                        value={email} onChange={(e) => setEmail(e.target.value)}/>
-                      <span className="cdx-text-input__icon cdx-text-input__start-icon icon-class--user-avatar"></span>
-                    </div>
+                <div className="login-form-container form-transition bg-white rounded-4 shadow-sm p-4 p-md-5" style={{ border: '1px solid #e9ecef' }}>
+                  <div className="login-header text-center mb-4">
+                    <h1 className="h3 fw-normal text-dark mb-2">Welcome back</h1>
+                    <p className="text-muted small mb-0">Sign in to your account</p>
                   </div>
-                  <div className='col-md-12'>
-                    <div className="cdx-label">
-                      <label className="cdx-label__label d-flex justify-content-between align-items-center">
-                        <span className="cdx-label__label__text fs-5 fw-light">Password</span>
-                        <a className="text-primary text-decoration-none small"
-                          style={{ cursor: 'pointer' }}
-                          onClick={() => navigate('/forgot-password')}
-                        >
-                          Forgot password?
-                        </a>
-                      </label>
-                    </div>
-                    <div className="col-md-12 cdx-text-input cdx-text-input--has-start-icon">
-                      <input className="cdx-text-input__input rounded-1" 
-                        placeholder="Enter your password" type="password" 
-                        value={password} onChange={(e) => setPassword(e.target.value)} />
-                      <span className="cdx-text-input__icon cdx-text-input__start-icon icon-class--lock"></span>
-                    </div>
-                  </div>
-                  <div className="col-12 d-grid pt-3 pb-1">
-                    <button type="submit" className="btn btn-dark">Sign in</button>
-                    <button className="mt-2 btn btn-outline-dark"
-                      onClick={(e) => {
-                        e.preventDefault()
-                        setCreateAccount(true)}}
-                    >Create account</button>
-                    
-                    <div className="me-auto mt-2">
-                      <small className="text-muted text-start mt-3">Or use your Google account to sign in.</small>
-                      <GoogleLogin
-                        onSuccess={(response) => {
-                          handleGoogleSuccess(response)
+                    <form onSubmit={(e) => handleLogin(e)}>
+                      <div className="mb-3">
+                        <label htmlFor="email" className="form-label text-dark fw-medium small">Email address</label>
+                        <input 
+                          type="email" 
+                          className="form-control form-control-lg border-0 bg-light rounded-3"
+                          id="email"
+                          placeholder="Enter your email"
+                          value={email} 
+                          onChange={(e) => setEmail(e.target.value)}
+                          style={{ 
+                            fontSize: '16px',
+                            padding: '12px 16px',
+                            boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.1)'
+                          }}
+                        />
+                      </div>
+                      <div className="mb-3">
+                        <div className="d-flex justify-content-between align-items-center mb-2">
+                          <label htmlFor="password" className="form-label text-dark fw-medium small mb-0">Password</label>
+                          <a 
+                            className="text-decoration-none small text-muted"
+                            style={{ cursor: 'pointer' }}
+                            onClick={() => navigate('/forgot-password')}
+                          >
+                            Forgot password?
+                          </a>
+                        </div>
+                        <input 
+                          type="password" 
+                          className="form-control form-control-lg border-0 bg-light rounded-3"
+                          id="password"
+                          placeholder="Enter your password"
+                          value={password} 
+                          onChange={(e) => setPassword(e.target.value)}
+                          style={{ 
+                            fontSize: '16px',
+                            padding: '12px 16px',
+                            boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.1)'
+                          }}
+                        />
+                      </div>
+                      <button 
+                        type="submit" 
+                        className="btn btn-dark btn-lg w-100 rounded-3 mb-3"
+                        style={{ 
+                          padding: '12px',
+                          fontSize: '16px',
+                          fontWeight: '500'
                         }}
-                        onError={() => {
-                          console.log('Login Failed');
+                      >
+                        Sign in
+                      </button>
+                      
+                      <div className="text-center mb-3">
+                        <span className="text-muted small">or</span>
+                      </div>
+                      
+                      <div className="d-grid mb-3">
+                        <GoogleLogin
+                          onSuccess={(response) => {
+                            handleGoogleSuccess(response)
+                          }}
+                          onError={() => {
+                            console.log('Login Failed');
+                          }}
+                          theme="outline"
+                          size="large"
+                          width="100%"
+                        />
+                      </div>
+                      
+                      <div className="text-center">
+                        <span className="text-muted small">Don't have an account? </span>
+                        <a 
+                          className="text-dark text-decoration-none fw-medium small"
+                          style={{ cursor: 'pointer' }}
+                          onClick={(e) => {
+                            e.preventDefault()
+                            setCreateAccount(true)
+                          }}
+                        >
+                          Sign up
+                        </a>
+                      </div>
+                    </form>
+                  </div>
+              ) : (
+               /* Create Account form */
+                <div className="login-form-container form-transition bg-white rounded-4 shadow-sm p-4 p-md-5" style={{ border: '1px solid #e9ecef' }}>
+                  <div className="login-header text-center mb-4">
+                    <h1 className="h3 fw-normal text-dark mb-2">Create your account</h1>
+                    <p className="text-muted small mb-0">Join 180 Degrees Consulting</p>
+                  </div>
+                  <form onSubmit={(e) => handleRegister(e)}>
+                    <div className="row mb-3">
+                      <div className="col-6">
+                        <label htmlFor="firstName" className="form-label text-dark fw-medium small">First name</label>
+                        <input 
+                          type="text" 
+                          className="form-control form-control-lg border-0 bg-light rounded-3"
+                          id="firstName"
+                          placeholder="Jane"
+                          value={fname} 
+                          onChange={(e) => setFName(e.target.value)}
+                          style={{ 
+                            fontSize: '16px',
+                            padding: '12px 16px',
+                            boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.1)'
+                          }}
+                        />
+                      </div>
+                      <div className="col-6">
+                        <label htmlFor="lastName" className="form-label text-dark fw-medium small">Last name</label>
+                        <input 
+                          type="text" 
+                          className="form-control form-control-lg border-0 bg-light rounded-3"
+                          id="lastName"
+                          placeholder="Doe"
+                          value={lname} 
+                          onChange={(e) => setLName(e.target.value)}
+                          style={{ 
+                            fontSize: '16px',
+                            padding: '12px 16px',
+                            boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.1)'
+                          }}
+                        />
+                      </div>
+                    </div>
+                    <div className="mb-3">
+                      <label htmlFor="registerEmail" className="form-label text-dark fw-medium small">Email address</label>
+                      <input 
+                        type="email" 
+                        className="form-control form-control-lg border-0 bg-light rounded-3"
+                        id="registerEmail"
+                        placeholder="Your university or work email"
+                        value={registerEmail} 
+                        onChange={(e) => setRegisterEmail(e.target.value)}
+                        style={{ 
+                          fontSize: '16px',
+                          padding: '12px 16px',
+                          boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.1)'
                         }}
                       />
                     </div>
-                  </div>
-                </form>
-              ) : (
-               /* Create Account form */
-                <form className="row g-3 w-50 bg-light px-3 pb-3 rounded-1 border border-black shadow-sm" onSubmit={(e) => handleRegister(e)}>
-                  <h2 className="border-bottom pb-2">Create account</h2>
-                  <div className='col-md-12 p-0 m-0 row g-3'>
-                    <div className="col-md-6">
-                      <label for="inputFirst" className="form-label fs-5">First name</label>
-                      <input type="text" placeholder='Jane' className="form-control border-black rounded-1" 
-                        id="inputFirst" value={fname} onChange={(e) => setFName(e.target.value)}/>
+                    <div className="mb-3">
+                      <label htmlFor="registerPassword" className="form-label text-dark fw-medium small">Password</label>
+                      <input 
+                        type="password" 
+                        className="form-control form-control-lg border-0 bg-light rounded-3"
+                        id="registerPassword"
+                        placeholder="Choose a secure password"
+                        value={registerPassword} 
+                        onChange={(e) => setRegisterPassword(e.target.value)}
+                        style={{ 
+                          fontSize: '16px',
+                          padding: '12px 16px',
+                          boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.1)'
+                        }}
+                      />
+                      <div className="form-text text-muted small mt-1">
+                        Must be 8+ characters including a number and letter
+                      </div>
                     </div>
-                    <div className="col-md-6">
-                      <label for="inputLast" className="form-label fs-5">Last name</label>
-                      <input type="text" placeholder='Doe' className="form-control border-black rounded-1" 
-                        id="inputLast" value={lname} onChange={(e) => setLName(e.target.value)} />
-                    </div>
-                  </div>
-                  <div className="col-12">
-                    <label for="inputAddress" className="form-label fs-5">Email address</label>
-                    <input type="email" className="form-control border-black rounded-1" 
-                      id="inputAddress" placeholder="name@example.com" value={registerEmail} 
-                      onChange={(e) => setRegisterEmail(e.target.value)}/>
-                  </div>
-                  <div className="col-12">
-                    <label for="inputPassword" className="form-label fs-5">Password</label>
-                    <input type="password" placeholder='Create a strong password' 
-                      className="form-control border-black rounded-1" id="inputPassword"
-                      value={registerPassword} onChange={(e) => setRegisterPassword(e.target.value)}/>
-                    <div className="form-text">Password should be at least 8 characters long.</div>
-                  </div>
-                  <div className="col-12 d-grid pt-3 pb-1">
-                    <button type="submit" className="btn btn-dark">Create account</button>
-                    <small className="text-muted text-start mt-2">Already have an account?</small>
-                    <button className="mt-1 btn btn-outline-dark"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        setCreateAccount(false);
+                    <button 
+                      type="submit" 
+                      className="btn btn-dark btn-lg w-100 rounded-3 mb-3"
+                      style={{ 
+                        padding: '12px',
+                        fontSize: '16px',
+                        fontWeight: '500'
                       }}
                     >
-                      Sign in
+                      Create account
                     </button>
-                  </div>
-                </form>
+                    
+                    <div className="text-center">
+                      <span className="text-muted small">Already have an account? </span>
+                      <a 
+                        className="text-dark text-decoration-none fw-medium small"
+                        style={{ cursor: 'pointer' }}
+                        onClick={(e) => {
+                          e.preventDefault()
+                          setCreateAccount(false)
+                        }}
+                      >
+                        Sign in
+                      </a>
+                    </div>
+                  </form>
+                </div>
               )}
             </div>
           </div>
