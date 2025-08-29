@@ -381,7 +381,7 @@ export default function LoginPage() {
                           className="btn w-100 py-3 mb-4"
                           style={{ 
                             backgroundColor: email && password ? '#000' : '#e5e5e5',
-                            color: email && password ? '#fff' : '#999',
+                            color: email && password ? '#fff' : '#000',
                             fontSize: '14px',
                             fontWeight: '500',
                             letterSpacing: '1px',
