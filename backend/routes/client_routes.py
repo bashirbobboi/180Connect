@@ -128,66 +128,132 @@ async def get_company(
     request: Request,
     company_id: int, 
 ):
-    pool = request.app.state.db
+    # Check if using SQLite or PostgreSQL
+    if hasattr(request.app.state, 'SessionLocal'):
+        # SQLite/SQLAlchemy approach
+        from models import Company
+        SessionLocal = request.app.state.SessionLocal
+        
+        with SessionLocal() as db:
+            company = db.query(Company).filter(Company.id == company_id).first()
+            
+            if not company:
+                raise HTTPException(status_code=404, detail="Company not found")
+            
+            return {
+                "id": company.id,
+                "name": company.name,
+                "status": company.status,
+                "company_type": company.company_type,
+                "address": company.address,
+                "email": company.email,
+                "postcode": company.postcode,
+                "city": company.city,
+                "region": company.region,
+                "website": company.website,
+                "activities": company.activities,
+                "id_from_source": company.id_from_source,
+                "source_id": company.source_id
+            }
+    else:
+        # PostgreSQL/asyncpg approach
+        pool = request.app.state.db
 
-    async with pool.acquire() as conn:
-        company = await conn.fetchrow(
-            """
-            SELECT 
-                id, name, status, company_type, address, email, postcode, 
-                city, region, website, activities, id_from_source, source_id
-            FROM companies
-            WHERE id = $1
-            """,
-            company_id
-        )
+        async with pool.acquire() as conn:
+            company = await conn.fetchrow(
+                """
+                SELECT 
+                    id, name, status, company_type, address, email, postcode, 
+                    city, region, website, activities, id_from_source, source_id
+                FROM companies
+                WHERE id = $1
+                """,
+                company_id
+            )
 
-        if not company:
-            raise HTTPException(status_code=404, detail="Company not found")
+            if not company:
+                raise HTTPException(status_code=404, detail="Company not found")
 
-        return dict(company)
+            return dict(company)
 
 @router.get("/search-clients")
 async def search_companies(
     request: Request,
     query: str = Query(..., min_length=1), 
 ):
-    pool = request.app.state.db
+    # Check if using SQLite or PostgreSQL
+    if hasattr(request.app.state, 'SessionLocal'):
+        # SQLite/SQLAlchemy approach
+        from models import Company
+        SessionLocal = request.app.state.SessionLocal
+        
+        with SessionLocal() as db:
+            try:
+                companies = db.query(Company).filter(
+                    Company.name.ilike(f"%{query}%")
+                ).all()
 
-    async with pool.acquire() as conn:
-        try:
-            companies = await conn.fetch(
-                """
-                SELECT id, name, status, company_type, address, email, postcode, website, activities
-                FROM companies
-                WHERE LOWER(name) LIKE LOWER($1)
-                """,
-                f"%{query}%",
-            )
+                if not companies:
+                    return {"message": "No companies found matching the query.", "results": []}
 
-            if not companies:
-                return {"message": "No companies found matching the query.", "results": []}
+                return {
+                    "message": "Success",
+                    "results": [
+                        {
+                            "id": c.id,
+                            "name": c.name,
+                            "status": c.status,
+                            "company_type": c.company_type,
+                            "address": c.address,
+                            "email": c.email,
+                            "postcode": c.postcode,
+                            "website": c.website,
+                            "activities": c.activities,
+                        }
+                        for c in companies
+                    ]
+                }
 
-            return {
-                "message": "Success",
-                "results": [
-                    {
-                        "id": c["id"],
-                        "name": c["name"],
-                        "status": c["status"],
-                        "company_type": c["company_type"],
-                        "address": c["address"],
-                        "email": c["email"],
-                        "postcode": c["postcode"],
-                        "website": c["website"],
-                        "activities": c["activities"],
-                    }
-                    for c in companies
-                ]
-            }
+            except Exception as e:
+                raise HTTPException(status_code=500, detail=f"An error occurred: {str(e)}")
+    else:
+        # PostgreSQL/asyncpg approach
+        pool = request.app.state.db
 
-        except Exception as e:
-            raise HTTPException(status_code=500, detail=f"An error occurred: {str(e)}")
+        async with pool.acquire() as conn:
+            try:
+                companies = await conn.fetch(
+                    """
+                    SELECT id, name, status, company_type, address, email, postcode, website, activities
+                    FROM companies
+                    WHERE LOWER(name) LIKE LOWER($1)
+                    """,
+                    f"%{query}%",
+                )
+
+                if not companies:
+                    return {"message": "No companies found matching the query.", "results": []}
+
+                return {
+                    "message": "Success",
+                    "results": [
+                        {
+                            "id": c["id"],
+                            "name": c["name"],
+                            "status": c["status"],
+                            "company_type": c["company_type"],
+                            "address": c["address"],
+                            "email": c["email"],
+                            "postcode": c["postcode"],
+                            "website": c["website"],
+                            "activities": c["activities"],
+                        }
+                        for c in companies
+                    ]
+                }
+
+            except Exception as e:
+                raise HTTPException(status_code=500, detail=f"An error occurred: {str(e)}")
     
 @router.post("/send-emails/")
 async def create_bulk_emails(
@@ -195,101 +261,203 @@ async def create_bulk_emails(
     email_data: BulkEmailCreate,
     authorization: str = Header(...),
 ):
-    pool = request.app.state.db
+    # Check if using SQLite or PostgreSQL
+    if hasattr(request.app.state, 'SessionLocal'):
+        # SQLite/SQLAlchemy approach
+        from models import Company, User, Email
+        from routes.token_routes import verify_token_sqlite
+        SessionLocal = request.app.state.SessionLocal
+        
+        with SessionLocal() as db:
+            try:
+                # Verify token and user
+                token_value = authorization.replace("Bearer ", "")
+                token = verify_token_sqlite(token_value, db)
+                if not token:
+                    raise HTTPException(status_code=401, detail="Invalid token")
+                
+                user = db.query(User).filter(User.id == token.user_id).first()
+                if not user:
+                    raise HTTPException(status_code=404, detail="User not found")
 
-    async with pool.acquire() as conn:
-        try:
-            # Verify token and user
-            token_value = authorization.replace("Bearer ", "")
-            token = await verify_token(token_value, conn)
-            user = await get_render_user_from_uid(conn, token["user_id"])
+                # Fetch all specified companies
+                companies = db.query(Company).filter(Company.id.in_(email_data.client_ids)).all()
+                found_ids = {c.id for c in companies}
+                missing_ids = set(email_data.client_ids) - found_ids
 
-            # Fetch all specified companies
-            company_ids = tuple(email_data.client_ids)
-            companies = await conn.fetch(
-                "SELECT * FROM companies WHERE id = ANY($1::int[]);", company_ids
-            )
-            found_ids = {c["id"] for c in companies}
-            missing_ids = set(company_ids) - found_ids
+                if missing_ids:
+                    raise HTTPException(
+                        status_code=404,
+                        detail=f"Companies not found for IDs: {missing_ids}"
+                    )
 
-            if missing_ids:
-                raise HTTPException(
-                    status_code=404,
-                    detail=f"Companies not found for IDs: {missing_ids}"
+                created_emails = []
+
+                for company in companies:
+                    email_content = email_data.content.replace("{charity_name}", company.name)
+                    html_content = (
+                        '<div style="font-family: Arial, sans-serif;">'
+                        f'{email_content.replace(chr(10), "<br>")}'
+                        '<br><br>'
+                        '<div dir="ltr">'
+                        '<div>'
+                        '<a href="mailto:sheffield@180dc.org" target="_blank">Email</a>'
+                        '<span>&nbsp;-&nbsp;</span>'
+                        '<a href="https://www.180dc.org/" target="_blank">Website</a>'
+                        '<span>&nbsp;-&nbsp;</span>'
+                        '<a href="https://www.instagram.com/180dcsheffield/" target="_blank">Instagram</a>'
+                        '<span>&nbsp;-&nbsp;</span>'
+                        '<a href="https://www.linkedin.com/company/104399563/admin/dashboard/" target="_blank">LinkedIn</a>'
+                        '<br></div><div>Business Consulting and Services</div>'
+                        '<div>Sheffield, South Yorkshire</div>'
+                        '<div><img width="96" height="96" src="https://ci3.googleusercontent.com/mail-sig/AIorK4z7bSBEIHVpx-66BDEvzOz_BzLe3E1hmBNaK9jvUMFHF4R4bsW2oHU4pTR6zGHTqDzFfySVbwZ5DnS3" alt="180DC Sheffield logo"></div>'
+                        '</div></div>'
+                    )
+
+                    status = "failed"
+                    if company.email:
+                        try:
+                            msg = MIMEMultipart("alternative")
+                            msg["From"] = GMAIL_SENDER
+                            msg["To"] = company.email
+                            msg["Subject"] = email_data.subject
+                            msg.attach(MIMEText(email_content, "plain"))
+                            msg.attach(MIMEText(html_content, "html"))
+
+                            with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
+                                server.login(GMAIL_SENDER, GMAIL_APP_PASSWORD)
+                                server.sendmail(GMAIL_SENDER, company.email, msg.as_string())
+
+                            status = "sent"
+                        except Exception as e:
+                            print(f"❌ Failed to send to {company.email}: {e}")
+                    else:
+                        print(f"⚠️ No email for company {company.name}")
+
+                    # Insert email record
+                    new_email = Email(
+                        user_id=user.id,
+                        client_id=company.id,
+                        subject=email_data.subject,
+                        content=email_data.content,
+                        status=status
+                    )
+                    db.add(new_email)
+                    db.commit()
+                    db.refresh(new_email)
+
+                    created_emails.append({
+                        "id": new_email.id,
+                        "subject": email_data.subject,
+                        "status": status,
+                        "client_name": company.name,
+                        "client_email": company.email
+                    })
+
+                return {
+                    "message": f"Successfully processed {len(created_emails)} emails",
+                    "emails": created_emails
+                }
+
+            except Exception as e:
+                raise HTTPException(status_code=500, detail=f"Failed to process emails: {str(e)}")
+    else:
+        # PostgreSQL/asyncpg approach
+        pool = request.app.state.db
+
+        async with pool.acquire() as conn:
+            try:
+                # Verify token and user
+                token_value = authorization.replace("Bearer ", "")
+                token = await verify_token(token_value, conn)
+                user = await get_render_user_from_uid(conn, token["user_id"])
+
+                # Fetch all specified companies
+                company_ids = tuple(email_data.client_ids)
+                companies = await conn.fetch(
+                    "SELECT * FROM companies WHERE id = ANY($1::int[]);", company_ids
                 )
+                found_ids = {c["id"] for c in companies}
+                missing_ids = set(company_ids) - found_ids
 
-            created_emails = []
+                if missing_ids:
+                    raise HTTPException(
+                        status_code=404,
+                        detail=f"Companies not found for IDs: {missing_ids}"
+                    )
 
-            for company in companies:
-                email_content = email_data.content.replace("{charity_name}", company["name"])
-                html_content = (
-                    '<div style="font-family: Arial, sans-serif;">'
-                    f'{email_content.replace(chr(10), "<br>")}'
-                    '<br><br>'
-                    '<div dir="ltr">'
-                    '<div>'
-                    '<a href="mailto:sheffield@180dc.org" target="_blank">Email</a>'
-                    '<span>&nbsp;-&nbsp;</span>'
-                    '<a href="https://www.180dc.org/" target="_blank">Website</a>'
-                    '<span>&nbsp;-&nbsp;</span>'
-                    '<a href="https://www.instagram.com/180dcsheffield/" target="_blank">Instagram</a>'
-                    '<span>&nbsp;-&nbsp;</span>'
-                    '<a href="https://www.linkedin.com/company/104399563/admin/dashboard/" target="_blank">LinkedIn</a>'
-                    '<br></div><div>Business Consulting and Services</div>'
-                    '<div>Sheffield, South Yorkshire</div>'
-                    '<div><img width="96" height="96" src="https://ci3.googleusercontent.com/mail-sig/AIorK4z7bSBEIHVpx-66BDEvzOz_BzLe3E1hmBNaK9jvUMFHF4R4bsW2oHU4pTR6zGHTqDzFfySVbwZ5DnS3" alt="180DC Sheffield logo"></div>'
-                    '</div></div>'
-                )
+                created_emails = []
 
-                status = "failed"
-                if company["email"]:
-                    try:
-                        msg = MIMEMultipart("alternative")
-                        msg["From"] = GMAIL_SENDER
-                        msg["To"] = company["email"]
-                        msg["Subject"] = email_data.subject
-                        msg.attach(MIMEText(email_content, "plain"))
-                        msg.attach(MIMEText(html_content, "html"))
+                for company in companies:
+                    email_content = email_data.content.replace("{charity_name}", company["name"])
+                    html_content = (
+                        '<div style="font-family: Arial, sans-serif;">'
+                        f'{email_content.replace(chr(10), "<br>")}'
+                        '<br><br>'
+                        '<div dir="ltr">'
+                        '<div>'
+                        '<a href="mailto:sheffield@180dc.org" target="_blank">Email</a>'
+                        '<span>&nbsp;-&nbsp;</span>'
+                        '<a href="https://www.180dc.org/" target="_blank">Website</a>'
+                        '<span>&nbsp;-&nbsp;</span>'
+                        '<a href="https://www.instagram.com/180dcsheffield/" target="_blank">Instagram</a>'
+                        '<span>&nbsp;-&nbsp;</span>'
+                        '<a href="https://www.linkedin.com/company/104399563/admin/dashboard/" target="_blank">LinkedIn</a>'
+                        '<br></div><div>Business Consulting and Services</div>'
+                        '<div>Sheffield, South Yorkshire</div>'
+                        '<div><img width="96" height="96" src="https://ci3.googleusercontent.com/mail-sig/AIorK4z7bSBEIHVpx-66BDEvzOz_BzLe3E1hmBNaK9jvUMFHF4R4bsW2oHU4pTR6zGHTqDzFfySVbwZ5DnS3" alt="180DC Sheffield logo"></div>'
+                        '</div></div>'
+                    )
 
-                        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
-                            server.login(GMAIL_SENDER, GMAIL_APP_PASSWORD)
-                            server.sendmail(GMAIL_SENDER, company["email"], msg.as_string())
+                    status = "failed"
+                    if company["email"]:
+                        try:
+                            msg = MIMEMultipart("alternative")
+                            msg["From"] = GMAIL_SENDER
+                            msg["To"] = company["email"]
+                            msg["Subject"] = email_data.subject
+                            msg.attach(MIMEText(email_content, "plain"))
+                            msg.attach(MIMEText(html_content, "html"))
 
-                        status = "sent"
-                    except Exception as e:
-                        print(f"❌ Failed to send to {company['email']}: {e}")
-                else:
-                    print(f"⚠️ No email for company {company['name']}")
+                            with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
+                                server.login(GMAIL_SENDER, GMAIL_APP_PASSWORD)
+                                server.sendmail(GMAIL_SENDER, company["email"], msg.as_string())
 
-                # Insert email record
-                email_row = await conn.fetchrow(
-                    """
-                    INSERT INTO emails (user_id, client_id, subject, content, status)
-                    VALUES ($1, $2, $3, $4, $5)
-                    RETURNING id;
-                    """,
-                    user["id"],
-                    company["id"],
-                    email_data.subject,
-                    email_data.content,
-                    status
-                )
+                            status = "sent"
+                        except Exception as e:
+                            print(f"❌ Failed to send to {company['email']}: {e}")
+                    else:
+                        print(f"⚠️ No email for company {company['name']}")
 
-                created_emails.append({
-                    "id": email_row["id"],
-                    "subject": email_data.subject,
-                    "status": status,
-                    "client_name": company["name"],
-                    "client_email": company["email"]
-                })
+                    # Insert email record
+                    email_row = await conn.fetchrow(
+                        """
+                        INSERT INTO emails (user_id, client_id, subject, content, status)
+                        VALUES ($1, $2, $3, $4, $5)
+                        RETURNING id;
+                        """,
+                        user["id"],
+                        company["id"],
+                        email_data.subject,
+                        email_data.content,
+                        status
+                    )
 
-            return {
-                "message": f"Successfully processed {len(created_emails)} emails",
-                "emails": created_emails
-            }
+                    created_emails.append({
+                        "id": email_row["id"],
+                        "subject": email_data.subject,
+                        "status": status,
+                        "client_name": company["name"],
+                        "client_email": company["email"]
+                    })
 
-        except Exception as e:
-            raise HTTPException(status_code=500, detail=f"Failed to process emails: {str(e)}")
+                return {
+                    "message": f"Successfully processed {len(created_emails)} emails",
+                    "emails": created_emails
+                }
+
+            except Exception as e:
+                raise HTTPException(status_code=500, detail=f"Failed to process emails: {str(e)}")
         
 @router.post("/send-email/")
 async def create_bulk_emails(

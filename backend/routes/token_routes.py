@@ -108,21 +108,43 @@ async def logout_user(
     request: Request,
     authorization: str = Header(...)
 ):
-    pool = request.app.state.db
+    # Check if using SQLite or PostgreSQL
+    if hasattr(request.app.state, 'SessionLocal'):
+        # SQLite/SQLAlchemy approach
+        from models import Token
+        SessionLocal = request.app.state.SessionLocal
+        
+        with SessionLocal() as db:
+            try:
+                token_value = authorization.replace("Bearer ", "")
+                token = db.query(Token).filter(Token.token == token_value).first()
 
-    async with pool.acquire() as conn:
-        try:
-            token_value = authorization.replace("Bearer ", "")
-            token = await conn.fetchrow("SELECT * FROM tokens WHERE token = $1 LIMIT 1", token_value)
+                if token:
+                    db.delete(token)
+                    db.commit()
+                    return {"detail": "Successfully logged out"}
 
-            if token:
-                await conn.execute("DELETE FROM tokens WHERE token = $1", token_value)
-                return {"detail": "Successfully logged out"}
+                return {"detail": "Token not found"}
 
-            return {"detail": "Token not found"}
+            except Exception as e:
+                raise HTTPException(status_code=500, detail=f"Logout failed: {str(e)}")
+    else:
+        # PostgreSQL/asyncpg approach
+        pool = request.app.state.db
 
-        except Exception as e:
-            raise HTTPException(status_code=500, detail=f"Logout failed: {str(e)}")
+        async with pool.acquire() as conn:
+            try:
+                token_value = authorization.replace("Bearer ", "")
+                token = await conn.fetchrow("SELECT * FROM tokens WHERE token = $1 LIMIT 1", token_value)
+
+                if token:
+                    await conn.execute("DELETE FROM tokens WHERE token = $1", token_value)
+                    return {"detail": "Successfully logged out"}
+
+                return {"detail": "Token not found"}
+
+            except Exception as e:
+                raise HTTPException(status_code=500, detail=f"Logout failed: {str(e)}")
     
 
 @router.get("/user-profile")
