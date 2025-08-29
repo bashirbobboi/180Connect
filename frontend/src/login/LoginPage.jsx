@@ -23,12 +23,14 @@ export default function LoginPage() {
   // Login form state
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   
   // Registration form state
   const [fname, setFName] = useState('');
   const [lname, setLName] = useState('');
   const [registerEmail, setRegisterEmail] = useState('');
   const [registerPassword, setRegisterPassword] = useState('');
+  const [showRegisterPassword, setShowRegisterPassword] = useState(false);
   
   const navigate = useNavigate();
 
@@ -212,215 +214,322 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="login-page min-vh-100 d-flex flex-column">
-      <NavBar logInPage={true}/>
-      <div className="flex-grow-1 d-flex align-items-center justify-content-center py-5">
-        <div className="container">
-          <div className="row justify-content-center">
-            <div className="col-11 col-sm-8 col-md-6 col-lg-5 col-xl-4">
-              {!createAccount ? (
-                /* Login form */
-                <div className="login-form-container form-transition bg-white rounded-4 shadow-sm p-4 p-md-5" style={{ border: '1px solid #e9ecef' }}>
-                  <div className="login-header text-center mb-4">
-                    <h1 className="h3 fw-normal text-dark mb-2">Welcome back</h1>
-                    <p className="text-muted small mb-0">Sign in to your account</p>
+    <div className="min-vh-100" style={{ backgroundColor: '#f7f7f7' }}>
+      {/* Header with create account */}
+      <div className="d-flex justify-content-end align-items-center p-4">
+        <button 
+          className="css-1uj0sxn"
+          onClick={(e) => {
+            e.preventDefault()
+            setCreateAccount(true)
+          }}
+        >
+          CREATE ACCOUNT
+        </button>
+      </div>
+
+      {!createAccount ? (
+        /* Login Page */
+        <div className="d-flex justify-content-center align-items-center" style={{ minHeight: '80vh' }}>
+          <div className="container">
+            <div className="row justify-content-center">
+              <div className="col-12 col-lg-10 col-xl-8">
+                
+                {/* Logo and Title */}
+                <div className="text-center mb-5">
+                  <div className="mb-4">
+                    <svg width="50" height="50" viewBox="0 0 100 100" className="mb-3 logo-animation">
+                      <circle cx="50" cy="50" r="45" fill="#000" stroke="#000" strokeWidth="2"/>
+                      <text x="50" y="40" textAnchor="middle" fill="#fff" fontSize="24" fontWeight="bold" fontFamily="Arial, sans-serif">180</text>
+                      <text x="50" y="65" textAnchor="middle" fill="#fff" fontSize="12" fontWeight="normal" fontFamily="Arial, sans-serif">CONNECT</text>
+                    </svg>
                   </div>
+                  <h1 className="css-1llmlc0 mb-5">Log into 180Connect</h1>
+                </div>
+
+                {/* Main Content Row */}
+                <div className="row gx-5 position-relative">
+                  {/* Left Column - Login Form */}
+                  <div className="col-12 col-md-6">
                     <form onSubmit={(e) => handleLogin(e)}>
-                      <div className="mb-3">
-                        <label htmlFor="email" className="form-label text-dark fw-medium small">Email address</label>
+                      <div className="mb-4">
+                        <label className="form-label text-uppercase text-muted small fw-medium mb-2" style={{ fontSize: '11px', letterSpacing: '1px' }}>
+                          EMAIL ADDRESS
+                        </label>
                         <input 
-                          type="email" 
-                          className="form-control form-control-lg border-0 bg-light rounded-3"
-                          id="email"
-                          placeholder="Enter your email"
+                          type="email"
+                          className="form-control border-0 border-bottom border-dark rounded-0 bg-transparent px-0 py-2"
+                          placeholder="name@180dc.com"
                           value={email} 
                           onChange={(e) => setEmail(e.target.value)}
                           style={{ 
                             fontSize: '16px',
-                            padding: '12px 16px',
-                            boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.1)'
+                            boxShadow: 'none',
+                            borderRadius: '0 !important'
                           }}
                         />
                       </div>
-                      <div className="mb-3">
-                        <div className="d-flex justify-content-between align-items-center mb-2">
-                          <label htmlFor="password" className="form-label text-dark fw-medium small mb-0">Password</label>
-                          <a 
-                            className="text-decoration-none small text-muted"
-                            style={{ cursor: 'pointer' }}
-                            onClick={() => navigate('/forgot-password')}
+
+                      <div className="mb-4">
+                        <label className="form-label text-uppercase text-muted small fw-medium mb-2" style={{ fontSize: '11px', letterSpacing: '1px' }}>
+                          PASSWORD
+                        </label>
+                        <div className="position-relative">
+                          <input 
+                            type={showPassword ? "text" : "password"}
+                            className="form-control border-0 border-bottom border-dark rounded-0 bg-transparent px-0 py-2 pe-4"
+                            placeholder="Password"
+                            value={password} 
+                            onChange={(e) => setPassword(e.target.value)}
+                            style={{ 
+                              fontSize: '16px',
+                              boxShadow: 'none',
+                              borderRadius: '0 !important'
+                            }}
+                          />
+                          <button 
+                            type="button"
+                            className="btn btn-link p-0 text-dark position-absolute"
+                            style={{ 
+                              fontSize: '16px',
+                              right: '0',
+                              top: '50%',
+                              transform: 'translateY(-50%)'
+                            }}
+                            onClick={() => setShowPassword(!showPassword)}
                           >
-                            Forgot password?
-                          </a>
+                            {showPassword ? (
+                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
+                                <line x1="1" y1="1" x2="23" y2="23"/>
+                              </svg>
+                            ) : (
+                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                                <circle cx="12" cy="12" r="3"/>
+                              </svg>
+                            )}
+                          </button>
                         </div>
-                        <input 
-                          type="password" 
-                          className="form-control form-control-lg border-0 bg-light rounded-3"
-                          id="password"
-                          placeholder="Enter your password"
-                          value={password} 
-                          onChange={(e) => setPassword(e.target.value)}
-                          style={{ 
-                            fontSize: '16px',
-                            padding: '12px 16px',
-                            boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.1)'
-                          }}
-                        />
                       </div>
+
                       <button 
-                        type="submit" 
-                        className="btn btn-dark btn-lg w-100 rounded-3 mb-3"
+                        type="submit"
+                        className="btn w-100 rounded-0 py-3 mb-4"
                         style={{ 
-                          padding: '12px',
-                          fontSize: '16px',
-                          fontWeight: '500'
+                          backgroundColor: email && password ? '#000' : '#e5e5e5',
+                          color: email && password ? '#fff' : '#999',
+                          fontSize: '14px',
+                          fontWeight: '500',
+                          letterSpacing: '1px',
+                          textTransform: 'uppercase',
+                          border: 'none'
                         }}
+                        disabled={!email || !password}
                       >
-                        Sign in
+                        LOG IN
                       </button>
-                      
-                      <div className="text-center mb-3">
-                        <span className="text-muted small">or</span>
-                      </div>
-                      
-                      <div className="d-grid mb-3">
-                        <GoogleLogin
-                          onSuccess={(response) => {
-                            handleGoogleSuccess(response)
-                          }}
-                          onError={() => {
-                            console.log('Login Failed');
-                          }}
-                          theme="outline"
-                          size="large"
-                          width="100%"
-                        />
-                      </div>
-                      
-                      <div className="text-center">
-                        <span className="text-muted small">Don't have an account? </span>
-                        <a 
-                          className="text-dark text-decoration-none fw-medium small"
-                          style={{ cursor: 'pointer' }}
-                          onClick={(e) => {
-                            e.preventDefault()
-                            setCreateAccount(true)
-                          }}
-                        >
-                          Sign up
-                        </a>
-                      </div>
                     </form>
-                  </div>
-              ) : (
-               /* Create Account form */
-                <div className="login-form-container form-transition bg-white rounded-4 shadow-sm p-4 p-md-5" style={{ border: '1px solid #e9ecef' }}>
-                  <div className="login-header text-center mb-4">
-                    <h1 className="h3 fw-normal text-dark mb-2">Create your account</h1>
-                    <p className="text-muted small mb-0">Join 180 Degrees Consulting</p>
-                  </div>
-                  <form onSubmit={(e) => handleRegister(e)}>
-                    <div className="row mb-3">
-                      <div className="col-6">
-                        <label htmlFor="firstName" className="form-label text-dark fw-medium small">First name</label>
-                        <input 
-                          type="text" 
-                          className="form-control form-control-lg border-0 bg-light rounded-3"
-                          id="firstName"
-                          placeholder="Jane"
-                          value={fname} 
-                          onChange={(e) => setFName(e.target.value)}
-                          style={{ 
-                            fontSize: '16px',
-                            padding: '12px 16px',
-                            boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.1)'
-                          }}
-                        />
-                      </div>
-                      <div className="col-6">
-                        <label htmlFor="lastName" className="form-label text-dark fw-medium small">Last name</label>
-                        <input 
-                          type="text" 
-                          className="form-control form-control-lg border-0 bg-light rounded-3"
-                          id="lastName"
-                          placeholder="Doe"
-                          value={lname} 
-                          onChange={(e) => setLName(e.target.value)}
-                          style={{ 
-                            fontSize: '16px',
-                            padding: '12px 16px',
-                            boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.1)'
-                          }}
-                        />
-                      </div>
+
+                    <div className="text-center">
+                      <a 
+                        href="#"
+                        className="text-dark text-decoration-none"
+                        style={{ fontSize: '12px', fontWeight: '500', letterSpacing: '1px' }}
+                        onClick={() => navigate('/forgot-password')}
+                      >
+                        CAN'T LOG IN?
+                      </a>
                     </div>
-                    <div className="mb-3">
-                      <label htmlFor="registerEmail" className="form-label text-dark fw-medium small">Email address</label>
+                  </div>
+
+                  {/* Right Column - Social Login */}
+                  <div className="col-12 col-md-6">
+                    <div className="d-flex flex-column justify-content-center" style={{ minHeight: '200px' }}>
+                      <GoogleLogin
+                        onSuccess={(response) => {
+                          handleGoogleSuccess(response)
+                        }}
+                        onError={() => {
+                          console.log('Login Failed');
+                        }}
+                        theme="outline"
+                        size="large"
+                        width="100%"
+                        text="continue_with"
+                      />
+                    </div>
+                    
+                    {/* OR divider */}
+                    <div className="text-center mt-4">
+                      <p className="text-muted small mb-0" style={{ fontSize: '11px' }}>
+                        OR
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : (
+        /* Create Account Page */
+        <div className="d-flex justify-content-center align-items-center" style={{ minHeight: '80vh' }}>
+          <div className="container">
+            <div className="row justify-content-center">
+              <div className="col-12 col-lg-6 col-xl-5">
+                
+                {/* Logo and Title */}
+                <div className="text-center mb-5">
+                  <div className="mb-4">
+                    <svg width="50" height="50" viewBox="0 0 100 100" className="mb-3 logo-animation">
+                      <circle cx="50" cy="50" r="45" fill="#000" stroke="#000" strokeWidth="2"/>
+                      <text x="50" y="40" textAnchor="middle" fill="#fff" fontSize="24" fontWeight="bold" fontFamily="Arial, sans-serif">180</text>
+                      <text x="50" y="65" textAnchor="middle" fill="#fff" fontSize="12" fontWeight="normal" fontFamily="Arial, sans-serif">CONNECT</text>
+                    </svg>
+                  </div>
+                  <h1 className="css-1llmlc0 mb-5">Create your 180Connect account</h1>
+                </div>
+
+                {/* Registration Form */}
+                <form onSubmit={(e) => handleRegister(e)}>
+                  <div className="row mb-4">
+                    <div className="col-6">
+                      <label className="form-label text-uppercase text-muted small fw-medium mb-2" style={{ fontSize: '11px', letterSpacing: '1px' }}>
+                        FIRST NAME
+                      </label>
                       <input 
-                        type="email" 
-                        className="form-control form-control-lg border-0 bg-light rounded-3"
-                        id="registerEmail"
-                        placeholder="Your university or work email"
-                        value={registerEmail} 
-                        onChange={(e) => setRegisterEmail(e.target.value)}
+                        type="text"
+                        className="form-control border-0 border-bottom border-dark rounded-0 bg-transparent px-0 py-2"
+                        placeholder="Jane"
+                        value={fname} 
+                        onChange={(e) => setFName(e.target.value)}
                         style={{ 
                           fontSize: '16px',
-                          padding: '12px 16px',
-                          boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.1)'
+                          boxShadow: 'none',
+                          borderRadius: '0 !important'
                         }}
                       />
                     </div>
-                    <div className="mb-3">
-                      <label htmlFor="registerPassword" className="form-label text-dark fw-medium small">Password</label>
+                    <div className="col-6">
+                      <label className="form-label text-uppercase text-muted small fw-medium mb-2" style={{ fontSize: '11px', letterSpacing: '1px' }}>
+                        LAST NAME
+                      </label>
                       <input 
-                        type="password" 
-                        className="form-control form-control-lg border-0 bg-light rounded-3"
-                        id="registerPassword"
+                        type="text"
+                        className="form-control border-0 border-bottom border-dark rounded-0 bg-transparent px-0 py-2"
+                        placeholder="Doe"
+                        value={lname} 
+                        onChange={(e) => setLName(e.target.value)}
+                        style={{ 
+                          fontSize: '16px',
+                          boxShadow: 'none',
+                          borderRadius: '0 !important'
+                        }}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="mb-4">
+                    <label className="form-label text-uppercase text-muted small fw-medium mb-2" style={{ fontSize: '11px', letterSpacing: '1px' }}>
+                      EMAIL ADDRESS
+                    </label>
+                    <input 
+                      type="email"
+                      className="form-control border-0 border-bottom border-dark rounded-0 bg-transparent px-0 py-2"
+                      placeholder="name@example.com"
+                      value={registerEmail} 
+                      onChange={(e) => setRegisterEmail(e.target.value)}
+                      style={{ 
+                        fontSize: '16px',
+                        boxShadow: 'none',
+                        borderRadius: '0 !important'
+                      }}
+                    />
+                  </div>
+
+                  <div className="mb-4">
+                    <label className="form-label text-uppercase text-muted small fw-medium mb-2" style={{ fontSize: '11px', letterSpacing: '1px' }}>
+                      PASSWORD
+                    </label>
+                    <div className="position-relative">
+                      <input 
+                        type={showRegisterPassword ? "text" : "password"}
+                        className="form-control border-0 border-bottom border-dark rounded-0 bg-transparent px-0 py-2 pe-4"
                         placeholder="Choose a secure password"
                         value={registerPassword} 
                         onChange={(e) => setRegisterPassword(e.target.value)}
                         style={{ 
                           fontSize: '16px',
-                          padding: '12px 16px',
-                          boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.1)'
+                          boxShadow: 'none',
+                          borderRadius: '0 !important'
                         }}
                       />
-                      <div className="form-text text-muted small mt-1">
-                        Must be 8+ characters including a number and letter
-                      </div>
-                    </div>
-                    <button 
-                      type="submit" 
-                      className="btn btn-dark btn-lg w-100 rounded-3 mb-3"
-                      style={{ 
-                        padding: '12px',
-                        fontSize: '16px',
-                        fontWeight: '500'
-                      }}
-                    >
-                      Create account
-                    </button>
-                    
-                    <div className="text-center">
-                      <span className="text-muted small">Already have an account? </span>
-                      <a 
-                        className="text-dark text-decoration-none fw-medium small"
-                        style={{ cursor: 'pointer' }}
-                        onClick={(e) => {
-                          e.preventDefault()
-                          setCreateAccount(false)
+                      <button 
+                        type="button"
+                        className="btn btn-link p-0 text-dark position-absolute"
+                        style={{ 
+                          fontSize: '16px',
+                          right: '0',
+                          top: '50%',
+                          transform: 'translateY(-50%)'
                         }}
+                        onClick={() => setShowRegisterPassword(!showRegisterPassword)}
                       >
-                        Sign in
-                      </a>
+                        {showRegisterPassword ? (
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
+                            <line x1="1" y1="1" x2="23" y2="23"/>
+                          </svg>
+                        ) : (
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                            <circle cx="12" cy="12" r="3"/>
+                          </svg>
+                        )}
+                      </button>
                     </div>
-                  </form>
+                    <div className="form-text text-muted small mt-1" style={{ fontSize: '11px' }}>
+                      Must be 8+ characters including a number and letter
+                    </div>
+                  </div>
+
+                  <button 
+                    type="submit"
+                    className="btn w-100 rounded-0 py-3 mb-4"
+                    style={{ 
+                      backgroundColor: fname && lname && registerEmail && registerPassword ? '#000' : '#e5e5e5',
+                      color: fname && lname && registerEmail && registerPassword ? '#fff' : '#999',
+                      fontSize: '14px',
+                      fontWeight: '500',
+                      letterSpacing: '1px',
+                      textTransform: 'uppercase',
+                      border: 'none'
+                    }}
+                    disabled={!fname || !lname || !registerEmail || !registerPassword}
+                  >
+                    CREATE ACCOUNT
+                  </button>
+                </form>
+
+                <div className="text-center">
+                  <span className="text-muted small">Already have an account? </span>
+                  <a 
+                    className="text-dark text-decoration-none fw-medium small"
+                    style={{ cursor: 'pointer' }}
+                    onClick={(e) => {
+                      e.preventDefault()
+                      setCreateAccount(false)
+                    }}
+                  >
+                    Sign in
+                  </a>
                 </div>
-              )}
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

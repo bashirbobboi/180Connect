@@ -2,9 +2,111 @@
 
 /* Overall page styling */
 .login-page {
-  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  background-color: #f7f7f7;
   min-height: 100vh;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+/* Squarespace-style input focus */
+.form-control:focus {
+  border-color: #000 !important;
+  box-shadow: none !important;
+  background-color: transparent !important;
+  outline: none !important;
+  font-family: Clarkson, "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
+/* Bold input text always */
+.form-control {
+  font-weight: 600 !important;
+  font-family: Clarkson, "Helvetica Neue", Helvetica, Arial, sans-serif !important;
+}
+
+/* Button hover effects */
+.btn:not(:disabled):hover {
+  transform: translateY(-1px);
+  transition: all 0.2s ease;
+}
+
+/* Social button styling */
+.btn-outline-dark:hover {
+  background-color: #000;
+  border-color: #000;
+  color: #fff;
+}
+
+.btn-outline-primary:hover {
+  background-color: #1877f2;
+  border-color: #1877f2;
+}
+
+/* Logo animation */
+.logo-animation {
+  transition: transform 0.3s ease;
+}
+
+.logo-animation:hover {
+  transform: scale(1.05);
+}
+
+/* Center OR divider styling */
+.center-or-divider {
+  background-color: #f7f7f7;
+  border: 1px solid #e0e0e0;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* Eye icon hover effect */
+.btn-link:hover svg {
+  opacity: 0.7;
+  transition: opacity 0.2s ease;
+}
+
+/* Custom heading style */
+.css-1llmlc0 {
+  text-align: center;
+  box-sizing: border-box;
+  text-rendering: optimizelegibility;
+  -webkit-font-smoothing: antialiased;
+  color: rgb(14, 14, 14);
+  font-weight: 600;
+  font-family: Clarkson, "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 22px;
+  line-height: 28px;
+}
+
+/* Custom create account button style */
+.css-1uj0sxn {
+  outline: none;
+  width: auto;
+  height: auto;
+  text-align: center;
+  text-rendering: optimizelegibility;
+  -webkit-font-smoothing: antialiased;
+  -webkit-box-align: center;
+  align-items: center;
+  border-color: transparent;
+  border-style: none;
+  border-width: 0px;
+  box-sizing: border-box;
+  cursor: pointer;
+  display: inline-flex;
+  font-family: Clarkson, "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  -webkit-box-pack: center;
+  justify-content: center;
+  letter-spacing: 0.5px;
+  line-height: 22px;
+  text-decoration: none;
+  text-transform: uppercase;
+  background-color: transparent;
+  color: rgb(14, 14, 14);
+  padding: 0px;
+  overflow: hidden;
+  transform: translate3d(0px, 0px, 0px) scale(1, 1);
+  transition: transform 50ms;
+  min-height: 36px;
 }
 
 /* Form container enhancements */
@@ -21,16 +123,24 @@
 
 /* Input field enhancements */
 .form-control:focus {
-  border-color: transparent !important;
-  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1) !important;
-  background-color: #fff !important;
+  background-color: transparent;
   transform: translateY(-1px);
   transition: all 0.2s ease;
+  font-weight: 500;
+  font-family: Clarkson, "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
 
 .form-control::placeholder {
   color: #6c757d;
   opacity: 0.8;
+  caret-color: black;
+  font-weight: bold;
+  text-align: left;
+  padding: 0px;
+  line-height: 22px;
+  flex: 1 1 0%;
+  font-size: 14px;
+  font-family: Clarkson, "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
 
 /* Button styling */
@@ -115,6 +225,7 @@
 .btn:focus {
   outline: 2px solid #007bff;
   outline-offset: 2px;
+  
 }
 
 /* Loading state for buttons */
