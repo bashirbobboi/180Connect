@@ -19,12 +19,32 @@ app = FastAPI()
 
 @app.on_event("startup")
 async def startup():
-    app.state.db = await asyncpg.create_pool(os.getenv("RENDER_DATABASE_URL"))
-    # await get_client_data_for_database()
+    database_url = os.getenv("RENDER_DATABASE_URL")
+    if database_url.startswith("sqlite"):
+        # For SQLite local development
+        from sqlalchemy import create_engine
+        from sqlalchemy.orm import sessionmaker
+        
+        engine = create_engine(database_url)
+        SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+        
+        # Create tables if they don't exist
+        from models import Base
+        Base.metadata.create_all(bind=engine)
+        
+        app.state.db = None  # SQLite doesn't use connection pools like asyncpg
+        app.state.engine = engine
+        app.state.SessionLocal = SessionLocal
+        print("✅ Using SQLite database for local development")
+    else:
+        # For PostgreSQL production
+        app.state.db = await asyncpg.create_pool(database_url)
+        print("✅ Using PostgreSQL database")
 
 @app.on_event("shutdown")
 async def shutdown():
-    await app.state.db.close()
+    if hasattr(app.state, 'db') and app.state.db:
+        await app.state.db.close()
 
 # === ROOT ROUTE ===
 @app.get("/")

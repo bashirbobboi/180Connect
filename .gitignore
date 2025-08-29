@@ -1,6 +1,61 @@
+# macOS
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+
+# Python
 backend/routes/__pycache__/
-frontend/node_modules/
-myenv/
 backend/__pycache__/
+backend/**/__pycache__/
+backend/*.pyc
+backend/**/*.pyc
+backend/venv/
+myenv/
+*.egg-info/
+.pytest_cache/
+
+# Environment variables
 backend/.env
+backend/.env.local
+backend/.env.development
+backend/.env.production
+frontend/.env
+frontend/.env.local
+frontend/.env.development
+frontend/.env.production
+
+# Databases
+backend/database.db
+backend/database.sqlite
+backend/database.sqlite3
+backend/*.db
+
+# Node.js / Frontend
+node_modules/
+frontend/node_modules/
+frontend/dist/
+frontend/build/
+frontend/.vite/
+frontend/coverage/
+
+# IDE / Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Logs
+*.log
+backend/logs/
+frontend/logs/
+
+# OS generated files
+Thumbs.db
+ehthumbs.db
+
+# Local development scripts (optional - remove if you want to commit them)
+# start_local_dev.sh
+# LOCAL_DEVELOPMENT.md
