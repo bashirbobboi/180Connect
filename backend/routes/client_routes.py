@@ -1071,7 +1071,7 @@ async def add_client(
                     """,
                     user["id"],
                     "client_added",
-                    f"New company added: {client_data.name}",
+                    f"New Client added: {client_data.name}",
                     client_data.name,
                     inserted["id"]
                 )

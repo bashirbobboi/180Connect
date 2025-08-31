@@ -125,7 +125,7 @@ export default function Dashboard() {
           // Fallback: Create recent activity from recent clients
           recent_activity = clients.slice(0, 6).map((client, index) => ({
             type: 'company_added',
-            description: `New company added: ${client.name}`,
+            description: `New Client Added: ${client.name}`,
             company_name: client.name,
             created_at: Date.now() - (index * 3600000) // Stagger by hours
           }));
@@ -255,13 +255,13 @@ export default function Dashboard() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <Card className="hover:shadow-lg transition-all duration-200">
             <CardHeader className="!flex !flex-row !items-center !justify-between !space-y-0 !pb-2">
-              <CardTitle className="text-sm font-medium text-gray-700 font-inter">Total Companies</CardTitle>
+              <CardTitle className="text-sm font-medium text-gray-700 font-inter">Total Clients</CardTitle>
               <Building2 className="h-4 w-4 text-gray-400" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-gray-900 font-inter">{dashboardStats.companies.total}</div>
               <p className="text-xs text-gray-500 mt-1 font-inter">
-                {dashboardStats.companies.contacted} contacted
+                {dashboardStats.companies.contacted} Contacted
               </p>
             </CardContent>
           </Card>
@@ -274,7 +274,7 @@ export default function Dashboard() {
             <CardContent>
               <div className="text-2xl font-bold text-gray-900 font-inter">{dashboardStats.emails.total_sent}</div>
               <p className="text-xs text-gray-500 mt-1 font-inter">
-                {dashboardStats.emails.success_rate}% success rate
+                {dashboardStats.emails.success_rate}% Response Rate
               </p>
             </CardContent>
           </Card>
@@ -287,14 +287,14 @@ export default function Dashboard() {
             <CardContent>
               <div className="text-2xl font-bold text-gray-900 font-inter">{dashboardStats.users.total}</div>
               <p className="text-xs text-gray-500 mt-1 font-inter">
-                Users on the platform
+                Users on the Platform
               </p>
             </CardContent>
           </Card>
 
           <Card className="hover:shadow-lg transition-all duration-200">
             <CardHeader className="!flex !flex-row !items-center !justify-between !space-y-0 !pb-2">
-              <CardTitle className="text-sm font-medium text-gray-700 font-inter">Companies by City</CardTitle>
+              <CardTitle className="text-sm font-medium text-gray-700 font-inter">Clients by City</CardTitle>
               <MapPin className="h-4 w-4 text-gray-400" />
             </CardHeader>
             <CardContent>
@@ -315,7 +315,7 @@ export default function Dashboard() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center justify-between">
-                Company Overview
+                Client Overview
                 <Button 
                   variant="ghost" 
                   size="sm"

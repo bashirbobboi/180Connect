@@ -76,21 +76,21 @@ export function Layout({ children }) {
                     key={item.name}
                     onClick={() => navigate(item.href)}
                     className={cn(
-                      "group flex items-center px-2 py-2 text-sm font-medium rounded-md w-full text-left transition-colors",
+                      "!group !flex !items-center !px-2 !py-2 !text-sm !font-medium !rounded-md !w-full !text-left !transition-colors",
                       item.current
-                        ? "bg-blue-50 text-blue-700 border-r-2 border-blue-700"
-                        : "text-stone-600 hover:bg-stone-50 hover:text-stone-900"
+                        ? "!bg-blue-50 !text-blue-700 !border-r-2 !border-blue-700"
+                        : "!text-stone-600 hover:!bg-stone-50 hover:!text-stone-900"
                     )}
                   >
                     <Icon
                       className={cn(
-                        "mr-3 flex-shrink-0 h-5 w-5",
+                        "!mr-3 !flex-shrink-0 !h-5 !w-5",
                         item.current
-                          ? "text-blue-500"
-                          : "text-stone-400 group-hover:text-stone-500"
+                          ? "!text-blue-500"
+                          : "!text-stone-400 group-hover:!text-stone-500"
                       )}
                     />
-                    {item.name}
+                    <span className="!text-sm !font-medium">{item.name}</span>
                   </button>
                 );
               })}
