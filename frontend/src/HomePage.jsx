@@ -1,6 +1,8 @@
-import 'bootstrap/dist/css/bootstrap.min.css';
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Layout } from "@/components/layout";
+import { useState, useEffect } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { 
   Building2, 
   Mail, 
@@ -8,439 +10,337 @@ import {
   MessageSquare,
   Plus,
   ArrowUpRight,
-  Activity,
-  BarChart3,
-  Users,
-  Database,
-  Home,
-  Settings,
-  User,
-  LogOut
-} from 'lucide-react';
-import './styles.less';
-import './App.css';
+  Activity
+} from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
-export default function HomePage() {
-    const navigate = useNavigate();
-    const [loading, setLoading] = useState(true);
-    const [dashboardData, setDashboardData] = useState({
-        totalCompanies: 0,
-        emailsSent: 0,
-        activeCampaigns: 0,
-        interactions: 0,
-        companyTypes: {},
-        recentActivity: []
-    });
-    const [userProfile, setUserProfile] = useState(null);
+export default function Dashboard() {
+  const navigate = useNavigate();
+  const [dashboardStats, setDashboardStats] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-    // Helper function to get activity icon
-    const getActivityIcon = (type) => {
-        switch (type) {
-            case 'email':
-                return <Mail className="text-white" size={12} />;
-            case 'interaction':
-                return <MessageSquare className="text-white" size={12} />;
-            case 'company_added':
-                return <Building2 className="text-white" size={12} />;
-            default:
-                return <Activity className="text-white" size={12} />;
-        }
-    };
-
-    // Check authentication and fetch user profile
-    useEffect(() => {
-        const checkAuth = async () => {
-            const token = localStorage.getItem("token");
-            if (!token) {
-                navigate('/login');
-                return;
-            }
-
-            try {
-                const res = await fetch(`${API_URL}/validate-token`, {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
-                });
-                
-                if (!res.ok) {
-                    localStorage.removeItem("token");
-                    navigate('/login');
-                    return;
-                }
-
-                // Fetch user profile
-                const profileRes = await fetch(`${API_URL}/user-profile`, {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
-                });
-                
-                if (profileRes.ok) {
-                    const profile = await profileRes.json();
-                    setUserProfile(profile);
-                }
-            } catch (error) {
-                console.error("Auth check failed:", error);
-                navigate('/login');
-            }
-        };
-
-        checkAuth();
-    }, [navigate]);
-
-    // Fetch dashboard data
-    useEffect(() => {
-        const fetchDashboardData = async () => {
-            try {
-                const token = localStorage.getItem("token");
-                
-                // Fetch all clients to calculate statistics
-                const clientsRes = await fetch(`${API_URL}/all-clients`, {
-                    headers: {
-                        'Accept': 'application/json',
-                        Authorization: `Bearer ${token}`,
-                    }
-                });
-
-                if (clientsRes.ok) {
-                    const clients = await clientsRes.json();
-                    
-                    // Calculate company types
-                    const companyTypes = {};
-                    clients.forEach(client => {
-                        const type = client.company_type || 'Unknown';
-                        companyTypes[type] = (companyTypes[type] || 0) + 1;
-                    });
-
-                    // Create recent activity from recent clients (mock data for now)
-                    const recentActivity = clients.slice(0, 3).map(client => ({
-                        id: client.id,
-                        type: 'company_added',
-                        title: `New company added: ${client.name}`,
-                        subtitle: client.name,
-                        timestamp: '27 Aug at 01:50' // Mock timestamp
-                    }));
-
-                    setDashboardData({
-                        totalCompanies: clients.length,
-                        emailsSent: 0, // TODO: Fetch from email endpoints
-                        activeCampaigns: 0, // TODO: Implement campaigns
-                        interactions: 0, // TODO: Implement interactions tracking
-                        companyTypes,
-                        recentActivity
-                    });
-                }
-                
-                setLoading(false);
-            } catch (error) {
-                console.error('Error fetching dashboard data:', error);
-                setLoading(false);
-            }
-        };
-
-        fetchDashboardData();
-    }, []);
-
-    const handleNavigation = (path) => {
-        navigate(path);
-    };
-
-    const handleSignOut = () => {
-        localStorage.removeItem("token");
+  // Check authentication and fetch dashboard data
+  useEffect(() => {
+    const checkAuthAndFetchData = async () => {
+      const token = localStorage.getItem("token");
+      if (!token) {
         navigate('/login');
+        return;
+      }
+
+      try {
+        // Check authentication
+        const authRes = await fetch(`${API_URL}/validate-token`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        
+        if (!authRes.ok) {
+          localStorage.removeItem("token");
+          navigate('/login');
+          return;
+        }
+
+        // Fetch all clients to calculate statistics
+        const clientsRes = await fetch(`${API_URL}/all-clients`, {
+          headers: {
+            'Accept': 'application/json',
+            Authorization: `Bearer ${token}`,
+          }
+        });
+
+        if (clientsRes.ok) {
+          const clients = await clientsRes.json();
+          
+          // Calculate company types
+          const companyTypeMap = {};
+          clients.forEach(client => {
+            const type = client.company_type || 'Unknown';
+            companyTypeMap[type] = (companyTypeMap[type] || 0) + 1;
+          });
+
+          // Convert to array format for display
+          const by_type = Object.entries(companyTypeMap).map(([type, count]) => ({
+            type: type === 'charity' ? 'Charity' : type === 'ltd' ? 'CIC' : type,
+            count
+          }));
+
+          // Mock priority data
+          const by_priority = [
+            { priority: 'High', count: 1 },
+            { priority: 'Medium', count: Math.max(0, clients.length - 1) },
+            { priority: 'Low', count: 0 }
+          ].filter(item => item.count > 0);
+
+          // Create recent activity from recent clients
+          const recent_activity = clients.slice(0, 6).map((client, index) => ({
+            type: 'company_added',
+            description: `New company added: ${client.name}`,
+            company_name: client.name,
+            created_at: Date.now() - (index * 3600000) // Stagger by hours
+          }));
+
+          setDashboardStats({
+            companies: {
+              total: clients.length,
+              contacted: 0,
+              by_type,
+              by_priority
+            },
+            emails: {
+              total_sent: 0,
+              success_rate: 0
+            },
+            campaigns: {
+              active: 0,
+              total: 0,
+              recent: []
+            },
+            interactions: {
+              this_week: 0
+            },
+            recent_activity
+          });
+        }
+      } catch (error) {
+        console.error('Failed to fetch dashboard data:', error);
+      } finally {
+        setLoading(false);
+      }
     };
 
-    if (loading) {
-        return (
-            <div className="d-flex justify-content-center align-items-center min-vh-100">
-                <div className="spinner-border text-primary" role="status">
-                    <span className="visually-hidden">Loading...</span>
-                </div>
-            </div>
-        );
+    checkAuthAndFetchData();
+  }, [navigate]);
+
+  const formatDate = (timestamp) => {
+    return new Date(timestamp).toLocaleDateString('en-GB', {
+      day: 'numeric',
+      month: 'short',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
+  const getActivityIcon = (type) => {
+    switch (type) {
+      case 'email':
+        return <Mail className="w-4 h-4 text-blue-500" />;
+      case 'interaction':
+        return <MessageSquare className="w-4 h-4 text-green-500" />;
+      case 'company_added':
+        return <Building2 className="w-4 h-4 text-purple-500" />;
+      default:
+        return <Activity className="w-4 h-4 text-stone-500" />;
     }
+  };
 
+  if (loading || !dashboardStats) {
     return (
-        <div className="d-flex min-vh-100 bg-light">
-            {/* Left Sidebar */}
-            <div className="bg-white border-end" style={{ width: '250px', minHeight: '100vh' }}>
-                {/* Logo Section */}
-                <div className="p-3 border-bottom">
-                    <button
-                        onClick={() => handleNavigation("/")}
-                        className="btn btn-link text-decoration-none p-0 w-100"
-                    >
-                        <div className="d-flex align-items-center">
-                            <div className="bg-primary rounded me-2 d-flex align-items-center justify-content-center" 
-                                 style={{ width: '32px', height: '32px' }}>
-                                <Building2 className="text-white" size={20} />
-                            </div>
-                            <div className="text-start">
-                                <div className="fw-bold text-dark">180Connect</div>
-                                <div className="text-muted small">CRM Platform</div>
-                            </div>
-                        </div>
-                    </button>
-                </div>
-
-                {/* Navigation Menu */}
-                <nav className="p-3">
-                    <div className="nav flex-column">
-                        <button 
-                            className="nav-link btn btn-link text-start p-2 mb-1 rounded bg-primary text-white d-flex align-items-center border-0"
-                            onClick={() => handleNavigation('/')}
-                            style={{ transition: 'all 0.2s ease' }}
-                        >
-                            <BarChart3 className="me-2" size={18} />
-                            Dashboard
-                        </button>
-                        <button 
-                            className="nav-link btn btn-link text-start p-2 mb-1 rounded text-dark d-flex align-items-center border-0"
-                            onClick={() => handleNavigation('/email')}
-                            style={{ transition: 'all 0.2s ease' }}
-                            onMouseEnter={(e) => e.target.classList.add('bg-light')}
-                            onMouseLeave={(e) => e.target.classList.remove('bg-light')}
-                        >
-                            <Building2 className="me-2" size={18} />
-                            Companies
-                        </button>
-                        <button 
-                            className="nav-link btn btn-link text-start p-2 mb-1 rounded text-dark d-flex align-items-center border-0"
-                            onClick={() => handleNavigation('/email')}
-                            style={{ transition: 'all 0.2s ease' }}
-                            onMouseEnter={(e) => e.target.classList.add('bg-light')}
-                            onMouseLeave={(e) => e.target.classList.remove('bg-light')}
-                        >
-                            <Mail className="me-2" size={18} />
-                            Email Campaigns
-                        </button>
-                        <button 
-                            className="nav-link btn btn-link text-start p-2 mb-1 rounded text-dark d-flex align-items-center border-0"
-                            onClick={() => handleNavigation('/email')}
-                            style={{ transition: 'all 0.2s ease' }}
-                            onMouseEnter={(e) => e.target.classList.add('bg-light')}
-                            onMouseLeave={(e) => e.target.classList.remove('bg-light')}
-                        >
-                            <Database className="me-2" size={18} />
-                            Data Import
-                        </button>
-                        <button 
-                            className="nav-link btn btn-link text-start p-2 mb-1 rounded text-dark d-flex align-items-center border-0"
-                            onClick={() => handleNavigation('/account')}
-                            style={{ transition: 'all 0.2s ease' }}
-                            onMouseEnter={(e) => e.target.classList.add('bg-light')}
-                            onMouseLeave={(e) => e.target.classList.remove('bg-light')}
-                        >
-                            <Users className="me-2" size={18} />
-                            Team
-                        </button>
-                    </div>
-                </nav>
-
-                {/* User Profile Section */}
-                <div className="mt-auto p-3 border-top" style={{ position: 'absolute', bottom: '0', width: '250px' }}>
-                    {userProfile && (
-                        <div className="dropdown">
-                            <button className="btn btn-link text-start p-0 w-100 text-decoration-none" 
-                                    data-bs-toggle="dropdown" aria-expanded="false">
-                                <div className="d-flex align-items-center">
-                                    <div className="bg-secondary rounded-circle me-2 d-flex align-items-center justify-content-center text-white" 
-                                         style={{ width: '32px', height: '32px' }}>
-                                        {userProfile.first_name?.[0]?.toUpperCase() || 'U'}
-                                    </div>
-                                    <div className="flex-grow-1">
-                                        <div className="fw-medium">{userProfile.first_name} {userProfile.last_name}</div>
-                                        <div className="text-muted small">{userProfile.email}</div>
-                                    </div>
-                                    <span className="badge bg-primary">admin</span>
-                                </div>
-                            </button>
-                            <ul className="dropdown-menu">
-                                <li><button className="dropdown-item d-flex align-items-center" onClick={() => handleNavigation('/')}>
-                                    <Home className="me-2" size={16} />
-                                    Home
-                                </button></li>
-                                <li><button className="dropdown-item d-flex align-items-center" onClick={() => handleNavigation('/account')}>
-                                    <Settings className="me-2" size={16} />
-                                    Admin Settings
-                                </button></li>
-                                <li><button className="dropdown-item d-flex align-items-center" onClick={() => handleNavigation('/account')}>
-                                    <User className="me-2" size={16} />
-                                    Account Settings
-                                </button></li>
-                                <li><hr className="dropdown-divider" /></li>
-                                <li><button className="dropdown-item text-danger d-flex align-items-center" onClick={handleSignOut}>
-                                    <LogOut className="me-2" size={16} />
-                                    Sign out
-                                </button></li>
-                            </ul>
-                        </div>
-                    )}
-                </div>
-            </div>
-
-            {/* Main Content */}
-            <div className="flex-grow-1 p-4">
-                {/* Header */}
-                <div className="mb-4">
-                    <h1 className="h2 mb-1">Dashboard</h1>
-                    <p className="text-muted">Welcome to 180Connect CRM - Your client outreach platform</p>
-                </div>
-
-                {/* Stats Cards */}
-                <div className="row g-4 mb-4">
-                    <div className="col-md-3">
-                        <div className="card h-100">
-                            <div className="card-body">
-                                <div className="d-flex justify-content-between align-items-start">
-                                    <div>
-                                        <h5 className="card-title text-muted mb-1">Total Companies</h5>
-                                        <h2 className="mb-0">{dashboardData.totalCompanies}</h2>
-                                        <small className="text-muted">0 contacted</small>
-                                    </div>
-                                    <Building2 className="text-muted" size={24} />
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div className="col-md-3">
-                        <div className="card h-100">
-                            <div className="card-body">
-                                <div className="d-flex justify-content-between align-items-start">
-                                    <div>
-                                        <h5 className="card-title text-muted mb-1">Emails Sent</h5>
-                                        <h2 className="mb-0">{dashboardData.emailsSent}</h2>
-                                        <small className="text-muted">0% success rate</small>
-                                    </div>
-                                    <Mail className="text-muted" size={24} />
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div className="col-md-3">
-                        <div className="card h-100">
-                            <div className="card-body">
-                                <div className="d-flex justify-content-between align-items-start">
-                                    <div>
-                                        <h5 className="card-title text-muted mb-1">Active Campaigns</h5>
-                                        <h2 className="mb-0">{dashboardData.activeCampaigns}</h2>
-                                        <small className="text-muted">0 total campaigns</small>
-                                    </div>
-                                    <TrendingUp className="text-muted" size={24} />
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div className="col-md-3">
-                        <div className="card h-100">
-                            <div className="card-body">
-                                <div className="d-flex justify-content-between align-items-start">
-                                    <div>
-                                        <h5 className="card-title text-muted mb-1">Interactions</h5>
-                                        <h2 className="mb-0">{dashboardData.interactions}</h2>
-                                        <small className="text-muted">This week</small>
-                                    </div>
-                                    <MessageSquare className="text-muted" size={24} />
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Content Row */}
-                <div className="row g-4">
-                    {/* Company Overview */}
-                    <div className="col-md-8">
-                        <div className="card h-100">
-                            <div className="card-header d-flex justify-content-between align-items-center">
-                                <h5 className="mb-0">Company Overview</h5>
-                                <button className="btn btn-link btn-sm text-decoration-none d-flex align-items-center" 
-                                        onClick={() => handleNavigation('/email')}>
-                                    View all
-                                    <ArrowUpRight className="ms-1" size={14} />
-                                </button>
-                            </div>
-                            <div className="card-body">
-                                <div className="mb-3">
-                                    <h6>By Type</h6>
-                                    {Object.entries(dashboardData.companyTypes).slice(0, 2).map(([type, count]) => (
-                                        <div key={type} className="d-flex justify-content-between align-items-center mb-2">
-                                            <span className="text-capitalize">{type === 'charity' ? 'Charity' : 'CIC'}</span>
-                                            <span>{count}</span>
-                                        </div>
-                                    ))}
-                                </div>
-                                <div>
-                                    <h6>By Priority</h6>
-                                    <div className="d-flex justify-content-between align-items-center">
-                                        <span>High</span>
-                                        <span className="badge bg-danger rounded-pill">1</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Recent Activity */}
-                    <div className="col-md-4">
-                        <div className="card h-100">
-                            <div className="card-header">
-                                <h5 className="mb-0">Recent Activity</h5>
-                            </div>
-                            <div className="card-body">
-                                {dashboardData.recentActivity.length > 0 ? (
-                                    dashboardData.recentActivity.map((activity, index) => (
-                                        <div key={activity.id} className={`d-flex align-items-start ${index !== dashboardData.recentActivity.length - 1 ? 'mb-3' : ''}`}>
-                                            <div className="bg-primary rounded-circle me-2 d-flex align-items-center justify-content-center" 
-                                                 style={{ width: '24px', height: '24px', minWidth: '24px' }}>
-                                                {getActivityIcon(activity.type)}
-                                            </div>
-                                            <div className="flex-grow-1">
-                                                <div className="fw-medium small">{activity.title}</div>
-                                                <div className="text-muted small">{activity.subtitle}</div>
-                                                <div className="text-muted small">{activity.timestamp}</div>
-                                            </div>
-                                        </div>
-                                    ))
-                                ) : (
-                                    <p className="text-muted">No recent activity</p>
-                                )}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Quick Actions */}
-                <div className="mt-4">
-                    <h5 className="mb-3">Quick Actions</h5>
-                    <div className="row g-3">
-                        <div className="col-md-4">
-                            <button className="btn btn-outline-primary w-100 p-3 d-flex flex-column align-items-center" 
-                                    onClick={() => handleNavigation('/email')}>
-                                <Building2 className="mb-2" size={24} />
-                                Add Company
-                            </button>
-                        </div>
-                        <div className="col-md-4">
-                            <button className="btn btn-outline-primary w-100 p-3 d-flex flex-column align-items-center" 
-                                    onClick={() => handleNavigation('/email')}>
-                                <Mail className="mb-2" size={24} />
-                                New Campaign
-                            </button>
-                        </div>
-                        <div className="col-md-4">
-                            <button className="btn btn-outline-primary w-100 p-3 d-flex flex-column align-items-center" 
-                                    onClick={() => handleNavigation('/email')}>
-                                <Database className="mb-2" size={24} />
-                                Import Data
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
+      <Layout>
+        <div className="flex items-center justify-center h-full">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
         </div>
+      </Layout>
     );
+  }
+
+  return (
+    <Layout>
+      <div className="p-6 space-y-6">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-semibold text-stone-900 tracking-tight">
+              Dashboard
+            </h1>
+            <p className="text-stone-600">
+              Welcome to 180Connect CRM - Your client outreach platform
+            </p>
+          </div>
+        </div>
+
+        {/* Key Metrics */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <Card className="hover:shadow-lg transition-all duration-200">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-gray-700 font-inter">Total Companies</CardTitle>
+              <Building2 className="h-4 w-4 text-gray-400" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-gray-900 font-inter">{dashboardStats.companies.total}</div>
+              <p className="text-xs text-gray-500 mt-1 font-inter">
+                {dashboardStats.companies.contacted} contacted
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card className="hover:shadow-lg transition-all duration-200">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-gray-700 font-inter">Emails Sent</CardTitle>
+              <Mail className="h-4 w-4 text-gray-400" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-gray-900 font-inter">{dashboardStats.emails.total_sent}</div>
+              <p className="text-xs text-gray-500 mt-1 font-inter">
+                {dashboardStats.emails.success_rate}% success rate
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card className="hover:shadow-lg transition-all duration-200">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-gray-700 font-inter">Active Campaigns</CardTitle>
+              <TrendingUp className="h-4 w-4 text-gray-400" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-gray-900 font-inter">{dashboardStats.campaigns.active}</div>
+              <p className="text-xs text-gray-500 mt-1 font-inter">
+                {dashboardStats.campaigns.total} total campaigns
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card className="hover:shadow-lg transition-all duration-200">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-gray-700 font-inter">Interactions</CardTitle>
+              <MessageSquare className="h-4 w-4 text-gray-400" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-gray-900 font-inter">{dashboardStats.interactions.this_week}</div>
+              <p className="text-xs text-gray-500 mt-1 font-inter">
+                This week
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Company Breakdown */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center justify-between">
+                Company Overview
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  onClick={() => navigate('/email')}
+                  className="gap-1"
+                >
+                  View all
+                  <ArrowUpRight className="w-3 h-3" />
+                </Button>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <h4 className="text-sm font-medium mb-2">By Type</h4>
+                <div className="space-y-2">
+                  {dashboardStats.companies.by_type.map((item) => (
+                    <div key={item.type} className="flex items-center justify-between">
+                      <span className="text-sm text-stone-600">{item.type}</span>
+                      <Badge variant="secondary">{item.count}</Badge>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              
+              <div>
+                <h4 className="text-sm font-medium mb-2">By Priority</h4>
+                <div className="space-y-2">
+                  {dashboardStats.companies.by_priority.map((item) => (
+                    <div key={item.priority} className="flex items-center justify-between">
+                      <span className="text-sm text-stone-600">{item.priority}</span>
+                      <Badge 
+                        variant={item.priority === 'High' ? 'destructive' : 
+                                item.priority === 'Medium' ? 'default' : 'secondary'}
+                      >
+                        {item.count}
+                      </Badge>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Recent Activity */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Recent Activity</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {dashboardStats.recent_activity.length === 0 ? (
+                  <p className="text-sm text-stone-500 text-center py-4">
+                    No recent activity
+                  </p>
+                ) : (
+                  dashboardStats.recent_activity.slice(0, 6).map((activity, index) => (
+                    <div key={index} className="flex items-start space-x-3">
+                      <div className="flex-shrink-0 mt-0.5">
+                        {getActivityIcon(activity.type)}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm text-stone-900">
+                          {activity.description}
+                        </p>
+                        {activity.company_name && (
+                          <p className="text-xs text-stone-500">
+                            {activity.company_name}
+                          </p>
+                        )}
+                        <p className="text-xs text-stone-400">
+                          {formatDate(activity.created_at)}
+                        </p>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Quick Actions */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Quick Actions</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <Button 
+                onClick={() => navigate('/email')}
+                className="gap-2 h-auto p-4 flex-col"
+                variant="outline"
+              >
+                <Building2 className="w-6 h-6" />
+                <span>Add Company</span>
+              </Button>
+              
+              <Button 
+                onClick={() => navigate('/email')}
+                className="gap-2 h-auto p-4 flex-col"
+                variant="outline"
+              >
+                <Mail className="w-6 h-6" />
+                <span>New Campaign</span>
+              </Button>
+              
+              <Button 
+                onClick={() => navigate('/email')}
+                className="gap-2 h-auto p-4 flex-col"
+                variant="outline"
+              >
+                <TrendingUp className="w-6 h-6" />
+                <span>Import Data</span>
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </Layout>
+  );
 }
