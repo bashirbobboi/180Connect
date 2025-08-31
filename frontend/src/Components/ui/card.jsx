@@ -29,10 +29,14 @@ const CardTitle = React.forwardRef(
     <h3
       ref={ref}
       className={cn(
-        "text-sm font-semibold leading-none tracking-tight !text-sm",
+        "text-sm font-semibold leading-none !text-sm",
         className,
       )}
-      style={{ fontSize: '0.875rem' }}
+      style={{ 
+        fontSize: '0.875rem',
+        letterSpacing: 'var(--tracking-tight)',
+        fontWeight: '501',
+      }}
       {...props}
     />
   )
