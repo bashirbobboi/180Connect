@@ -4,7 +4,7 @@
  */
 
 import { Analytics } from '@vercel/analytics/react';
-import 'bootstrap/dist/css/bootstrap.min.css';
+// Bootstrap loaded in index.css before Tailwind
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import HomePage from './HomePage';

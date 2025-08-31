@@ -42,7 +42,7 @@ export function Layout({ children }) {
   ];
 
   return (
-    <div className="flex min-h-screen w-full bg-gray-50">
+    <div className="flex min-h-screen w-full bg-white">
       {/* Sidebar Navigation */}
       <div className="hidden md:flex md:w-64 md:flex-col">
         <div className="flex flex-col flex-grow pt-5 bg-white border-r border-stone-200">

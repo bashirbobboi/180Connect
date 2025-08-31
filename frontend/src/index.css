@@ -1,3 +1,7 @@
+/* Load Bootstrap first */
+@import "bootstrap/dist/css/bootstrap.min.css";
+
+/* Then load Tailwind CSS (this will override Bootstrap) */
 @import "tailwindcss";
 
 @font-face {

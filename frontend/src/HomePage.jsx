@@ -17,12 +17,12 @@ import { useNavigate } from "react-router-dom";
 const API_URL = import.meta.env.VITE_API_URL;
 
 export default function Dashboard() {
-  const navigate = useNavigate();
+    const navigate = useNavigate();
   const [dashboardStats, setDashboardStats] = useState(null);
   const [loading, setLoading] = useState(true);
 
   // Check authentication and fetch dashboard data
-  useEffect(() => {
+    useEffect(() => {
     const checkAuthAndFetchData = async () => {
       const token = localStorage.getItem("token");
       if (!token) {
@@ -192,14 +192,17 @@ export default function Dashboard() {
 
   return (
     <Layout>
-      <div className="p-6 space-y-6">
+      <div className="!p-6 !space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-semibold text-stone-900 tracking-tight">
+            <h1 className="text-2xl font-semibold text-stone-900 font-inter !text-2xl" style={{ 
+              letterSpacing: 'var(--tracking-tight)',
+              fontSize: '1.5rem'
+            }}>
               Dashboard
             </h1>
-            <p className="text-stone-600">
+            <p className="text-stone-600 font-inter">
               Welcome to 180Connect CRM - Your client outreach platform
             </p>
           </div>
@@ -208,7 +211,7 @@ export default function Dashboard() {
         {/* Key Metrics */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <Card className="hover:shadow-lg transition-all duration-200">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardHeader className="!flex !flex-row !items-center !justify-between !space-y-0 !pb-2">
               <CardTitle className="text-sm font-medium text-gray-700 font-inter">Total Companies</CardTitle>
               <Building2 className="h-4 w-4 text-gray-400" />
             </CardHeader>
@@ -221,7 +224,7 @@ export default function Dashboard() {
           </Card>
 
           <Card className="hover:shadow-lg transition-all duration-200">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardHeader className="!flex !flex-row !items-center !justify-between !space-y-0 !pb-2">
               <CardTitle className="text-sm font-medium text-gray-700 font-inter">Emails Sent</CardTitle>
               <Mail className="h-4 w-4 text-gray-400" />
             </CardHeader>
@@ -234,7 +237,7 @@ export default function Dashboard() {
           </Card>
 
           <Card className="hover:shadow-lg transition-all duration-200">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardHeader className="!flex !flex-row !items-center !justify-between !space-y-0 !pb-2">
               <CardTitle className="text-sm font-medium text-gray-700 font-inter">Users</CardTitle>
               <Users className="h-4 w-4 text-gray-400" />
             </CardHeader>
@@ -247,7 +250,7 @@ export default function Dashboard() {
           </Card>
 
           <Card className="hover:shadow-lg transition-all duration-200">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardHeader className="!flex !flex-row !items-center !justify-between !space-y-0 !pb-2">
               <CardTitle className="text-sm font-medium text-gray-700 font-inter">Companies by City</CardTitle>
               <MapPin className="h-4 w-4 text-gray-400" />
             </CardHeader>
