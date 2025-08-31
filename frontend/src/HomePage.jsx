@@ -198,11 +198,14 @@ export default function Dashboard() {
           <div>
             <h1 className="text-2xl font-semibold text-stone-900 font-inter !text-2xl" style={{ 
               letterSpacing: 'var(--tracking-tight)',
-              fontSize: '1.5rem'
+              fontSize: '1.5rem',
+              fontWeight: '501',
             }}>
               Dashboard
             </h1>
-            <p className="text-stone-600 font-inter">
+            <p className="text-stone-600 font-inter" style={{
+                fontWeight: '451',
+            }}>
               Welcome to 180Connect CRM - Your client outreach platform
             </p>
           </div>
@@ -259,7 +262,7 @@ export default function Dashboard() {
                 {dashboardStats.topCities.map((city, index) => (
                   <div key={index} className="flex items-center justify-between">
                     <span className="text-sm text-gray-600 font-inter">{city.city}</span>
-                    <Badge variant="secondary" className="font-inter">{city.count}</Badge>
+                    <span className="text-sm font-medium text-gray-900 font-inter">{city.count}</span>
                   </div>
                 ))}
               </div>
