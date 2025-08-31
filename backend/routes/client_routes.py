@@ -614,6 +614,137 @@ async def get_client_emails(
                 detail=f"Failed to retrieve emails: {str(e)}"
             )
 
+@router.get("/email-stats")
+async def get_email_statistics(
+    request: Request,
+    authorization: str = Header(...)
+):
+    """Get email statistics for the dashboard."""
+    # Check if using SQLite or PostgreSQL
+    if hasattr(request.app.state, 'SessionLocal'):
+        # SQLite/SQLAlchemy approach
+        from models import User, Email
+        from routes.token_routes import verify_token_sqlite
+        SessionLocal = request.app.state.SessionLocal
+        
+        with SessionLocal() as db:
+            try:
+                # Verify token and user
+                token_value = authorization.replace("Bearer ", "")
+                token = verify_token_sqlite(token_value, db)
+                if not token:
+                    raise HTTPException(status_code=401, detail="Invalid token")
+                
+                user = db.query(User).filter(User.id == token.user_id).first()
+                if not user:
+                    raise HTTPException(status_code=404, detail="User not found")
+
+                # Get email statistics
+                total_emails = db.query(Email).filter(Email.user_id == user.id).count()
+                sent_emails = db.query(Email).filter(Email.user_id == user.id, Email.status == "sent").count()
+                failed_emails = db.query(Email).filter(Email.user_id == user.id, Email.status == "failed").count()
+                
+                success_rate = (sent_emails / total_emails * 100) if total_emails > 0 else 0
+
+                return {
+                    "total_sent": total_emails,
+                    "success_rate": round(success_rate, 1),
+                    "sent_count": sent_emails,
+                    "failed_count": failed_emails
+                }
+
+            except Exception as e:
+                raise HTTPException(status_code=500, detail=f"Failed to get email stats: {str(e)}")
+    else:
+        # PostgreSQL/asyncpg approach
+        pool = request.app.state.db
+        async with pool.acquire() as conn:
+            try:
+                # Verify token and user
+                token_value = authorization.replace("Bearer ", "")
+                token = await verify_token(token_value, conn)
+                user = await get_render_user_from_uid(conn, token["user_id"])
+
+                # Get email statistics
+                total_emails = await conn.fetchval(
+                    "SELECT COUNT(*) FROM emails WHERE user_id = $1",
+                    user["id"]
+                )
+                sent_emails = await conn.fetchval(
+                    "SELECT COUNT(*) FROM emails WHERE user_id = $1 AND status = 'sent'",
+                    user["id"]
+                )
+                failed_emails = await conn.fetchval(
+                    "SELECT COUNT(*) FROM emails WHERE user_id = $1 AND status = 'failed'",
+                    user["id"]
+                )
+                
+                success_rate = (sent_emails / total_emails * 100) if total_emails > 0 else 0
+
+                return {
+                    "total_sent": total_emails,
+                    "success_rate": round(success_rate, 1),
+                    "sent_count": sent_emails,
+                    "failed_count": failed_emails
+                }
+
+            except Exception as e:
+                raise HTTPException(status_code=500, detail=f"Failed to get email stats: {str(e)}")
+
+@router.get("/user-stats")
+async def get_user_statistics(
+    request: Request,
+    authorization: str = Header(...)
+):
+    """Get user statistics for the dashboard."""
+    # Check if using SQLite or PostgreSQL
+    if hasattr(request.app.state, 'SessionLocal'):
+        # SQLite/SQLAlchemy approach
+        from models import User
+        from routes.token_routes import verify_token_sqlite
+        SessionLocal = request.app.state.SessionLocal
+        
+        with SessionLocal() as db:
+            try:
+                # Verify token and user
+                token_value = authorization.replace("Bearer ", "")
+                token = verify_token_sqlite(token_value, db)
+                if not token:
+                    raise HTTPException(status_code=401, detail="Invalid token")
+                
+                user = db.query(User).filter(User.id == token.user_id).first()
+                if not user:
+                    raise HTTPException(status_code=404, detail="User not found")
+
+                # Get total user count
+                total_users = db.query(User).count()
+
+                return {
+                    "total_users": total_users
+                }
+
+            except Exception as e:
+                raise HTTPException(status_code=500, detail=f"Failed to get user stats: {str(e)}")
+    else:
+        # PostgreSQL/asyncpg approach
+        pool = request.app.state.db
+        async with pool.acquire() as conn:
+            try:
+                # Verify token and user
+                token_value = authorization.replace("Bearer ", "")
+                token = await verify_token(token_value, conn)
+                user = await get_render_user_from_uid(conn, token["user_id"])
+
+                # Get total user count
+                total_users = await conn.fetchval("SELECT COUNT(*) FROM users")
+
+                return {
+                    "total_users": total_users
+                }
+
+            except Exception as e:
+                raise HTTPException(status_code=500, detail=f"Failed to get user stats: {str(e)}")
+
 ###############################################
 ############# CSV FUNCTIONS ###################
 ###############################################

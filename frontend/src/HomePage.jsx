@@ -6,8 +6,8 @@ import { Badge } from "@/components/ui/badge";
 import { 
   Building2, 
   Mail, 
-  TrendingUp, 
-  MessageSquare,
+  Users,
+  MapPin,
   Plus,
   ArrowUpRight,
   Activity
@@ -52,8 +52,28 @@ export default function Dashboard() {
           }
         });
 
+        // Fetch email statistics
+        const emailStatsRes = await fetch(`${API_URL}/email-stats`, {
+          headers: {
+            'Accept': 'application/json',
+            Authorization: `Bearer ${token}`,
+          }
+        });
+
+        // Fetch user statistics
+        const userStatsRes = await fetch(`${API_URL}/user-stats`, {
+          headers: {
+            'Accept': 'application/json',
+            Authorization: `Bearer ${token}`,
+          }
+        });
+
         if (clientsRes.ok) {
           const clients = await clientsRes.json();
+          
+          // Debug: Log the number of companies found
+          console.log(`Found ${clients.length} companies in database`);
+          console.log('Companies:', clients.map(c => c.name));
           
           // Calculate company types
           const companyTypeMap = {};
@@ -67,6 +87,19 @@ export default function Dashboard() {
             type: type === 'charity' ? 'Charity' : type === 'ltd' ? 'CIC' : type,
             count
           }));
+
+          // Calculate companies by city
+          const cityMap = {};
+          clients.forEach(client => {
+            const city = client.postcode?.split(' ')[0] || 'Unknown';
+            cityMap[city] = (cityMap[city] || 0) + 1;
+          });
+
+          // Get top 3 cities
+          const topCities = Object.entries(cityMap)
+            .sort(([,a], [,b]) => b - a)
+            .slice(0, 3)
+            .map(([city, count]) => ({ city, count }));
 
           // Mock priority data
           const by_priority = [
@@ -83,6 +116,20 @@ export default function Dashboard() {
             created_at: Date.now() - (index * 3600000) // Stagger by hours
           }));
 
+          // Get email statistics
+          let emailStats = { total_sent: 0, success_rate: 0 };
+          if (emailStatsRes.ok) {
+            emailStats = await emailStatsRes.json();
+            console.log('Email stats:', emailStats);
+          }
+
+          // Get user statistics
+          let userStats = { total_users: 0 };
+          if (userStatsRes.ok) {
+            userStats = await userStatsRes.json();
+            console.log('User stats:', userStats);
+          }
+
           setDashboardStats({
             companies: {
               total: clients.length,
@@ -91,17 +138,13 @@ export default function Dashboard() {
               by_priority
             },
             emails: {
-              total_sent: 0,
-              success_rate: 0
+              total_sent: emailStats.total_sent || 0,
+              success_rate: emailStats.success_rate || 0
             },
-            campaigns: {
-              active: 0,
-              total: 0,
-              recent: []
+            users: {
+              total: userStats.total_users || 0
             },
-            interactions: {
-              this_week: 0
-            },
+            topCities,
             recent_activity
           });
         }
@@ -192,27 +235,31 @@ export default function Dashboard() {
 
           <Card className="hover:shadow-lg transition-all duration-200">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-gray-700 font-inter">Active Campaigns</CardTitle>
-              <TrendingUp className="h-4 w-4 text-gray-400" />
+              <CardTitle className="text-sm font-medium text-gray-700 font-inter">Users</CardTitle>
+              <Users className="h-4 w-4 text-gray-400" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-gray-900 font-inter">{dashboardStats.campaigns.active}</div>
+              <div className="text-2xl font-bold text-gray-900 font-inter">{dashboardStats.users.total}</div>
               <p className="text-xs text-gray-500 mt-1 font-inter">
-                {dashboardStats.campaigns.total} total campaigns
+                number of users on the platform
               </p>
             </CardContent>
           </Card>
 
           <Card className="hover:shadow-lg transition-all duration-200">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-gray-700 font-inter">Interactions</CardTitle>
-              <MessageSquare className="h-4 w-4 text-gray-400" />
+              <CardTitle className="text-sm font-medium text-gray-700 font-inter">Companies by City</CardTitle>
+              <MapPin className="h-4 w-4 text-gray-400" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-gray-900 font-inter">{dashboardStats.interactions.this_week}</div>
-              <p className="text-xs text-gray-500 mt-1 font-inter">
-                This week
-              </p>
+              <div className="space-y-2">
+                {dashboardStats.topCities.map((city, index) => (
+                  <div key={index} className="flex items-center justify-between">
+                    <span className="text-sm text-gray-600 font-inter">{city.city}</span>
+                    <Badge variant="secondary" className="font-inter">{city.count}</Badge>
+                  </div>
+                ))}
+              </div>
             </CardContent>
           </Card>
         </div>
@@ -334,7 +381,7 @@ export default function Dashboard() {
                 className="gap-2 h-auto p-4 flex-col"
                 variant="outline"
               >
-                <TrendingUp className="w-6 h-6" />
+                <MapPin className="w-6 h-6" />
                 <span>Import Data</span>
               </Button>
             </div>
