@@ -1,3 +1,4 @@
+
 /**
  * Login and registration page component.
  * Handles user authentication through email/password and Google OAuth.

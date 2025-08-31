@@ -1,6 +1,22 @@
 import 'bootstrap/dist/css/bootstrap.min.css';
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { 
+  Building2, 
+  Mail, 
+  TrendingUp, 
+  MessageSquare,
+  Plus,
+  ArrowUpRight,
+  Activity,
+  BarChart3,
+  Users,
+  Database,
+  Home,
+  Settings,
+  User,
+  LogOut
+} from 'lucide-react';
 import './styles.less';
 import './App.css';
 
@@ -18,6 +34,20 @@ export default function HomePage() {
         recentActivity: []
     });
     const [userProfile, setUserProfile] = useState(null);
+
+    // Helper function to get activity icon
+    const getActivityIcon = (type) => {
+        switch (type) {
+            case 'email':
+                return <Mail className="text-white" size={12} />;
+            case 'interaction':
+                return <MessageSquare className="text-white" size={12} />;
+            case 'company_added':
+                return <Building2 className="text-white" size={12} />;
+            default:
+                return <Activity className="text-white" size={12} />;
+        }
+    };
 
     // Check authentication and fetch user profile
     useEffect(() => {
@@ -139,50 +169,73 @@ export default function HomePage() {
             <div className="bg-white border-end" style={{ width: '250px', minHeight: '100vh' }}>
                 {/* Logo Section */}
                 <div className="p-3 border-bottom">
-                    <div className="d-flex align-items-center">
-                        <div className="bg-primary rounded me-2 d-flex align-items-center justify-content-center" 
-                             style={{ width: '32px', height: '32px' }}>
-                            📊
+                    <button
+                        onClick={() => handleNavigation("/")}
+                        className="btn btn-link text-decoration-none p-0 w-100"
+                    >
+                        <div className="d-flex align-items-center">
+                            <div className="bg-primary rounded me-2 d-flex align-items-center justify-content-center" 
+                                 style={{ width: '32px', height: '32px' }}>
+                                <Building2 className="text-white" size={20} />
+                            </div>
+                            <div className="text-start">
+                                <div className="fw-bold text-dark">180Connect</div>
+                                <div className="text-muted small">CRM Platform</div>
+                            </div>
                         </div>
-                        <div>
-                            <div className="fw-bold">180Connect</div>
-                            <div className="text-muted small">CRM Platform</div>
-                        </div>
-                    </div>
+                    </button>
                 </div>
 
                 {/* Navigation Menu */}
                 <nav className="p-3">
                     <div className="nav flex-column">
                         <button 
-                            className="nav-link btn btn-link text-start p-2 mb-1 rounded bg-primary text-white"
+                            className="nav-link btn btn-link text-start p-2 mb-1 rounded bg-primary text-white d-flex align-items-center border-0"
                             onClick={() => handleNavigation('/')}
+                            style={{ transition: 'all 0.2s ease' }}
                         >
-                            📊 Dashboard
+                            <BarChart3 className="me-2" size={18} />
+                            Dashboard
                         </button>
                         <button 
-                            className="nav-link btn btn-link text-start p-2 mb-1 rounded text-dark"
+                            className="nav-link btn btn-link text-start p-2 mb-1 rounded text-dark d-flex align-items-center border-0"
                             onClick={() => handleNavigation('/email')}
+                            style={{ transition: 'all 0.2s ease' }}
+                            onMouseEnter={(e) => e.target.classList.add('bg-light')}
+                            onMouseLeave={(e) => e.target.classList.remove('bg-light')}
                         >
-                            🏢 Companies
+                            <Building2 className="me-2" size={18} />
+                            Companies
                         </button>
                         <button 
-                            className="nav-link btn btn-link text-start p-2 mb-1 rounded text-dark"
+                            className="nav-link btn btn-link text-start p-2 mb-1 rounded text-dark d-flex align-items-center border-0"
                             onClick={() => handleNavigation('/email')}
+                            style={{ transition: 'all 0.2s ease' }}
+                            onMouseEnter={(e) => e.target.classList.add('bg-light')}
+                            onMouseLeave={(e) => e.target.classList.remove('bg-light')}
                         >
-                            ✉️ Email Campaigns
+                            <Mail className="me-2" size={18} />
+                            Email Campaigns
                         </button>
                         <button 
-                            className="nav-link btn btn-link text-start p-2 mb-1 rounded text-dark"
+                            className="nav-link btn btn-link text-start p-2 mb-1 rounded text-dark d-flex align-items-center border-0"
                             onClick={() => handleNavigation('/email')}
+                            style={{ transition: 'all 0.2s ease' }}
+                            onMouseEnter={(e) => e.target.classList.add('bg-light')}
+                            onMouseLeave={(e) => e.target.classList.remove('bg-light')}
                         >
-                            📤 Data Import
+                            <Database className="me-2" size={18} />
+                            Data Import
                         </button>
                         <button 
-                            className="nav-link btn btn-link text-start p-2 mb-1 rounded text-dark"
+                            className="nav-link btn btn-link text-start p-2 mb-1 rounded text-dark d-flex align-items-center border-0"
                             onClick={() => handleNavigation('/account')}
+                            style={{ transition: 'all 0.2s ease' }}
+                            onMouseEnter={(e) => e.target.classList.add('bg-light')}
+                            onMouseLeave={(e) => e.target.classList.remove('bg-light')}
                         >
-                            👥 Team
+                            <Users className="me-2" size={18} />
+                            Team
                         </button>
                     </div>
                 </nav>
@@ -206,18 +259,22 @@ export default function HomePage() {
                                 </div>
                             </button>
                             <ul className="dropdown-menu">
-                                <li><button className="dropdown-item" onClick={() => handleNavigation('/')}>
-                                    🏠 Home
+                                <li><button className="dropdown-item d-flex align-items-center" onClick={() => handleNavigation('/')}>
+                                    <Home className="me-2" size={16} />
+                                    Home
                                 </button></li>
-                                <li><button className="dropdown-item" onClick={() => handleNavigation('/account')}>
-                                    ⚙️ Admin Settings
+                                <li><button className="dropdown-item d-flex align-items-center" onClick={() => handleNavigation('/account')}>
+                                    <Settings className="me-2" size={16} />
+                                    Admin Settings
                                 </button></li>
-                                <li><button className="dropdown-item" onClick={() => handleNavigation('/account')}>
-                                    👤 Account Settings
+                                <li><button className="dropdown-item d-flex align-items-center" onClick={() => handleNavigation('/account')}>
+                                    <User className="me-2" size={16} />
+                                    Account Settings
                                 </button></li>
                                 <li><hr className="dropdown-divider" /></li>
-                                <li><button className="dropdown-item text-danger" onClick={handleSignOut}>
-                                    🚪 Sign out
+                                <li><button className="dropdown-item text-danger d-flex align-items-center" onClick={handleSignOut}>
+                                    <LogOut className="me-2" size={16} />
+                                    Sign out
                                 </button></li>
                             </ul>
                         </div>
@@ -244,7 +301,7 @@ export default function HomePage() {
                                         <h2 className="mb-0">{dashboardData.totalCompanies}</h2>
                                         <small className="text-muted">0 contacted</small>
                                     </div>
-                                    <span style={{ fontSize: '24px' }}>🏢</span>
+                                    <Building2 className="text-muted" size={24} />
                                 </div>
                             </div>
                         </div>
@@ -258,7 +315,7 @@ export default function HomePage() {
                                         <h2 className="mb-0">{dashboardData.emailsSent}</h2>
                                         <small className="text-muted">0% success rate</small>
                                     </div>
-                                    <span style={{ fontSize: '24px' }}>✉️</span>
+                                    <Mail className="text-muted" size={24} />
                                 </div>
                             </div>
                         </div>
@@ -272,7 +329,7 @@ export default function HomePage() {
                                         <h2 className="mb-0">{dashboardData.activeCampaigns}</h2>
                                         <small className="text-muted">0 total campaigns</small>
                                     </div>
-                                    <span style={{ fontSize: '24px' }}>📈</span>
+                                    <TrendingUp className="text-muted" size={24} />
                                 </div>
                             </div>
                         </div>
@@ -286,7 +343,7 @@ export default function HomePage() {
                                         <h2 className="mb-0">{dashboardData.interactions}</h2>
                                         <small className="text-muted">This week</small>
                                     </div>
-                                    <span style={{ fontSize: '24px' }}>💬</span>
+                                    <MessageSquare className="text-muted" size={24} />
                                 </div>
                             </div>
                         </div>
@@ -300,9 +357,10 @@ export default function HomePage() {
                         <div className="card h-100">
                             <div className="card-header d-flex justify-content-between align-items-center">
                                 <h5 className="mb-0">Company Overview</h5>
-                                <button className="btn btn-link btn-sm text-decoration-none" 
+                                <button className="btn btn-link btn-sm text-decoration-none d-flex align-items-center" 
                                         onClick={() => handleNavigation('/email')}>
-                                    View all →
+                                    View all
+                                    <ArrowUpRight className="ms-1" size={14} />
                                 </button>
                             </div>
                             <div className="card-body">
@@ -338,7 +396,7 @@ export default function HomePage() {
                                         <div key={activity.id} className={`d-flex align-items-start ${index !== dashboardData.recentActivity.length - 1 ? 'mb-3' : ''}`}>
                                             <div className="bg-primary rounded-circle me-2 d-flex align-items-center justify-content-center" 
                                                  style={{ width: '24px', height: '24px', minWidth: '24px' }}>
-                                                <span style={{ fontSize: '12px' }}>🏢</span>
+                                                {getActivityIcon(activity.type)}
                                             </div>
                                             <div className="flex-grow-1">
                                                 <div className="fw-medium small">{activity.title}</div>
@@ -360,23 +418,23 @@ export default function HomePage() {
                     <h5 className="mb-3">Quick Actions</h5>
                     <div className="row g-3">
                         <div className="col-md-4">
-                            <button className="btn btn-outline-primary w-100 p-3" 
+                            <button className="btn btn-outline-primary w-100 p-3 d-flex flex-column align-items-center" 
                                     onClick={() => handleNavigation('/email')}>
-                                <div style={{ fontSize: '24px' }} className="mb-2">🏢</div>
+                                <Building2 className="mb-2" size={24} />
                                 Add Company
                             </button>
                         </div>
                         <div className="col-md-4">
-                            <button className="btn btn-outline-primary w-100 p-3" 
+                            <button className="btn btn-outline-primary w-100 p-3 d-flex flex-column align-items-center" 
                                     onClick={() => handleNavigation('/email')}>
-                                <div style={{ fontSize: '24px' }} className="mb-2">✉️</div>
+                                <Mail className="mb-2" size={24} />
                                 New Campaign
                             </button>
                         </div>
                         <div className="col-md-4">
-                            <button className="btn btn-outline-primary w-100 p-3" 
+                            <button className="btn btn-outline-primary w-100 p-3 d-flex flex-column align-items-center" 
                                     onClick={() => handleNavigation('/email')}>
-                                <div style={{ fontSize: '24px' }} className="mb-2">📤</div>
+                                <Database className="mb-2" size={24} />
                                 Import Data
                             </button>
                         </div>
