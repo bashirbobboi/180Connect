@@ -114,7 +114,7 @@ export default function LoginPage() {
         console.log("Login successful, storing token and navigating...");
         localStorage.setItem("token", data.access_token);
         showNotification("Login successful! Redirecting...", 'success');
-        setTimeout(() => navigate('/email'), 1500); // Delay navigation to show notification
+        setTimeout(() => navigate('/'), 1500); // Delay navigation to show notification
         return data;
       } else if (response.status === 401) {
         showNotification("Invalid email or password", 'error');
@@ -197,7 +197,7 @@ export default function LoginPage() {
 
         if (loginResponse.ok) {
           localStorage.setItem("token", loginData.access_token);
-          setTimeout(() => navigate('/email'), 1500); // Delay navigation to show notification
+          setTimeout(() => navigate('/'), 1500); // Delay navigation to show notification
         } else {
           showNotification("Account created, but failed to log in automatically. Please log in manually.", 'error');
           setTimeout(() => navigate('/login'), 1500);
@@ -242,7 +242,7 @@ export default function LoginPage() {
       const data = await response.json();
       if(response.ok){
         localStorage.setItem("token", data.access_token);
-        navigate('/email')
+        navigate('/')
       }      
     } catch (error) {
       console.error('Error during Google authentication:', error);

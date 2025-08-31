@@ -56,7 +56,7 @@ export default function AddClientPage() {
 
       const data = await response.json();
       console.log('Client added:', data);
-      navigate('/email');
+      navigate('/');
     } catch (error) {
       console.error('Failed to add client:', error);
       alert('Failed to add client. Please try again.');
@@ -81,7 +81,7 @@ export default function AddClientPage() {
               <h2 className="mb-0">Add New Client</h2>
               <button 
                 className="btn btn-outline-secondary"
-                onClick={() => navigate('/email')}
+                onClick={() => navigate('/')}
               >
                 Cancel
               </button>
