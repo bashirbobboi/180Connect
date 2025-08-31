@@ -247,7 +247,7 @@ export default function Dashboard() {
             <CardContent>
               <div className="text-2xl font-bold text-gray-900 font-inter">{dashboardStats.users.total}</div>
               <p className="text-xs text-gray-500 mt-1 font-inter">
-                number of users on the platform
+                Users on the platform
               </p>
             </CardContent>
           </Card>
