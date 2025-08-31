@@ -89,6 +89,21 @@ async def create_db_tables(db_pool):
             """
         )
 
+        # === ACTIVITY TABLE ===
+        await conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS activities (
+                id SERIAL PRIMARY KEY,
+                user_id INTEGER NOT NULL REFERENCES users(id),
+                activity_type VARCHAR NOT NULL,
+                description TEXT NOT NULL,
+                company_name VARCHAR,
+                company_id INTEGER REFERENCES companies(id),
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+            """
+        )
+
     print("Database tables successfully created")
 
 # Run this function to populate the database with client data

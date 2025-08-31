@@ -85,6 +85,21 @@ class Email(Base):
     user = relationship("User", back_populates="emails")
     client = relationship("Company", back_populates="emails")
 
+# === ACTIVITY TABLE ===
+class Activity(Base):
+    __tablename__ = "activities"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    activity_type = Column(String, nullable=False)  # e.g., "client_added", "email_sent", "client_updated"
+    description = Column(Text, nullable=False)
+    company_name = Column(String, nullable=True)  # For client-related activities
+    company_id = Column(Integer, ForeignKey("companies.id"), nullable=True)
+    created_at = Column(DateTime, default=datetime.now(timezone.utc))
+
+    user = relationship("User")
+    company = relationship("Company")
+
 # === Pydantic MODELS FOR REQUEST VALIDATION ===
 
 class BulkEmailCreate(BaseModel):

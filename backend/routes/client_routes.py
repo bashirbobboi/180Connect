@@ -350,6 +350,17 @@ async def create_bulk_emails(
                     db.commit()
                     db.refresh(new_email)
 
+                    # Log the activity
+                    activity = Activity(
+                        user_id=user.id,
+                        activity_type="email_sent",
+                        description=f"Email sent to {company.name}",
+                        company_name=company.name,
+                        company_id=company.id
+                    )
+                    db.add(activity)
+                    db.commit()
+
                     created_emails.append({
                         "id": new_email.id,
                         "subject": email_data.subject,
@@ -445,6 +456,19 @@ async def create_bulk_emails(
                         email_data.subject,
                         email_data.content,
                         status
+                    )
+
+                    # Log the activity
+                    await conn.execute(
+                        """
+                        INSERT INTO activities (user_id, activity_type, description, company_name, company_id)
+                        VALUES ($1, $2, $3, $4, $5)
+                        """,
+                        user["id"],
+                        "email_sent",
+                        f"Email sent to {company['name']}",
+                        company["name"],
+                        company["id"]
                     )
 
                     created_emails.append({
@@ -745,6 +769,83 @@ async def get_user_statistics(
             except Exception as e:
                 raise HTTPException(status_code=500, detail=f"Failed to get user stats: {str(e)}")
 
+@router.get("/recent-activities")
+async def get_recent_activities(
+    request: Request,
+    authorization: str = Header(...),
+    limit: int = Query(10, ge=1, le=50)
+):
+    """Get recent activities for the dashboard."""
+    # Check if using SQLite or PostgreSQL
+    if hasattr(request.app.state, 'SessionLocal'):
+        # SQLite/SQLAlchemy approach
+        from models import Activity, User
+        from routes.token_routes import verify_token_sqlite
+        SessionLocal = request.app.state.SessionLocal
+        
+        with SessionLocal() as db:
+            try:
+                # Verify token and user
+                token_value = authorization.replace("Bearer ", "")
+                token = verify_token_sqlite(token_value, db)
+                if not token:
+                    raise HTTPException(status_code=401, detail="Invalid token")
+                
+                user = db.query(User).filter(User.id == token.user_id).first()
+                if not user:
+                    raise HTTPException(status_code=404, detail="User not found")
+
+                # Get recent activities
+                activities = db.query(Activity).order_by(Activity.created_at.desc()).limit(limit).all()
+
+                return [
+                    {
+                        "id": activity.id,
+                        "type": activity.activity_type,
+                        "description": activity.description,
+                        "company_name": activity.company_name,
+                        "created_at": activity.created_at.isoformat() + 'Z' if activity.created_at else None
+                    }
+                    for activity in activities
+                ]
+
+            except Exception as e:
+                raise HTTPException(status_code=500, detail=f"Failed to get recent activities: {str(e)}")
+    else:
+        # PostgreSQL/asyncpg approach
+        pool = request.app.state.db
+        async with pool.acquire() as conn:
+            try:
+                # Verify token and user
+                token_value = authorization.replace("Bearer ", "")
+                token = await verify_token(token_value, conn)
+                user = await get_render_user_from_uid(conn, token["user_id"])
+
+                # Get recent activities
+                activities = await conn.fetch(
+                    """
+                    SELECT id, activity_type, description, company_name, created_at
+                    FROM activities
+                    ORDER BY created_at DESC
+                    LIMIT $1
+                    """,
+                    limit
+                )
+
+                return [
+                    {
+                        "id": activity["id"],
+                        "type": activity["activity_type"],
+                        "description": activity["description"],
+                        "company_name": activity["company_name"],
+                        "created_at": activity["created_at"].isoformat() + 'Z' if activity["created_at"] else None
+                    }
+                    for activity in activities
+                ]
+
+            except Exception as e:
+                raise HTTPException(status_code=500, detail=f"Failed to get recent activities: {str(e)}")
+
 ###############################################
 ############# CSV FUNCTIONS ###################
 ###############################################
@@ -862,7 +963,7 @@ async def add_client(
     # Check if using SQLite or PostgreSQL
     if hasattr(request.app.state, 'SessionLocal'):
         # SQLite/SQLAlchemy approach
-        from models import Company, User
+        from models import Company, User, Activity
         from routes.token_routes import verify_token_sqlite
         SessionLocal = request.app.state.SessionLocal
         
@@ -895,6 +996,17 @@ async def add_client(
                 db.commit()
                 db.refresh(new_company)
 
+                # Log the activity
+                activity = Activity(
+                    user_id=user.id,
+                    activity_type="client_added",
+                    description=f"New company added: {client_data.name}",
+                    company_name=client_data.name,
+                    company_id=new_company.id
+                )
+                db.add(activity)
+                db.commit()
+
                 return {
                     "message": "Client added successfully",
                     "client": {
@@ -926,7 +1038,7 @@ async def add_client(
                 # Verify token and user
                 token_value = authorization.replace("Bearer ", "")
                 token = await verify_token(token_value, conn)
-                _ = await get_render_user_from_uid(conn, token["user_id"])
+                user = await get_render_user_from_uid(conn, token["user_id"])
 
                 # Insert new company
                 inserted = await conn.fetchrow(
@@ -949,6 +1061,19 @@ async def add_client(
                     client_data.region,
                     client_data.website,
                     client_data.activities
+                )
+
+                # Log the activity
+                await conn.execute(
+                    """
+                    INSERT INTO activities (user_id, activity_type, description, company_name, company_id)
+                    VALUES ($1, $2, $3, $4, $5)
+                    """,
+                    user["id"],
+                    "client_added",
+                    f"New company added: {client_data.name}",
+                    client_data.name,
+                    inserted["id"]
                 )
 
                 return {

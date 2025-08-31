@@ -10,7 +10,8 @@ import {
   MapPin,
   Plus,
   ArrowUpRight,
-  Activity
+  Activity,
+  MessageSquare
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
@@ -21,145 +22,182 @@ export default function Dashboard() {
   const [dashboardStats, setDashboardStats] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Check authentication and fetch dashboard data
-    useEffect(() => {
-    const checkAuthAndFetchData = async () => {
-      const token = localStorage.getItem("token");
-      if (!token) {
+  // Function to fetch dashboard data
+  const fetchDashboardData = async () => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      navigate('/login');
+      return;
+    }
+
+    try {
+      // Check authentication
+      const authRes = await fetch(`${API_URL}/validate-token`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      
+      if (!authRes.ok) {
+        localStorage.removeItem("token");
         navigate('/login');
         return;
       }
 
-      try {
-        // Check authentication
-        const authRes = await fetch(`${API_URL}/validate-token`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        
-        if (!authRes.ok) {
-          localStorage.removeItem("token");
-          navigate('/login');
-          return;
+      // Fetch all clients to calculate statistics
+      const clientsRes = await fetch(`${API_URL}/all-clients`, {
+        headers: {
+          'Accept': 'application/json',
+          Authorization: `Bearer ${token}`,
         }
+      });
 
-        // Fetch all clients to calculate statistics
-        const clientsRes = await fetch(`${API_URL}/all-clients`, {
-          headers: {
-            'Accept': 'application/json',
-            Authorization: `Bearer ${token}`,
-          }
+      // Fetch email statistics
+      const emailStatsRes = await fetch(`${API_URL}/email-stats`, {
+        headers: {
+          'Accept': 'application/json',
+          Authorization: `Bearer ${token}`,
+        }
+      });
+
+      // Fetch user statistics
+      const userStatsRes = await fetch(`${API_URL}/user-stats`, {
+        headers: {
+          'Accept': 'application/json',
+          Authorization: `Bearer ${token}`,
+        }
+      });
+
+      // Fetch recent activities
+      const activitiesRes = await fetch(`${API_URL}/recent-activities?limit=6`, {
+        headers: {
+          'Accept': 'application/json',
+          Authorization: `Bearer ${token}`,
+        }
+      });
+
+      if (clientsRes.ok) {
+        const clients = await clientsRes.json();
+        
+        // Debug: Log the number of companies found
+        console.log(`Found ${clients.length} companies in database`);
+        console.log('Companies:', clients.map(c => c.name));
+        
+        // Calculate company types
+        const companyTypeMap = {};
+        clients.forEach(client => {
+          const type = client.company_type || 'Unknown';
+          companyTypeMap[type] = (companyTypeMap[type] || 0) + 1;
         });
 
-        // Fetch email statistics
-        const emailStatsRes = await fetch(`${API_URL}/email-stats`, {
-          headers: {
-            'Accept': 'application/json',
-            Authorization: `Bearer ${token}`,
-          }
+        // Convert to array format for display
+        const by_type = Object.entries(companyTypeMap).map(([type, count]) => ({
+          type: type === 'charity' ? 'Charity' : type === 'ltd' ? 'CIC' : type,
+          count
+        }));
+
+        // Calculate companies by city
+        const cityMap = {};
+        clients.forEach(client => {
+          const city = client.city || 'Unknown';
+          cityMap[city] = (cityMap[city] || 0) + 1;
         });
 
-        // Fetch user statistics
-        const userStatsRes = await fetch(`${API_URL}/user-stats`, {
-          headers: {
-            'Accept': 'application/json',
-            Authorization: `Bearer ${token}`,
-          }
-        });
+        // Get top 3 cities
+        const topCities = Object.entries(cityMap)
+          .sort(([,a], [,b]) => b - a)
+          .slice(0, 3)
+          .map(([city, count]) => ({ city, count }));
 
-        if (clientsRes.ok) {
-          const clients = await clientsRes.json();
-          
-          // Debug: Log the number of companies found
-          console.log(`Found ${clients.length} companies in database`);
-          console.log('Companies:', clients.map(c => c.name));
-          
-          // Calculate company types
-          const companyTypeMap = {};
-          clients.forEach(client => {
-            const type = client.company_type || 'Unknown';
-            companyTypeMap[type] = (companyTypeMap[type] || 0) + 1;
-          });
+        // Mock priority data
+        const by_priority = [
+          { priority: 'High', count: 1 },
+          { priority: 'Medium', count: Math.max(0, clients.length - 1) },
+          { priority: 'Low', count: 0 }
+        ].filter(item => item.count > 0);
 
-          // Convert to array format for display
-          const by_type = Object.entries(companyTypeMap).map(([type, count]) => ({
-            type: type === 'charity' ? 'Charity' : type === 'ltd' ? 'CIC' : type,
-            count
-          }));
-
-          // Calculate companies by city
-          const cityMap = {};
-          clients.forEach(client => {
-            const city = client.postcode?.split(' ')[0] || 'Unknown';
-            cityMap[city] = (cityMap[city] || 0) + 1;
-          });
-
-          // Get top 3 cities
-          const topCities = Object.entries(cityMap)
-            .sort(([,a], [,b]) => b - a)
-            .slice(0, 3)
-            .map(([city, count]) => ({ city, count }));
-
-          // Mock priority data
-          const by_priority = [
-            { priority: 'High', count: 1 },
-            { priority: 'Medium', count: Math.max(0, clients.length - 1) },
-            { priority: 'Low', count: 0 }
-          ].filter(item => item.count > 0);
-
-          // Create recent activity from recent clients
-          const recent_activity = clients.slice(0, 6).map((client, index) => ({
+        // Get recent activities from backend
+        let recent_activity = [];
+        if (activitiesRes.ok) {
+          recent_activity = await activitiesRes.json();
+          console.log('Recent activities:', recent_activity);
+        } else {
+          // Fallback: Create recent activity from recent clients
+          recent_activity = clients.slice(0, 6).map((client, index) => ({
             type: 'company_added',
             description: `New company added: ${client.name}`,
             company_name: client.name,
             created_at: Date.now() - (index * 3600000) // Stagger by hours
           }));
-
-          // Get email statistics
-          let emailStats = { total_sent: 0, success_rate: 0 };
-          if (emailStatsRes.ok) {
-            emailStats = await emailStatsRes.json();
-            console.log('Email stats:', emailStats);
-          }
-
-          // Get user statistics
-          let userStats = { total_users: 0 };
-          if (userStatsRes.ok) {
-            userStats = await userStatsRes.json();
-            console.log('User stats:', userStats);
-          }
-
-          setDashboardStats({
-            companies: {
-              total: clients.length,
-              contacted: 0,
-              by_type,
-              by_priority
-            },
-            emails: {
-              total_sent: emailStats.total_sent || 0,
-              success_rate: emailStats.success_rate || 0
-            },
-            users: {
-              total: userStats.total_users || 0
-            },
-            topCities,
-            recent_activity
-          });
         }
-      } catch (error) {
-        console.error('Failed to fetch dashboard data:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
 
-    checkAuthAndFetchData();
+        // Get email statistics
+        let emailStats = { total_sent: 0, success_rate: 0 };
+        if (emailStatsRes.ok) {
+          emailStats = await emailStatsRes.json();
+          console.log('Email stats:', emailStats);
+        }
+
+        // Get user statistics
+        let userStats = { total_users: 0 };
+        if (userStatsRes.ok) {
+          userStats = await userStatsRes.json();
+          console.log('User stats:', userStats);
+        }
+
+        setDashboardStats({
+          companies: {
+            total: clients.length,
+            contacted: 0,
+            by_type,
+            by_priority
+          },
+          emails: {
+            total_sent: emailStats.total_sent || 0,
+            success_rate: emailStats.success_rate || 0
+          },
+          users: {
+            total: userStats.total_users || 0
+          },
+          topCities,
+          recent_activity
+        });
+      }
+    } catch (error) {
+      console.error('Failed to fetch dashboard data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Check authentication and fetch dashboard data
+  useEffect(() => {
+    fetchDashboardData();
   }, [navigate]);
 
+  // Refresh data when user returns to the page
+  useEffect(() => {
+    const handleFocus = () => {
+      fetchDashboardData();
+    };
+
+    window.addEventListener('focus', handleFocus);
+    return () => window.removeEventListener('focus', handleFocus);
+  }, []);
+
   const formatDate = (timestamp) => {
-    return new Date(timestamp).toLocaleDateString('en-GB', {
+    // Handle both ISO strings and timestamps
+    const date = typeof timestamp === 'string' ? new Date(timestamp) : new Date(timestamp);
+    
+    // Debug: Log the timestamp and conversion
+    console.log('Original timestamp:', timestamp);
+    console.log('Parsed date:', date);
+    console.log('Date.toISOString():', date.toISOString());
+    console.log('Date.toLocaleString():', date.toLocaleString());
+    console.log('User timezone:', Intl.DateTimeFormat().resolvedOptions().timeZone);
+    
+    // Format in local timezone - JavaScript automatically converts UTC to local time
+    return date.toLocaleString('en-GB', {
       day: 'numeric',
       month: 'short',
       hour: '2-digit',
@@ -170,10 +208,12 @@ export default function Dashboard() {
   const getActivityIcon = (type) => {
     switch (type) {
       case 'email':
+      case 'email_sent':
         return <Mail className="w-4 h-4 text-blue-500" />;
       case 'interaction':
         return <MessageSquare className="w-4 h-4 text-green-500" />;
       case 'company_added':
+      case 'client_added':
         return <Building2 className="w-4 h-4 text-purple-500" />;
       default:
         return <Activity className="w-4 h-4 text-stone-500" />;
