@@ -332,11 +332,11 @@ export default function Dashboard() {
             <CardContent className="space-y-4">
               <div>
                 <h4 className="text-sm font-medium mb-2">By Type</h4>
-                <div className="space-y-2">
+                <div className="!space-y-2">
                   {dashboardStats.companies.by_type.map((item) => (
                     <div key={item.type} className="flex items-center justify-between">
-                      <span className="text-sm text-stone-600">{item.type}</span>
-                      <Badge variant="secondary">{item.count}</Badge>
+                      <span className="!text-sm !text-stone-600">{item.type}</span>
+                      <Badge variant="secondary" className="!w-1 !justify-center" style={{ backgroundColor: 'oklch(0.97 0 0)' }}>{item.count}</Badge>
                     </div>
                   ))}
                 </div>
@@ -344,13 +344,15 @@ export default function Dashboard() {
               
               <div>
                 <h4 className="text-sm font-medium mb-2">By Priority</h4>
-                <div className="space-y-2">
+                <div className="!space-y-2">
                   {dashboardStats.companies.by_priority.map((item) => (
                     <div key={item.priority} className="flex items-center justify-between">
-                      <span className="text-sm text-stone-600">{item.priority}</span>
+                      <span className="text-sm text-black">{item.priority}</span>
                       <Badge 
                         variant={item.priority === 'High' ? 'destructive' : 
                                 item.priority === 'Medium' ? 'default' : 'secondary'}
+                        className="!w-1  !justify-center"
+                        style={{ color: 'black !important' }}
                       >
                         {item.count}
                       </Badge>
