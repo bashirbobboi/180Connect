@@ -12,7 +12,8 @@ import {
   Plus,
   ArrowUpRight,
   Activity,
-  MessageSquare
+  MessageSquare,
+  Download
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
@@ -246,10 +247,8 @@ export default function Dashboard() {
             }}>
               Dashboard
             </h1>
-            <p className="text-stone-600 font-inter" style={{
-                fontWeight: '451',
-            }}>
-              Welcome to 180Connect CRM - Your client outreach platform
+            <p className="text-stone-600 font-inter">
+              Welcome to 180Connect - 180 Degrees' Client Outreach Platform
             </p>
           </div>
         </div>
@@ -327,25 +326,25 @@ export default function Dashboard() {
                   style={{ fontSize: '0.875rem !important', fontWeight: '600 !important' }}
                 >
                   View all
-                  <ArrowUpRight className="w-3 h-3" />
+                  <ArrowUpRight className="w-4 h-4" style={{ width: 'calc(var(--spacing) * 4)', height: 'calc(var(--spacing) * 4)' }} />
                 </Button>
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div>
-                <h4 className="text-sm font-medium mb-2">By Type</h4>
-                <div className="!space-y-2">
-                  {dashboardStats.companies.by_type.map((item) => (
-                    <div key={item.type} className="flex items-center justify-between">
-                      <span className="!text-sm !text-stone-600">{item.type}</span>
-                      <Badge variant="secondary" className="!w-1 !justify-center" style={{ backgroundColor: 'oklch(0.97 0 0)' }}>{item.count}</Badge>
-                    </div>
-                  ))}
+                              <div>
+                  <h4 className="!text-sm !font-semibold !mb-2" style={{ fontWeight: '600 !important' }}>By Type</h4>
+                  <div className="!space-y-2">
+                    {dashboardStats.companies.by_type.map((item) => (
+                      <div key={item.type} className="flex items-center justify-between">
+                        <span className="!text-sm !text-stone-600">{item.type}</span>
+                        <Badge variant="secondary" className="!w-1 !justify-center" style={{ backgroundColor: 'oklch(0.97 0 0)' }}>{item.count}</Badge>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              </div>
-              
-              <div>
-                <h4 className="text-sm font-medium mb-2">By Priority</h4>
+                
+                <div className="!mt-6">
+                  <h4 className="!text-sm !font-semibold !mb-2" style={{ fontWeight: '600 !important' }}>By Priority</h4>
                 <div className="!space-y-2">
                   {dashboardStats.companies.by_priority.map((item) => (
                     <div key={item.priority} className="flex items-center justify-between">
@@ -481,29 +480,65 @@ export default function Dashboard() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <Button 
                 onClick={() => navigate('/email')}
-                className="gap-2 h-auto p-4 flex-col"
+                className="gap-2 h-auto p-4 flex-col !rounded-lg !transition-all !duration-300"
                 variant="outline"
+                style={{
+                  background: 'linear-gradient(to right, #f8f9fa 50%, white 50%)',
+                  backgroundSize: '200% 100%',
+                  backgroundPosition: 'right bottom',
+                  transition: 'all 0.3s ease, background-position 0.3s ease'
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.backgroundPosition = 'left bottom';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.backgroundPosition = 'right bottom';
+                }}
               >
-                <Building2 className="w-6 h-6" />
-                <span>Add Company</span>
+                <Building2 className="!w-6 !h-6" />
+                <span className="!text-sm !font-semibold" style={{ fontWeight: '600 !important' }}>Add Company</span>
               </Button>
               
               <Button 
                 onClick={() => navigate('/email')}
-                className="gap-2 h-auto p-4 flex-col"
+                className="gap-2 h-auto p-4 flex-col !rounded-lg !transition-all !duration-300"
                 variant="outline"
+                style={{
+                  background: 'linear-gradient(to right, #f8f9fa 50%, white 50%)',
+                  backgroundSize: '200% 100%',
+                  backgroundPosition: 'right bottom',
+                  transition: 'all 0.3s ease, background-position 0.3s ease'
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.backgroundPosition = 'left bottom';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.backgroundPosition = 'right bottom';
+                }}
               >
                 <Mail className="w-6 h-6" />
-                <span>New Campaign</span>
+                <span className="!text-sm !font-semibold" style={{ fontWeight: '600 !important' }}>New Campaign</span>
               </Button>
               
               <Button 
                 onClick={() => navigate('/email')}
-                className="gap-2 h-auto p-4 flex-col"
+                className="gap-2 h-auto p-4 flex-col !rounded-lg !transition-all !duration-300"
                 variant="outline"
+                style={{
+                  background: 'linear-gradient(to right, #f8f9fa 50%, white 50%)',
+                  backgroundSize: '200% 100%',
+                  backgroundPosition: 'right bottom',
+                  transition: 'all 0.3s ease, background-position 0.3s ease'
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.backgroundPosition = 'left bottom';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.backgroundPosition = 'right bottom';
+                }}
               >
-                <MapPin className="w-6 h-6" />
-                <span>Import Data</span>
+                <Download className="w-6 h-6" />
+                <span className="!text-sm !font-semibold" style={{ fontWeight: '600 !important' }}>Import Data</span>
               </Button>
             </div>
           </CardContent>
