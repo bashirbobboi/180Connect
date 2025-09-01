@@ -795,8 +795,8 @@ async def get_recent_activities(
                 if not user:
                     raise HTTPException(status_code=404, detail="User not found")
 
-                # Get recent activities
-                activities = db.query(Activity).order_by(Activity.created_at.desc()).limit(limit).all()
+                # Get recent activities with user information
+                activities = db.query(Activity).join(User, Activity.user_id == User.id).order_by(Activity.created_at.desc()).limit(limit).all()
 
                 return [
                     {
@@ -804,7 +804,9 @@ async def get_recent_activities(
                         "type": activity.activity_type,
                         "description": activity.description,
                         "company_name": activity.company_name,
-                        "created_at": activity.created_at.isoformat() + 'Z' if activity.created_at else None
+                        "created_at": activity.created_at.isoformat() + 'Z' if activity.created_at else None,
+                        "user_name": f"{activity.user.first_name} {activity.user.last_name}" if activity.user else "Unknown User",
+                        "user_email": activity.user.email if activity.user else "unknown@email.com"
                     }
                     for activity in activities
                 ]
@@ -821,12 +823,14 @@ async def get_recent_activities(
                 token = await verify_token(token_value, conn)
                 user = await get_render_user_from_uid(conn, token["user_id"])
 
-                # Get recent activities
+                # Get recent activities with user information
                 activities = await conn.fetch(
                     """
-                    SELECT id, activity_type, description, company_name, created_at
-                    FROM activities
-                    ORDER BY created_at DESC
+                    SELECT a.id, a.activity_type, a.description, a.company_name, a.created_at,
+                           u.first_name, u.last_name, u.email
+                    FROM activities a
+                    JOIN users u ON a.user_id = u.id
+                    ORDER BY a.created_at DESC
                     LIMIT $1
                     """,
                     limit
@@ -838,7 +842,9 @@ async def get_recent_activities(
                         "type": activity["activity_type"],
                         "description": activity["description"],
                         "company_name": activity["company_name"],
-                        "created_at": activity["created_at"].isoformat() + 'Z' if activity["created_at"] else None
+                        "created_at": activity["created_at"].isoformat() + 'Z' if activity["created_at"] else None,
+                        "user_name": f"{activity['first_name']} {activity['last_name']}" if activity['first_name'] and activity['last_name'] else "Unknown User",
+                        "user_email": activity["email"] if activity["email"] else "unknown@email.com"
                     }
                     for activity in activities
                 ]

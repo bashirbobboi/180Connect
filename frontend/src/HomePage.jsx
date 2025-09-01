@@ -397,6 +397,9 @@ export default function Dashboard() {
                             </p>
                           )}
                           <p className="!text-xs !text-stone-400 !mb-0 !mt-0 !leading-tight">
+                            Added by {activity.user_name} ({activity.user_email})
+                          </p>
+                          <p className="!text-xs !text-stone-400 !mb-0 !mt-0 !leading-tight">
                             {formatDate(activity.created_at)}
                           </p>
                         </div>
@@ -423,6 +426,9 @@ export default function Dashboard() {
                           </p>
                         )}
                         <p className="!text-xs !text-stone-400 !mb-0 !mt-0 !leading-tight">
+                          Added by {activity.user_name} ({activity.user_email})
+                        </p>
+                        <p className="!text-xs !text-stone-400 !mb-0 !mt-0 !leading-tight">
                           {formatDate(activity.created_at)}
                         </p>
                       </div>
@@ -447,10 +453,13 @@ export default function Dashboard() {
                               {activity.company_name}
                             </p>
                           )}
-                                                  <p className="!text-xs !text-stone-400 !mb-0 !mt-0 !leading-tight">
-                          {formatDate(activity.created_at)}
-                        </p>
-                      </div>
+                          <p className="!text-xs !text-stone-400 !mb-0 !mt-0 !leading-tight">
+                            Added by {activity.user_name} ({activity.user_email})
+                          </p>
+                          <p className="!text-xs !text-stone-400 !mb-0 !mt-0 !leading-tight">
+                            {formatDate(activity.created_at)}
+                          </p>
+                        </div>
                     </div>
                   ))}
                 </TabsContent>
