@@ -184,7 +184,7 @@ export default function CompanyPage() {
       }
   
       const data = await response.json();
-      console.log('Emails processed:', data);
+      
       
       // Show success message with details
       const successCount = data.emails.filter(e => e.status === "sent").length;
@@ -252,11 +252,11 @@ export default function CompanyPage() {
         }
 
         const data = await response.json();
-        console.log(data)
+
         setCompany(data.client);
         setEmails(data.emails);
       } catch (err) {
-        console.log(err.message);
+
       } finally {
         setLoading(false)
       }
@@ -266,7 +266,7 @@ export default function CompanyPage() {
   }, []);
 
   useEffect(() => {
-    console.log(company)
+    
   }, [company]);
 
   return (

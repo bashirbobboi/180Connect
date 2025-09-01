@@ -277,7 +277,7 @@ export default function EmailPage() {
       }
   
       const data = await response.json();
-      console.log('Emails processed:', data);
+      
       
       // Show success message with details
       const successCount = data.emails.filter(e => e.status === "sent").length;

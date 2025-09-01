@@ -163,7 +163,7 @@ export default function AccountPage() {
         
         if (res.ok) {
           const data = await res.json();
-          console.log(data)
+  
           setUserProfile({
             ...userProfile,
             email: data.user.email,

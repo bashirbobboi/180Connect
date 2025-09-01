@@ -24,7 +24,6 @@ export default function UserDropdown() {
         
         if (profileRes.ok) {
           const profile = await profileRes.json();
-          console.log('User profile data:', profile);
           setUserProfile(profile);
         }
       } catch (error) {

@@ -35,7 +35,7 @@ export default function AddClientForm({ showForm, onClose, onClientAdded }) {
       }
 
       const data = await response.json();
-      console.log('Client added:', data);
+
       
       // Reset form
       setFormData({

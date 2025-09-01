@@ -15,7 +15,7 @@ import './LoginPage.css';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
-console.log("LoginPage API_URL:", API_URL);
+
 
 export default function LoginPage() {
   // Authentication form state
@@ -57,7 +57,7 @@ export default function LoginPage() {
       handleGoogleSuccess(response);
     },
     onError: () => {
-      console.log('Login Failed');
+      
     },
   });
 
@@ -89,13 +89,13 @@ export default function LoginPage() {
         return;
       }
 
-      console.log("Starting login for:", user);
+
 
       const formData = new URLSearchParams();
       formData.append("email", user);
       formData.append("password", pass);
     
-      console.log("Sending login request to:", `${API_URL}/token`);
+      
       
       const response = await fetch(`${API_URL}/token`, {
         method: "POST",
@@ -106,12 +106,10 @@ export default function LoginPage() {
         },
       });
       
-      console.log("Login response status:", response.status);
       const data = await response.json();
-      console.log("Login response data:", data);
     
       if (response.ok) {
-        console.log("Login successful, storing token and navigating...");
+
         localStorage.setItem("token", data.access_token);
         showNotification("Login successful! Redirecting...", 'success');
         setTimeout(() => navigate('/'), 1500); // Delay navigation to show notification
@@ -153,7 +151,7 @@ export default function LoginPage() {
         return;
       }
 
-      console.log("Starting registration for:", register_email);
+
 
       const formData = new URLSearchParams();
       formData.append("email", register_email);
@@ -161,7 +159,7 @@ export default function LoginPage() {
       formData.append("first_name", first_name);
       formData.append("last_name", last_name);
     
-      console.log("Sending registration request to:", `${API_URL}/register`);
+      
       
       const response = await fetch(`${API_URL}/register`, {
         method: "POST",
@@ -173,7 +171,7 @@ export default function LoginPage() {
       });
     
       const data = await response.json();
-      console.log("Registration response:", response.status, data);
+      
     
       if (response.ok) {
         showNotification("Account created successfully! Logging you in...", 'success');
@@ -193,7 +191,7 @@ export default function LoginPage() {
         });
 
         const loginData = await loginResponse.json();
-        console.log("Login response:", loginResponse.status, loginData);
+
 
         if (loginResponse.ok) {
           localStorage.setItem("token", loginData.access_token);

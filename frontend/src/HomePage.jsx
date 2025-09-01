@@ -82,8 +82,7 @@ export default function Dashboard() {
         const clients = await clientsRes.json();
         
         // Debug: Log the number of companies found
-        console.log(`Found ${clients.length} companies in database`);
-        console.log('Companies:', clients.map(c => c.name));
+        
         
         // Calculate company types
         const companyTypeMap = {};
@@ -122,7 +121,7 @@ export default function Dashboard() {
         let recent_activity = [];
         if (activitiesRes.ok) {
           recent_activity = await activitiesRes.json();
-          console.log('Recent activities:', recent_activity);
+  
         } else {
           // Fallback: Create recent activity from recent clients
           recent_activity = clients.slice(0, 6).map((client, index) => ({
@@ -137,14 +136,14 @@ export default function Dashboard() {
         let emailStats = { total_sent: 0, success_rate: 0 };
         if (emailStatsRes.ok) {
           emailStats = await emailStatsRes.json();
-          console.log('Email stats:', emailStats);
+  
         }
 
         // Get user statistics
         let userStats = { total_users: 0 };
         if (userStatsRes.ok) {
           userStats = await userStatsRes.json();
-          console.log('User stats:', userStats);
+  
         }
 
         setDashboardStats({
@@ -192,11 +191,7 @@ export default function Dashboard() {
     const date = typeof timestamp === 'string' ? new Date(timestamp) : new Date(timestamp);
     
     // Debug: Log the timestamp and conversion
-    console.log('Original timestamp:', timestamp);
-    console.log('Parsed date:', date);
-    console.log('Date.toISOString():', date.toISOString());
-    console.log('Date.toLocaleString():', date.toLocaleString());
-    console.log('User timezone:', Intl.DateTimeFormat().resolvedOptions().timeZone);
+
     
     // Format in local timezone - JavaScript automatically converts UTC to local time
     const day = date.getDate();

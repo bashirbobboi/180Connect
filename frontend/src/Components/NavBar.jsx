@@ -101,7 +101,7 @@ export default function NavBar ({logInPage=false}) {
             });
 
             const data = await res.json();
-            console.log(data)
+    
             if (data.user.profile_picture) {
                 setProfilePicture(data.user.profile_picture.data);
                 setProfilePictureType(data.user.profile_picture.type);

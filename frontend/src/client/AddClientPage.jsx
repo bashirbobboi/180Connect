@@ -55,7 +55,7 @@ export default function AddClientPage() {
       }
 
       const data = await response.json();
-      console.log('Client added:', data);
+
       navigate('/');
     } catch (error) {
       console.error('Failed to add client:', error);
