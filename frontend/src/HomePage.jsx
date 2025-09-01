@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
   Building2, 
   Mail, 
@@ -365,13 +366,46 @@ export default function Dashboard() {
               <CardTitle>Recent Activity</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                {dashboardStats.recent_activity.length === 0 ? (
-                  <p className="!text-sm !text-stone-500 !text-center !py-4">
-                    No recent activity
-                  </p>
-                ) : (
-                  dashboardStats.recent_activity.slice(0, 6).map((activity, index) => (
+              <Tabs defaultValue="all" className="w-full">
+                <TabsList className="inline-flex rounded-lg bg-gray-100 p-0.5">
+                  <TabsTrigger value="all">All</TabsTrigger>
+                  <TabsTrigger value="clients">Clients</TabsTrigger>
+                  <TabsTrigger value="emails">Emails</TabsTrigger>
+                </TabsList>
+                
+                <TabsContent value="all" className="space-y-4">
+                  {dashboardStats.recent_activity.length === 0 ? (
+                    <p className="text-sm text-stone-500 text-center py-4">
+                      No recent activity
+                    </p>
+                  ) : (
+                    dashboardStats.recent_activity.slice(0, 6).map((activity, index) => (
+                      <div key={index} className="!flex !items-start !space-x-3 !mb-3 last:!mb-0">
+                        <div className="!flex-shrink-0 !mt-0.5">
+                          {getActivityIcon(activity.type)}
+                        </div>
+                        <div className="!flex-1 !min-w-0 !space-y-0">
+                          <p className="!text-sm !text-stone-900 !mb-0 !leading-tight">
+                            {activity.description}
+                          </p>
+                          {activity.company_name && (
+                            <p className="!text-xs !text-stone-500 !mb-0 !mt-0 !leading-tight">
+                              {activity.company_name}
+                            </p>
+                          )}
+                          <p className="!text-xs !text-stone-400 !mb-0 !mt-0 !leading-tight">
+                            {formatDate(activity.created_at)}
+                          </p>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </TabsContent>
+                
+                <TabsContent value="clients" className="space-y-4">
+                  {dashboardStats.recent_activity.filter(activity => 
+                    activity.type === 'client_added' || activity.type === 'company_added'
+                  ).slice(0, 6).map((activity, index) => (
                     <div key={index} className="!flex !items-start !space-x-3 !mb-3 last:!mb-0">
                       <div className="!flex-shrink-0 !mt-0.5">
                         {getActivityIcon(activity.type)}
@@ -390,9 +424,36 @@ export default function Dashboard() {
                         </p>
                       </div>
                     </div>
-                  ))
-                )}
-              </div>
+                  ))}
+                </TabsContent>
+                
+                <TabsContent value="emails" className="space-y-4">
+                  {dashboardStats.recent_activity.filter(activity => 
+                    activity.type === 'email_sent' || activity.type === 'email'
+                  ).slice(0, 6).map((activity, index) => (
+                    <div key={index} className="!flex !items-start !space-x-3 !mb-3 last:!mb-0">
+                      <div className="!flex-shrink-0 !mt-0.5">
+                        {getActivityIcon(activity.type)}
+                      </div>
+                      <div className="!flex-1 !min-w-0 !space-y-0">
+                        <p className="!text-sm !text-stone-900 !mb-0 !leading-tight">
+                          {activity.description}
+                        </p>
+                        {activity.company_name && (
+                          <p className="!text-xs !text-stone-500 !mb-0 !mt-0 !leading-tight">
+                            {activity.company_name}
+                          </p>
+                        )}
+                        <p className="!text-xs !text-stone-400 !mb-0 !mt-0 !leading-tight">
+                          {formatDate(activity.created_at)}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </TabsContent>
+                
+
+              </Tabs>
             </CardContent>
           </Card>
         </div>
