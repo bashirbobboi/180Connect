@@ -198,12 +198,14 @@ export default function Dashboard() {
     console.log('User timezone:', Intl.DateTimeFormat().resolvedOptions().timeZone);
     
     // Format in local timezone - JavaScript automatically converts UTC to local time
-    return date.toLocaleString('en-GB', {
-      day: 'numeric',
-      month: 'short',
+    const day = date.getDate();
+    const month = date.toLocaleString('en-GB', { month: 'short' });
+    const time = date.toLocaleString('en-GB', {
       hour: '2-digit',
       minute: '2-digit'
     });
+    
+    return `${day} ${month} at ${time}`;
   };
 
   const getActivityIcon = (type) => {
@@ -321,8 +323,8 @@ export default function Dashboard() {
                   variant="ghost" 
                   size="sm"
                   onClick={() => navigate('/email')}
-                  className="gap-1 hover:!bg-gray-100 hover:!rounded-md !transition-all !duration-200 !text-sm"
-                  style={{ fontSize: '0.875rem !important' }}
+                  className="gap-1 hover:!bg-gray-100 hover:!rounded-md !transition-all !duration-200 !text-sm !font-semibold"
+                  style={{ fontSize: '0.875rem !important', fontWeight: '600 !important' }}
                 >
                   View all
                   <ArrowUpRight className="w-3 h-3" />
