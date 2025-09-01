@@ -24,6 +24,7 @@ export default function UserDropdown() {
         
         if (profileRes.ok) {
           const profile = await profileRes.json();
+          console.log('User profile data:', profile);
           setUserProfile(profile);
         }
       } catch (error) {
@@ -80,28 +81,31 @@ export default function UserDropdown() {
       </button>
 
       {isOpen && (
-        <div className="absolute bottom-full left-0 mb-2 bg-white border border-gray-200 rounded-lg shadow-lg z-50 w-72">
+        <div className="absolute bottom-full left-0 mb-2 bg-white border border-gray-200 rounded-lg shadow-lg z-50 w-72" style={{ transform: 'translateX(-20px)' }}>
           {userProfile ? (
             <>
               {/* User Info Section */}
-              <div className="flex items-start justify-between gap-3 p-4 border-b border-gray-200">
-                <div className="size-8 bg-blue-600 rounded-full flex items-center justify-center">
-                  <span className="text-white text-sm font-medium">
+              <div className="flex items-start justify-between gap-3 pt-2 px-3">
+                <span className="relative flex shrink-0 overflow-hidden rounded-full transition-all duration-200 size-8">
+                  <span className="flex h-full w-full items-center justify-center rounded-full font-medium bg-rose-100 text-rose-500 text-base">
                     {getUserInitials()}
                   </span>
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-900 truncate">
-                    {userProfile.first_name} {userProfile.last_name}
+                </span>
+                <div className="flex-1 min-w-0 space-y-0">
+                  <p className="text-sm truncate !mb-0">
+                    {userProfile.user?.first_name || userProfile.first_name || 'User'} {userProfile.user?.last_name || userProfile.last_name || ''}
                   </p>
-                  <p className="text-xs text-gray-500 truncate">
-                    {userProfile.email}
+                  <p className="text-xs text-muted-foreground truncate !mt-0">
+                    {userProfile.user?.email || userProfile.email || 'user@example.com'}
                   </p>
                 </div>
-                <div className={cn("text-xs font-medium px-2 py-1 rounded-full", getRoleBadgeStyles(userProfile.role))}>
-                  {userProfile.role || "No role"}
+                <div className="inline-flex items-center rounded-full border px-2 py-0.5 font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 bg-muted text-muted-foreground border-border" style={{ fontSize: '14px' }}>
+                  {userProfile.user?.role || userProfile.role || "viewer"}
                 </div>
               </div>
+              
+              {/* Divider */}
+              <div className="border-t border-gray-200 !mt-0 !mb-0.5"></div>
               
               {/* Menu Items */}
               <div className="py-1">
@@ -110,22 +114,22 @@ export default function UserDropdown() {
                     navigate('/');
                     setIsOpen(false);
                   }}
-                  className="flex items-center w-full px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                  className="flex items-center w-full px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:rounded-md transition-colors group"
                 >
                   <Home className="!mr-2 !size-4" />
-                  <span>Home</span>
+                  <span className=" group-hover:!text-black transition-colors" style={{ color: 'oklch(0.556 0 0)', fontSize: '14px' }}>Home</span>
                 </button>
                 
-                {userProfile.role?.toLowerCase() === 'admin' && (
+                {(userProfile.user?.role || userProfile.role)?.toLowerCase() === 'admin' && (
                   <button
                     onClick={() => {
                       navigate('/admin');
                       setIsOpen(false);
                     }}
-                    className="flex items-center w-full px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                    className="flex items-center w-full px-2 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:rounded-md transition-colors group"
                   >
                     <Shield className="!mr-2 !size-4" />
-                    <span>Admin Settings</span>
+                    <span className="group-hover:!text-black transition-colors" style={{ color: 'oklch(0.556 0 0)', fontSize: '14px' }}>Admin Settings</span>
                   </button>
                 )}
                 
@@ -134,10 +138,10 @@ export default function UserDropdown() {
                     navigate('/account');
                     setIsOpen(false);
                   }}
-                  className="flex items-center w-full px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                  className="flex items-center w-full px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:rounded-md transition-colors group"
                 >
                   <Cog className="!mr-2 !size-4" />
-                  <span>Account Settings</span>
+                  <span className="group-hover:!text-black transition-colors" style={{ color: 'oklch(0.556 0 0)', fontSize: '14px'  }}>Account Settings</span>
                 </button>
                 
                 <div className="border-t border-gray-200 my-1"></div>
@@ -147,10 +151,10 @@ export default function UserDropdown() {
                     handleSignOut();
                     setIsOpen(false);
                   }}
-                  className="flex items-center w-full px-3 py-2 text-sm text-red-600 hover:bg-red-50 !hover:rounded-md transition-colors"
+                  className="flex items-center w-full px-3 py-2 text-sm text-red-600 hover:bg-red-50 hover:rounded-md transition-colors"
                 >
                   <LogOut className="!mr-2 !size-4" />
-                  <span>Sign out</span>
+                  <span className="style" style={{ fontSize: '14px' }}>Sign out</span>
                 </button>
               </div>
             </>
