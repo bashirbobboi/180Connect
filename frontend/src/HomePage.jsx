@@ -320,7 +320,7 @@ export default function Dashboard() {
                   variant="ghost" 
                   size="sm"
                   onClick={() => navigate('/email')}
-                  className="gap-1"
+                  className="gap-1 hover:!bg-gray-100 hover:!rounded-md !transition-all !duration-200"
                 >
                   View all
                   <ArrowUpRight className="w-3 h-3" />
@@ -367,25 +367,25 @@ export default function Dashboard() {
             <CardContent>
               <div className="space-y-4">
                 {dashboardStats.recent_activity.length === 0 ? (
-                  <p className="text-sm text-stone-500 text-center py-4">
+                  <p className="!text-sm !text-stone-500 !text-center !py-4">
                     No recent activity
                   </p>
                 ) : (
                   dashboardStats.recent_activity.slice(0, 6).map((activity, index) => (
-                    <div key={index} className="flex items-start space-x-3">
-                      <div className="flex-shrink-0 mt-0.5">
+                    <div key={index} className="!flex !items-start !space-x-3 !mb-3 last:!mb-0">
+                      <div className="!flex-shrink-0 !mt-0.5">
                         {getActivityIcon(activity.type)}
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm text-stone-900">
+                      <div className="!flex-1 !min-w-0 !space-y-0">
+                        <p className="!text-sm !text-stone-900 !mb-0 !leading-tight">
                           {activity.description}
                         </p>
                         {activity.company_name && (
-                          <p className="text-xs text-stone-500">
+                          <p className="!text-xs !text-stone-500 !mb-0 !mt-0 !leading-tight">
                             {activity.company_name}
                           </p>
                         )}
-                        <p className="text-xs text-stone-400">
+                        <p className="!text-xs !text-stone-400 !mb-0 !mt-0 !leading-tight">
                           {formatDate(activity.created_at)}
                         </p>
                       </div>
