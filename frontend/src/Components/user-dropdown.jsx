@@ -112,7 +112,7 @@ export default function UserDropdown() {
                   }}
                   className="flex items-center w-full px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
                 >
-                  <Home className="mr-2 size-4" />
+                  <Home className="!mr-2 !size-4" />
                   <span>Home</span>
                 </button>
                 
@@ -124,7 +124,7 @@ export default function UserDropdown() {
                     }}
                     className="flex items-center w-full px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
                   >
-                    <Shield className="mr-2 size-4" />
+                    <Shield className="!mr-2 !size-4" />
                     <span>Admin Settings</span>
                   </button>
                 )}
@@ -136,7 +136,7 @@ export default function UserDropdown() {
                   }}
                   className="flex items-center w-full px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
                 >
-                  <Cog className="mr-2 size-4" />
+                  <Cog className="!mr-2 !size-4" />
                   <span>Account Settings</span>
                 </button>
                 
@@ -147,9 +147,9 @@ export default function UserDropdown() {
                     handleSignOut();
                     setIsOpen(false);
                   }}
-                  className="flex items-center w-full px-3 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                  className="flex items-center w-full px-3 py-2 text-sm text-red-600 hover:bg-red-50 !hover:rounded-md transition-colors"
                 >
-                  <LogOut className="mr-2 size-4" />
+                  <LogOut className="!mr-2 !size-4" />
                   <span>Sign out</span>
                 </button>
               </div>

@@ -42,24 +42,24 @@ export function Layout({ children }) {
   ];
 
   return (
-    <div className="flex min-h-screen w-full bg-white">
+    <div className="!flex !min-h-screen !w-full bg-white">
       {/* Sidebar Navigation */}
       <div className="hidden md:flex md:w-64 md:flex-col">
-        <div className="flex flex-col flex-grow pt-5 bg-white border-r border-stone-200">
+        <div className="!flex !flex-col !flex-grow !pt-5 bg-white border-r border-stone-200">
           {/* Logo */}
           <div className="flex items-center flex-shrink-0 px-4">
             <button
               onClick={() => navigate("/")}
-              className="flex items-center space-x-3"
+              className="!flex !items-center !space-x-3"
             >
-              <div className="flex items-center justify-center w-8 h-8 bg-blue-600 rounded-lg">
-                <Building2 className="w-5 h-5 text-white" />
+              <div className="!flex !items-center !justify-center !w-8 !h-8 bg-blue-600 rounded-lg">
+                <Building2 className="!w-5 !h-5 !text-white" />
               </div>
               <div className="flex flex-col items-start">
-                <span className="text-lg font-semibold text-stone-900 tracking-tight">
+                <span className="!text-lg !font-semibold !text-stone-900 !tracking-tight">
                   180Connect
                 </span>
-                <span className="text-xs text-stone-500">
+                <span className="!text-xs !text-stone-500">
                   CRM Platform
                 </span>
               </div>
@@ -67,7 +67,7 @@ export function Layout({ children }) {
           </div>
 
           {/* Navigation */}
-          <div className="mt-8 flex-grow flex flex-col">
+          <div className="!mt-8 !flex-grow !flex !flex-col">
             <nav className="flex-1 px-2 space-y-1">
               {navigationItems.map((item) => {
                 const Icon = item.icon;

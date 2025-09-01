@@ -177,14 +177,14 @@ export default function Dashboard() {
   }, [navigate]);
 
   // Refresh data when user returns to the page
-  useEffect(() => {
+    useEffect(() => {
     const handleFocus = () => {
       fetchDashboardData();
     };
 
     window.addEventListener('focus', handleFocus);
     return () => window.removeEventListener('focus', handleFocus);
-  }, []);
+    }, []);
 
   const formatDate = (timestamp) => {
     // Handle both ISO strings and timestamps
