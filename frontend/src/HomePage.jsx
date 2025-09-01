@@ -259,7 +259,7 @@ export default function Dashboard() {
               <CardTitle className="text-sm font-medium text-gray-700 font-inter">Total Clients</CardTitle>
               <Building2 className="h-4 w-4 text-gray-400" />
             </CardHeader>
-            <CardContent>
+            <CardContent className="!pb-4" style={{ paddingBottom: '1rem !important' }}>
               <div className="text-2xl font-bold text-gray-900 font-inter">{dashboardStats.companies.total}</div>
               <p className="text-xs text-gray-500 mt-1 font-inter">
                 {dashboardStats.companies.contacted} Contacted
@@ -272,7 +272,7 @@ export default function Dashboard() {
               <CardTitle className="text-sm font-medium text-gray-700 font-inter">Emails Sent</CardTitle>
               <Mail className="h-4 w-4 text-gray-400" />
             </CardHeader>
-            <CardContent>
+            <CardContent className="!pb-4" style={{ paddingBottom: '1rem !important' }}>
               <div className="text-2xl font-bold text-gray-900 font-inter">{dashboardStats.emails.total_sent}</div>
               <p className="text-xs text-gray-500 mt-1 font-inter">
                 {dashboardStats.emails.success_rate}% Response Rate
@@ -285,7 +285,7 @@ export default function Dashboard() {
               <CardTitle className="text-sm font-medium text-gray-700 font-inter">Users</CardTitle>
               <Users className="h-4 w-4 text-gray-400" />
             </CardHeader>
-            <CardContent>
+            <CardContent className="!pb-4" style={{ paddingBottom: '1rem !important' }}>
               <div className="text-2xl font-bold text-gray-900 font-inter">{dashboardStats.users.total}</div>
               <p className="text-xs text-gray-500 mt-1 font-inter">
                 Users on the Platform
@@ -298,7 +298,7 @@ export default function Dashboard() {
               <CardTitle className="text-sm font-medium text-gray-700 font-inter">Clients by City</CardTitle>
               <MapPin className="h-4 w-4 text-gray-400" />
             </CardHeader>
-            <CardContent>
+            <CardContent className="!pb-4" style={{ paddingBottom: '1rem !important' }}>
               <div className="space-y-2">
                 {dashboardStats.topCities.map((city, index) => (
                   <div key={index} className="flex items-center justify-between">
