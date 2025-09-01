@@ -1,6 +1,6 @@
 import React from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import UserDropdown from "@/components/user-dropdown";
+import UserDropdown from "@/Components/user-dropdown";
 import { Building2, Mail, Users, BarChart3, Database } from "lucide-react";
 import { cn } from "@/lib/utils";
 
