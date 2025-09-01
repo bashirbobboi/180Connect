@@ -315,13 +315,14 @@ export default function Dashboard() {
           {/* Company Breakdown */}
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center justify-between">
+              <CardTitle className="flex items-center justify-between !text-2xl" style={{ fontSize: '1.5rem !important' }}>
                 Client Overview
                 <Button 
                   variant="ghost" 
                   size="sm"
                   onClick={() => navigate('/email')}
-                  className="gap-1 hover:!bg-gray-100 hover:!rounded-md !transition-all !duration-200"
+                  className="gap-1 hover:!bg-gray-100 hover:!rounded-md !transition-all !duration-200 !text-sm"
+                  style={{ fontSize: '0.875rem !important' }}
                 >
                   View all
                   <ArrowUpRight className="w-3 h-3" />
@@ -362,17 +363,17 @@ export default function Dashboard() {
 
           {/* Recent Activity */}
           <Card>
-            <CardHeader>
-              <CardTitle>Recent Activity</CardTitle>
-            </CardHeader>
-            <CardContent>
+            <CardContent className="!p-0">
               <Tabs defaultValue="all" className="w-full">
-                <TabsList className="inline-flex rounded-lg bg-gray-100 p-0.5">
-                  <TabsTrigger value="all">All</TabsTrigger>
-                  <TabsTrigger value="clients">Clients</TabsTrigger>
-                  <TabsTrigger value="emails">Emails</TabsTrigger>
-                </TabsList>
-                
+                <div className="!flex !flex-row !items-center !justify-between !px-6 !pt-6 !pb-2">
+                  <CardTitle className="!text-2xl" style={{ fontSize: '1.5rem !important' }}>Recent Activity</CardTitle>
+                  <TabsList className="!inline-flex !rounded-lg !bg-gray-100 !p-0.5">
+                    <TabsTrigger value="all">All</TabsTrigger>
+                    <TabsTrigger value="clients">Clients</TabsTrigger>
+                    <TabsTrigger value="emails">Emails</TabsTrigger>
+                  </TabsList>
+                </div>
+                <div className="!px-6 !pb-6">
                 <TabsContent value="all" className="space-y-4">
                   {dashboardStats.recent_activity.length === 0 ? (
                     <p className="text-sm text-stone-500 text-center py-4">
@@ -431,27 +432,27 @@ export default function Dashboard() {
                   {dashboardStats.recent_activity.filter(activity => 
                     activity.type === 'email_sent' || activity.type === 'email'
                   ).slice(0, 6).map((activity, index) => (
-                    <div key={index} className="!flex !items-start !space-x-3 !mb-3 last:!mb-0">
-                      <div className="!flex-shrink-0 !mt-0.5">
-                        {getActivityIcon(activity.type)}
-                      </div>
-                      <div className="!flex-1 !min-w-0 !space-y-0">
-                        <p className="!text-sm !text-stone-900 !mb-0 !leading-tight">
-                          {activity.description}
-                        </p>
-                        {activity.company_name && (
-                          <p className="!text-xs !text-stone-500 !mb-0 !mt-0 !leading-tight">
-                            {activity.company_name}
+                      <div key={index} className="!flex !items-start !space-x-3 !mb-3 last:!mb-0">
+                        <div className="!flex-shrink-0 !mt-0.5">
+                          {getActivityIcon(activity.type)}
+                        </div>
+                        <div className="!flex-1 !min-w-0 !space-y-0">
+                          <p className="!text-sm !text-stone-900 !mb-0 !leading-tight">
+                            {activity.description}
                           </p>
-                        )}
-                        <p className="!text-xs !text-stone-400 !mb-0 !mt-0 !leading-tight">
+                          {activity.company_name && (
+                            <p className="!text-xs !text-stone-500 !mb-0 !mt-0 !leading-tight">
+                              {activity.company_name}
+                            </p>
+                          )}
+                                                  <p className="!text-xs !text-stone-400 !mb-0 !mt-0 !leading-tight">
                           {formatDate(activity.created_at)}
                         </p>
                       </div>
                     </div>
                   ))}
                 </TabsContent>
-                
+                </div>
 
               </Tabs>
             </CardContent>
@@ -461,7 +462,7 @@ export default function Dashboard() {
         {/* Quick Actions */}
         <Card>
           <CardHeader>
-            <CardTitle>Quick Actions</CardTitle>
+            <CardTitle className="!text-2xl" style={{ fontSize: '1.5rem !important' }}>Quick Actions</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

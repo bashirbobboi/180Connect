@@ -68,7 +68,7 @@ export function Layout({ children }) {
 
           {/* Navigation */}
           <div className="!mt-8 !flex-grow !flex !flex-col">
-            <nav className="flex-1 px-2 space-y-1">
+            <nav className="!flex-1 !px-2 !space-y-1">
               {navigationItems.map((item) => {
                 const Icon = item.icon;
                 return (
@@ -76,11 +76,12 @@ export function Layout({ children }) {
                     key={item.name}
                     onClick={() => navigate(item.href)}
                     className={cn(
-                      "!group !flex !items-center !px-2 !py-2 !text-sm !font-medium !rounded-md !w-full !text-left !transition-colors",
+                      "!group !flex !items-center !px-2 !py-2 !text-sm !font-semibold !rounded-md !w-full !text-left !transition-colors",
                       item.current
                         ? "!bg-blue-50 !text-blue-700 !border-r-2 !border-blue-700"
                         : "!text-stone-600 hover:!bg-stone-50 hover:!text-stone-900"
                     )}
+                    style={{ fontWeight: '500 !important' }}
                   >
                     <Icon
                       className={cn(
@@ -90,7 +91,7 @@ export function Layout({ children }) {
                           : "!text-stone-400 group-hover:!text-stone-500"
                       )}
                     />
-                    <span className="!text-sm !font-medium">{item.name}</span>
+                    <span className="!text-sm !font-semibold font-inter" style={{ fontWeight: '600 !important' }}>{item.name}</span>
                   </button>
                 );
               })}

@@ -131,7 +131,7 @@ export default function UserDropdown() {
                 
                 <button
                   onClick={() => {
-                    navigate('/profile');
+                    navigate('/account');
                     setIsOpen(false);
                   }}
                   className="flex items-center w-full px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
