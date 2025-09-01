@@ -415,7 +415,7 @@ export default function LoginPage() {
                       <div className="d-block d-md-none mt-5">
                         <div className="d-flex align-items-center">
                           <div className="css-amgugu"></div>
-                          <div className="px-3" style={{ fontSize: '11px', color: '#999', letterSpacing: '0.5px' }}>
+                          <div className="px-3" style={{ fontSize: '11px', color: '#000', letterSpacing: '0.5px', fontWeight: 'bold' }}>
                             OR
                           </div>
                           <div className="css-amgugu"></div>
@@ -428,12 +428,13 @@ export default function LoginPage() {
                   <div className="col-2 d-none d-md-flex justify-content-center align-items-center" style={{ height: '300px' }}>
                     <div className="position-relative d-flex align-items-center justify-content-center" style={{ height: '100%' }}>
                       <div className="css-amgugu"></div>
-                      <div className="position-absolute" style={{ 
-                        backgroundColor: '#f7f7f7', 
+                      <div className="position-absolute or-divider-background" style={{ 
+                        backgroundColor: 'transparent', 
                         padding: '8px 12px', 
                         fontSize: '11px', 
-                        color: '#999', 
-                        letterSpacing: '0.5px' 
+                        color: '#000', 
+                        letterSpacing: '0.5px',
+                        fontWeight: 'bold'
                       }}>
                         OR
                       </div>

@@ -144,6 +144,11 @@
   }
 }
 
+/* OR divider background - make transparent */
+.or-divider-background {
+  background-color: transparent !important;
+}
+
 /* Custom Google Button Styling */
 .google-login-container {
   background: #f7f7f7 !important;
