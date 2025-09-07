@@ -496,7 +496,7 @@ export default function LoginPage() {
                         <path d="M12 6v6l4 2"/>
                       </svg>
                       <span className="small text-muted">
-                        <strong>Note:</strong> First-time access may take up to 1 minute to load as our servers wake up
+                        <strong>Note:</strong> After a period of inactivity, the server may need up to 60 seconds to restart. Once it's running, the site will be fully responsive.
                       </span>
                     </div>
                   </div>
