@@ -49,6 +49,10 @@ export default function LoginPage() {
   // Notification state
   const [notification, setNotification] = useState({ show: false, message: '', type: '' });
   
+  // Disclaimer visibility state - separate for login and create account
+  const [showLoginDisclaimer, setShowLoginDisclaimer] = useState(true);
+  const [showCreateAccountDisclaimer, setShowCreateAccountDisclaimer] = useState(true);
+  
   const navigate = useNavigate();
 
   // Google OAuth hook
@@ -68,6 +72,15 @@ export default function LoginPage() {
     setTimeout(() => {
       setNotification({ show: false, message: '', type: '' });
     }, 4000);
+  };
+
+  // Dismiss disclaimer functions
+  const dismissLoginDisclaimer = () => {
+    setShowLoginDisclaimer(false);
+  };
+
+  const dismissCreateAccountDisclaimer = () => {
+    setShowCreateAccountDisclaimer(false);
   };
 
   function validateLoginForm(checkEmail, checkPassword) {
@@ -306,17 +319,30 @@ export default function LoginPage() {
                   <h1 className="css-1llmlc0 mb-5">Log into 180Connect</h1>
                   
                   {/* Loading Disclaimer */}
-                  <div className="loading-disclaimer mb-4">
-                    <div className="d-flex align-items-center justify-content-center gap-2">
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <circle cx="12" cy="12" r="10"/>
-                        <path d="M12 6v6l4 2"/>
-                      </svg>
-                      <span className="small text-muted">
-                        <strong>Note:</strong>  After a period of inactivity, the server may need up to 60 seconds to restart. Once it's running, the site will be fully responsive.
-                      </span>
+                  {showLoginDisclaimer && (
+                    <div className="loading-disclaimer mb-4">
+                      <button 
+                        type="button"
+                        className="btn-close-disclaimer"
+                        onClick={dismissLoginDisclaimer}
+                        aria-label="Dismiss disclaimer"
+                      >
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                          <line x1="18" y1="6" x2="6" y2="18"/>
+                          <line x1="6" y1="6" x2="18" y2="18"/>
+                        </svg>
+                      </button>
+                      <div className="d-flex align-items-center justify-content-center gap-2">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <circle cx="12" cy="12" r="10"/>
+                          <path d="M12 6v6l4 2"/>
+                        </svg>
+                        <span className="small text-muted">
+                          <strong>Note:</strong> After a period of inactivity, the server may need up to 60 seconds to restart. Once it's running, the site will be fully responsive.
+                        </span>
+                      </div>
                     </div>
-                  </div>
+                  )}
                 </div>
 
                 {/* Main Content Row */}
@@ -489,17 +515,30 @@ export default function LoginPage() {
                   <h1 className="css-1llmlc0 mb-5">Create your 180Connect account</h1>
                   
                   {/* Loading Disclaimer */}
-                  <div className="loading-disclaimer mb-4">
-                    <div className="d-flex align-items-center justify-content-center gap-2">
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <circle cx="12" cy="12" r="10"/>
-                        <path d="M12 6v6l4 2"/>
-                      </svg>
-                      <span className="small text-muted">
-                        <strong>Note:</strong> After a period of inactivity, the server may need up to 60 seconds to restart. Once it's running, the site will be fully responsive.
-                      </span>
+                  {showCreateAccountDisclaimer && (
+                    <div className="loading-disclaimer mb-4">
+                      <button 
+                        type="button"
+                        className="btn-close-disclaimer"
+                        onClick={dismissCreateAccountDisclaimer}
+                        aria-label="Dismiss disclaimer"
+                      >
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                          <line x1="18" y1="6" x2="6" y2="18"/>
+                          <line x1="6" y1="6" x2="18" y2="18"/>
+                        </svg>
+                      </button>
+                      <div className="d-flex align-items-center justify-content-center gap-2">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <circle cx="12" cy="12" r="10"/>
+                          <path d="M12 6v6l4 2"/>
+                        </svg>
+                        <span className="small text-muted">
+                          <strong>Note:</strong> After a period of inactivity, the server may need up to 60 seconds to restart. Once it's running, the site will be fully responsive.
+                        </span>
+                      </div>
                     </div>
-                  </div>
+                  )}
                 </div>
 
                 {/* Registration Form */}
