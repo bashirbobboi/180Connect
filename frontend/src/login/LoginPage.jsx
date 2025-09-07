@@ -304,6 +304,19 @@ export default function LoginPage() {
                 {/* Title Only */}
                 <div className="text-center mb-5">
                   <h1 className="css-1llmlc0 mb-5">Log into 180Connect</h1>
+                  
+                  {/* Loading Disclaimer */}
+                  <div className="loading-disclaimer mb-4">
+                    <div className="d-flex align-items-center justify-content-center gap-2">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <circle cx="12" cy="12" r="10"/>
+                        <path d="M12 6v6l4 2"/>
+                      </svg>
+                      <span className="small text-muted">
+                        <strong>Note:</strong>  After a period of inactivity, the server may need up to 60 seconds to restart. Once it's running, the site will be fully responsive.
+                      </span>
+                    </div>
+                  </div>
                 </div>
 
                 {/* Main Content Row */}
@@ -474,6 +487,19 @@ export default function LoginPage() {
                 {/* Logo and Title */}
                 <div className="text-center mb-5">
                   <h1 className="css-1llmlc0 mb-5">Create your 180Connect account</h1>
+                  
+                  {/* Loading Disclaimer */}
+                  <div className="loading-disclaimer mb-4">
+                    <div className="d-flex align-items-center justify-content-center gap-2">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <circle cx="12" cy="12" r="10"/>
+                        <path d="M12 6v6l4 2"/>
+                      </svg>
+                      <span className="small text-muted">
+                        <strong>Note:</strong> First-time access may take up to 1 minute to load as our servers wake up
+                      </span>
+                    </div>
+                  </div>
                 </div>
 
                 {/* Registration Form */}
