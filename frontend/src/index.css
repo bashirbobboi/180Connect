@@ -1,6 +1,9 @@
 /* Load Bootstrap first */
 @import "bootstrap/dist/css/bootstrap.min.css";
 
+/* Load Font Awesome */
+@import '@fortawesome/fontawesome-free/css/all.min.css';
+
 /* Then load Tailwind CSS (this will override Bootstrap) */
 @import "tailwindcss";
 

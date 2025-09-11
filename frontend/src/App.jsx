@@ -14,6 +14,7 @@ import CompanyPage from './company/CompanyPage';
 import AccountPage from './account/AccountPage';
 import EditClientPage from './client/EditClientPage';
 import ResetPasswordPage, { ForgotPassword } from './forgot-password/ResetPasswordPage';
+import TermsOfServicePage from './terms/TermsOfServicePage';
 
 /**
  * Main App component that sets up routing.
@@ -39,6 +40,7 @@ export default function App() {
         <Route path="/account" element={<AccountPage />} />
         <Route path="/company/:id" element={<CompanyPage />} />
         <Route path="/edit-client/:clientId" element={<EditClientPage />} />
+        <Route path="/terms-of-service" element={<TermsOfServicePage />} />
       </Routes>
       <Analytics />
     </Router>

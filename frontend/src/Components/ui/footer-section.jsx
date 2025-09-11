@@ -22,9 +22,9 @@ function Footerdemo() {
       <div className="container mx-auto px-4 md:px-6 lg:px-8" style={{ paddingTop: '2rem' }}>
         <div className="grid gap-12 md:grid-cols-2 lg:grid-cols-4">
           <div className="relative">
-            <h2 className="mb-4 text-3xl font-bold tracking-tight text-gray-900">Stay Connected</h2>
+            <h2 className="mb-4 text-3xl font-bold tracking-tight text-gray-900">Having Trouble?</h2>
             <p className="mb-6 text-gray-600">
-              Join our newsletter for the latest updates and exclusive offers.
+              Questions or problems with the app? Don’t hesitate to reach out.
             </p>
             <form className="relative">
               <Input
@@ -119,24 +119,37 @@ function Footerdemo() {
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button variant="outline" size="icon" className="bg-white border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400" style={{ borderRadius: '40px' }} onClick={() => window.open('https://linktr.ee/180dcsheffield', '_blank')}>
+                      <i className="fa-brands fa-linktree" style={{ fontSize: '16px' }}></i>
+                      <span className="sr-only">Linktree</span>
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent sideOffset={2} style={{ paddingTop: '4px', paddingBottom: '1px', lineHeight: '1.2' }}>
+                    Visit our Linktree
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             </div>
           </div>
         </div>
         <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-gray-200 text-center md:flex-row" style={{ paddingTop: '2rem' }}>
           <p className="text-sm text-gray-600">
-            © 2024 Your Company. All rights reserved.
+            ©2025 180 Degrees Consulting. All rights reserved.
           </p>
-          <nav className="flex gap-4 text-sm">
+          {/* <nav className="flex gap-4 text-sm">
             <a href="#" className="transition-colors hover:text-blue-600 text-gray-600">
               Privacy Policy
             </a>
-            <a href="#" className="transition-colors hover:text-blue-600 text-gray-600">
+            <a href="/terms-of-service" className="transition-colors hover:text-blue-600 text-gray-600">
               Terms of Service
             </a>
             <a href="#" className="transition-colors hover:text-blue-600 text-gray-600">
               Cookie Settings
             </a>
-          </nav>
+          </nav> */}
         </div>
       </div>
     </footer>
