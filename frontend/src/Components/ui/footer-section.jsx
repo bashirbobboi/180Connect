@@ -19,7 +19,7 @@ function Footerdemo() {
 
   return (
     <footer className="relative border-t border-gray-200 text-gray-900 transition-colors duration-300" style={{ backgroundColor: '#f7f7f7' }}>
-      <div className="container mx-auto px-4 pt-16 pb-12 md:px-6 lg:px-8">
+      <div className="container mx-auto px-4 md:px-6 lg:px-8" style={{ paddingTop: '2rem' }}>
         <div className="grid gap-12 md:grid-cols-2 lg:grid-cols-4">
           <div className="relative">
             <h2 className="mb-4 text-3xl font-bold tracking-tight text-gray-900">Stay Connected</h2>
@@ -118,7 +118,7 @@ function Footerdemo() {
             </div>
           </div>
         </div>
-        <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-gray-200 pt-8 text-center md:flex-row">
+        <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-gray-200 text-center md:flex-row" style={{ paddingTop: '2rem' }}>
           <p className="text-sm text-gray-600">
             © 2024 Your Company. All rights reserved.
           </p>
