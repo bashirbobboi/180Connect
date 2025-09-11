@@ -310,7 +310,7 @@ export default function LoginPage() {
 
       {!createAccount ? (
         /* Login Page */
-        <div className="d-flex justify-content-center align-items-center" style={{ minHeight: '80vh' }}>
+        <div className="d-flex justify-content-center align-items-center" style={{ minHeight: '100vh' }}>
           <div className="container">
             <div className="row justify-content-center">
               <div className="col-12 col-lg-10 col-xl-8">
@@ -506,7 +506,7 @@ export default function LoginPage() {
         </div>
       ) : (
         /* Create Account Page */
-        <div className="d-flex justify-content-center align-items-center" style={{ minHeight: '80vh' }}>
+        <div className="d-flex justify-content-center align-items-center" style={{ minHeight: '100vh' }}>
           <div className="container">
             <div className="row justify-content-center">
               <div className="col-12 col-lg-6 col-xl-5">

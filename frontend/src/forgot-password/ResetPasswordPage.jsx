@@ -79,7 +79,7 @@ export function ForgotPassword(){
         </button>
       </div>
 
-      <div className="d-flex justify-content-center align-items-center" style={{ minHeight: '80vh' }}>
+      <div className="d-flex justify-content-center align-items-center" style={{ minHeight: '100vh' }}>
         <div className="container">
           <div className="row justify-content-center">
             <div className="col-12 col-lg-6 col-xl-5">
@@ -238,7 +238,7 @@ export default function ResetPasswordPage() {
         </button>
       </div>
 
-      <div className="d-flex justify-content-center align-items-center" style={{ minHeight: '80vh' }}>
+      <div className="d-flex justify-content-center align-items-center" style={{ minHeight: '100vh' }}>
         <div className="container">
           <div className="row justify-content-center">
             <div className="col-12 col-lg-6 col-xl-5">

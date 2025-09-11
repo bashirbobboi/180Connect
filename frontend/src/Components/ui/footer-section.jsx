@@ -9,7 +9,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/Components/ui/tooltip"
-import { Facebook, Instagram, Linkedin, Send, Twitter } from "lucide-react"
+import { Instagram, Linkedin, Send, Globe, Mail } from "lucide-react"
 
 function Footerdemo() {
   // Ensure light mode is always active
@@ -44,74 +44,78 @@ function Footerdemo() {
             <div className="absolute -right-4 top-0 h-24 w-24 rounded-full bg-blue-100 blur-2xl" />
           </div>
           <div>
-            <h3 className="mb-4 text-lg font-semibold text-gray-900">Quick Links</h3>
-            <nav className="space-y-2 text-sm">
-              <a href="https://github.com" className="block transition-colors hover:text-blue-600 text-gray-600">
+            <h3 className="mb-4 text-3xl font-bold tracking-tight text-gray-900">Quick Links</h3>
+            <nav className="text-sm">
+              <a href="https://www.180dc.org/branches/sheffield" className="block transition-colors hover:text-blue-600 text-gray-600 mb-2">
+                About Us
+              </a>
+              <a href="https://github.com/bashirbobboi/180Connect/commits/main/" className="block transition-colors hover:text-blue-600 text-gray-600">
                 Changelog
               </a>
             </nav>
           </div>
           <div>
-            <h3 className="mb-4 text-lg font-semibold text-gray-900">Contact Us</h3>
-            <address className="space-y-2 text-sm not-italic text-gray-600">
-              <p>123 Innovation Street</p>
-              <p>Tech City, TC 12345</p>
+            <h3 className="mb-4 text-3xl font-bold tracking-tight text-gray-900">Contact Us</h3>
+            <address className="space-y-1 text-sm not-italic text-gray-600">
+              <p>82 Upper Allen St, Sheffield,</p>
+              <p>South Yorkshire, United Kingdom.</p>
+              <p>S3 7NU</p>
               <p>Phone: (123) 456-7890</p>
-              <p>Email: hello@example.com</p>
+              <p>Email: sheffield@180dc.org</p>
             </address>
           </div>
           <div className="relative">
-            <h3 className="mb-4 text-lg font-semibold text-gray-900">Follow Us</h3>
+            <h3 className="mb-4 text-3xl font-bold tracking-tight text-gray-900">Follow Us</h3>
             <div className="mb-6 flex gap-6">
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <Button variant="outline" size="icon" className="bg-white border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400" style={{ borderRadius: '40px' }}>
-                      <Facebook className="h-4 w-4" />
-                      <span className="sr-only">Facebook</span>
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Follow us on Facebook</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button variant="outline" size="icon" className="bg-white border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400" style={{ borderRadius: '40px' }}>
-                      <Twitter className="h-4 w-4" />
-                      <span className="sr-only">Twitter</span>
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Follow us on Twitter</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button variant="outline" size="icon" className="bg-white border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400" style={{ borderRadius: '40px' }}>
+                    <Button variant="outline" size="icon" className="bg-white border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400" style={{ borderRadius: '40px' }} onClick={() => window.open('https://www.instagram.com/180dcsheffield?igsh=N3o5NHUwY2kwM3k0', '_blank')}>
                       <Instagram className="h-4 w-4" />
                       <span className="sr-only">Instagram</span>
                     </Button>
                   </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Follow us on Instagram</p>
+                  <TooltipContent sideOffset={2} style={{ paddingTop: '4px', paddingBottom: '1px', lineHeight: '1.2' }}>
+                    Follow us on Instagram
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <Button variant="outline" size="icon" className="bg-white border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400" style={{ borderRadius: '40px' }}>
+                    <Button variant="outline" size="icon" className="bg-white border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400" style={{ borderRadius: '40px' }} onClick={() => window.open('https://www.linkedin.com/company/180dcsheffield/', '_blank')}>
                       <Linkedin className="h-4 w-4" />
                       <span className="sr-only">LinkedIn</span>
                     </Button>
                   </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Connect with us on LinkedIn</p>
+                  <TooltipContent sideOffset={2} style={{ paddingTop: '4px', paddingBottom: '1px', lineHeight: '1.2' }}>
+                    Connect with us on LinkedIn
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button variant="outline" size="icon" className="bg-white border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400" style={{ borderRadius: '40px' }} onClick={() => window.open('https://www.180dc.org/', '_blank')}>
+                      <Globe className="h-4 w-4" />
+                      <span className="sr-only">Website</span>
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent sideOffset={2} style={{ paddingTop: '4px', paddingBottom: '1px', lineHeight: '1.2' }}>
+                    Visit our website
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button variant="outline" size="icon" className="bg-white border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400" style={{ borderRadius: '40px' }} onClick={() => window.open('mailto:sheffield@180dc.org', '_blank')}>
+                      <Mail className="h-4 w-4" />
+                      <span className="sr-only">Email</span>
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent sideOffset={2} style={{ paddingTop: '4px', paddingBottom: '1px', lineHeight: '1.2' }}>
+                    Email us
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
