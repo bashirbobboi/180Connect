@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/Components/ui/card";
 import { Button } from "@/Components/ui/button";
 import { Badge } from "@/Components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/Components/ui/tabs";
+import { Footer } from "@/Components/ui/footer-demo";
 import { 
   Building2, 
   Mail, 
@@ -539,6 +540,9 @@ export default function Dashboard() {
           </CardContent>
         </Card>
       </div>
+      
+      {/* Footer */}
+      <Footer />
     </Layout>
   );
 }
