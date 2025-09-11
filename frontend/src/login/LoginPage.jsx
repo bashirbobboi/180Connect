@@ -12,6 +12,7 @@ import NavBar from '/src/Components/NavBar';
 import { GoogleLogin, useGoogleLogin } from '@react-oauth/google';
 import { useNavigate } from 'react-router-dom';
 import './LoginPage.css';
+import { Footer } from '@/Components/ui/footer-demo';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -703,6 +704,9 @@ export default function LoginPage() {
           </div>
         </div>
       )}
+      
+      {/* Footer */}
+      <Footer />
     </div>
   );
 }
